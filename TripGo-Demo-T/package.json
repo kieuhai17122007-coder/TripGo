@@ -1,0 +1,17 @@
+{
+  "name": "tripgo-flight-booking-demo",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 4173"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.13",
+    "lucide": "^0.544.0",
+    "tailwindcss": "^4.1.13",
+    "vite": "^7.1.7"
+  }
+}
