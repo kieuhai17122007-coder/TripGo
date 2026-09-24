@@ -4,40 +4,114 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>TripGo - Chọn ghế</title>
+
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/pages.css">
+
+    <style>
+      .seat-error {
+        display: none;
+        color: #d93025;
+        font-size: 13px;
+        margin-top: 10px;
+      }
+
+      .seat-error.show {
+        display: block;
+      }
+
+      .seats {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 10px;
+        margin: 20px 0;
+      }
+
+      .seat {
+        padding: 12px 5px;
+        border: 1px solid #ccc;
+        background: #fff;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .seat:hover {
+        border-color: #111;
+      }
+
+      .seat.selected {
+        background: #111;
+        color: #fff;
+        border-color: #111;
+      }
+    </style>
   </head>
+
   <body>
+
     <main class="simple-page">
       <div class="form-card">
+
         <p class="eyebrow dark">SEAT SELECTION</p>
+
         <h1>Chọn ghế</h1>
+
         <div id="seats" class="seats"></div>
-        <button class="primary-btn wide" onclick="next()">TIẾP TỤC THANH TOÁN</button>
+
+        <small id="seatError" class="seat-error">
+          Vui lòng chọn ghế trước khi tiếp tục
+        </small>
+
+        <button class="primary-btn wide" onclick="next()">
+          XÁC NHẬN THÔNG TIN
+        </button>
+
       </div>
     </main>
+
     <script>
       const box = document.getElementById('seats');
+      const seatError = document.getElementById('seatError');
+
       let selected = '';
 
       for (let r = 1; r <= 8; r++) {
+
         for (let c of ['A', 'B', 'C', 'D', 'E', 'F']) {
+
           const b = document.createElement('button');
+
           b.className = 'seat';
+          b.type = 'button';
           b.textContent = r + c;
+
           b.onclick = () => {
-            document.querySelectorAll('.seat').forEach(x => x.classList.remove('selected'));
+
+            document
+              .querySelectorAll('.seat')
+              .forEach(x => x.classList.remove('selected'));
+
             b.classList.add('selected');
+
             selected = r + c;
+
+            seatError.classList.remove('show');
           };
+
           box.appendChild(b);
         }
       }
 
       function next() {
-        if (!selected) return alert('Hãy chọn ghế');
-        localStorage.setItem('tripgo_selected_seat', selected);
-        location.href = 'payment.html';
+        if (!selected) {
+          seatError.classList.add('show');
+          return;
+        }
+        localStorage.setItem(
+          'tripgo_selected_seat',
+          selected
+        );
+        location.href = 'confirm.html';
       }
     </script>
   </body>
