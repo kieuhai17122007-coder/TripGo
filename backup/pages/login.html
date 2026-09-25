@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TripGo - Đăng nhập</title>
+
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/pages.css">
+</head>
+
+<body>
+
+  <main class="simple-page">
+
+    <div class="form-card">
+
+      <a class="logo" href="../index.html">✈ TripGo</a>
+
+      <h1>Đăng nhập</h1>
+
+      <!-- Email -->
+      <label>
+        Email
+        <input
+          type="email"
+          id="email"
+          placeholder="email@example.com"
+        >
+      </label>
+
+      <!-- Mật khẩu -->
+      <label>
+        Mật khẩu
+        <input
+          type="password"
+          id="password"
+          placeholder="••••••••"
+        >
+      </label>
+
+      <!-- Nút đăng nhập -->
+      <button
+        class="primary-btn wide"
+        onclick="login()"
+      >
+        ĐĂNG NHẬP
+      </button>
+
+      <!-- Thông báo -->
+      <div id="result"></div>
+
+      <p class="back">
+        Chưa có tài khoản?
+        <a href="register.html">Đăng ký</a>
+      </p>
+
+      <p class="back">
+        <a href="../index.html">← Về trang chủ</a>
+      </p>
+
+    </div>
+
+  </main>
+
+  <script>
+    function login() {
+
+      // Lấy dữ liệu từ form
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      const result = document.getElementById('result');
+
+      // Xóa thông báo cũ
+      result.innerHTML = '';
+
+      if (email === '') {
+        result.innerHTML =
+          '<div class="notice">Vui lòng nhập email.</div>';
+        return;
+      }
+
+      if (password === '') {
+        result.innerHTML =
+          '<div class="notice">Vui lòng nhập mật khẩu.</div>';
+        return;
+      }
+
+      // Kiểm tra định dạng email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!emailRegex.test(email)) {
+        result.innerHTML =
+          '<div class="notice">Email không đúng định dạng.</div>';
+        return;
+      }
+
+      const users =
+        JSON.parse(localStorage.getItem('tripgo_users')) || [];
+
+      // Tìm tài khoản theo email
+      const user = users.find(function (item) {
+        return item.email === email;
+      });
+
+      // Không tìm thấy tài khoản
+      if (!user) {
+        result.innerHTML =
+          '<div class="notice">Tài khoản không tồn tại.</div>';
+        return;
+      }
+
+      // Kiểm tra mật khẩu
+      if (user.password !== password) {
+        result.innerHTML =
+          '<div class="notice">Mật khẩu không chính xác.</div>';
+        return;
+      }
+
+      localStorage.setItem(
+        'tripgo_current_user',
+        JSON.stringify(user)
+      );
+
+      result.innerHTML =
+        '<div class="notice">Đăng nhập thành công.</div>';
+
+      // Chuyển về trang chủ sau 1 giây
+      setTimeout(function () {
+        window.location.href = '../index.html';
+      }, 1000);
+    }
+  </script>
+
+</body>
+</html>

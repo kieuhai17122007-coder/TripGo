@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TripGo - Đăng ký</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/pages.css">
+  </head>
+  <body>
+    <main class="simple-page">
+      <div class="form-card">
+        <a class="logo" href="../index.html">✈ TripGo</a>
+        <h1>Đăng ký tài khoản</h1>
+        <p>Tạo tài khoản TripGo để sử dụng các chức năng dành cho người dùng.</p>
+
+        <form id="registerForm" novalidate>
+          <label>
+            Họ và tên
+            <input type="text" id="name" placeholder="Nguyễn Văn A" autocomplete="name">
+          </label>
+
+          <label>
+            Email
+            <input type="email" id="email" placeholder="email@example.com" autocomplete="email">
+          </label>
+
+          <label>
+            Số điện thoại
+            <input type="tel" id="phone" placeholder="0912345678" autocomplete="tel">
+          </label>
+
+          <label>
+            Mật khẩu
+            <input type="password" id="password" placeholder="Tối thiểu 6 ký tự" autocomplete="new-password">
+          </label>
+
+          <label>
+            Xác nhận mật khẩu
+            <input type="password" id="confirmPassword" placeholder="Nhập lại mật khẩu" autocomplete="new-password">
+          </label>
+
+          <button class="primary-btn wide" type="submit">ĐĂNG KÝ</button>
+        </form>
+
+        <div id="result" aria-live="polite"></div>
+
+        <p class="back">
+          Đã có tài khoản? <a href="login.html">Đăng nhập</a>
+        </p>
+        <p class="back">
+          <a href="../index.html">← Về trang chủ</a>
+        </p>
+      </div>
+    </main>
+
+    <script src="../js/register.js"></script>
+  </body>
+</html>
