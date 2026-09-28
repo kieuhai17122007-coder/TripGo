@@ -5,7 +5,8 @@ export function renderFlightResults() {
 
   const filteredFlights = flights.filter(flight =>
   flight.from === search.from &&
-  flight.to === search.to
+  flight.to === search.to &&
+  flight.date === search.departure
 )
   if (filteredFlights.length === 0) {
   return `
