@@ -1,7 +1,22 @@
 import { flights } from './flights.js'
 
 export function renderFlightResults() {
-  const flightList = flights.map(flight => `
+  const search = JSON.parse(localStorage.getItem('tripgo_search'))
+
+  const filteredFlights = flights.filter(flight =>
+  flight.from === search.from &&
+  flight.to === search.to
+)
+  if (filteredFlights.length === 0) {
+  return `
+    <section class="section">
+      <div class="container">
+        <h2>Không tìm thấy chuyến bay phù hợp</h2>
+      </div>
+    </section>
+  `
+ }
+  const flightList = filteredFlights.map(flight => `
     <div class="flight-card">
       <div class="airline">${flight.airline}</div>
 
