@@ -78,7 +78,12 @@ if (search.sortBy === 'timeDesc') {
 
       <div class="info">
         <span class="price">${flight.price.toLocaleString()} VNĐ</span>
-        <button onclick="bookFlight()">Đặt vé</button>
+        <button onclick="viewFlight('${flight.id}')">
+             Xem chi tiết
+        </button>
+          <button onclick="bookFlight()">
+             Đặt vé
+        </button>
       </div>
     </div>
   `).join('')
@@ -97,4 +102,18 @@ window.bookFlight = function () {
   alert('Đặt vé thành công!')
   window.location.hash = ''
   location.reload()
+}
+window.viewFlight = function (id) {
+  const flight = flights.find(f => f.id === id)
+
+  alert(`
+Mã chuyến bay: ${flight.id}
+Hãng: ${flight.airline}
+Tuyến: ${flight.from} → ${flight.to}
+Ngày bay: ${flight.date}
+Giờ khởi hành: ${flight.departure}
+Giờ hạ cánh: ${flight.arrival}
+Giá vé: ${flight.price.toLocaleString()} VNĐ
+Số ghế còn lại: ${flight.seats}
+  `)
 }
