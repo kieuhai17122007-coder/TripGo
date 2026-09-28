@@ -13,7 +13,8 @@ const filteredFlights = flights.filter(flight =>
   flight.date === search.departure &&
   flight.seats >= Number(search.passengers) &&
   flight.price >= minPrice &&
-  flight.price <= maxPrice
+  flight.price <= maxPrice &&
+  (search.airline === '' || flight.airline === search.airline)
 )
   if (filteredFlights.length === 0) {
   return `
