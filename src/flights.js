@@ -43,5 +43,14 @@ export const flights = [
     departure: "18:20",
     arrival: "19:45",
     price: 1200000
-  }
+  },
+  {
+  id: "TG006",
+  airline: "Vietravel Airlines",
+  from: "HAN",
+  to: "SGN",
+  departure: "20:00",
+  arrival: "22:00",
+  price: 1600000
+}
 ]

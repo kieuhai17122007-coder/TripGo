@@ -1,44 +1,34 @@
+import { flights } from './flights.js'
+
 export function renderFlightResults() {
+  const flightList = flights.map(flight => `
+    <div class="flight-card">
+      <div class="airline">${flight.airline}</div>
+
+      <div class="info">
+        <span>${flight.from} → ${flight.to}</span>
+        <span>${flight.departure} - ${flight.arrival}</span>
+      </div>
+
+      <div class="info">
+        <span class="price">${flight.price.toLocaleString()} VNĐ</span>
+        <button onclick="bookFlight()">Đặt vé</button>
+      </div>
+    </div>
+  `).join('')
+
   return `
     <section class="section">
       <div class="container">
         <h2>Kết quả tìm kiếm chuyến bay</h2>
-
-        <div class="flight-card">
-          <div class="airline">Vietnam Airlines</div>
-
-          <div class="info">
-            <span>Hà Nội → Đà Nẵng</span>
-            <span>06:30 - 07:55</span>
-          </div>
-
-          <div class="info">
-            <span class="price">1.250.000 VNĐ</span>
-            <button onclick="bookFlight()">Đặt vé</button>
-          </div>
-        </div>
-
-        <div class="flight-card">
-          <div class="airline">VietJet Air</div>
-
-          <div class="info">
-            <span>Hà Nội → TP.HCM</span>
-            <span>08:00 - 10:10</span>
-          </div>
-
-          <div class="info">
-            <span class="price">1.450.000 VNĐ</span>
-            <button onclick="bookFlight()">Đặt vé</button>
-          </div>
-        </div>
+        ${flightList}
       </div>
-    }
     </section>
   `
 }
-  window.bookFlight = function () {
-      alert('Đặt vé thành công!')
-      window.location.hash = ''
-      location.reload()
-  }
-    
+
+window.bookFlight = function () {
+  alert('Đặt vé thành công!')
+  window.location.hash = ''
+  location.reload()
+}
