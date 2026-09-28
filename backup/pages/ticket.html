@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TripGo - Chọn hạng vé</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f6f8;
+            color: #222;
+        }
+
+        .header {
+            background: #fff;
+            padding: 18px 60px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1769ff;
+        }
+
+        .container {
+            width: 900px;
+            max-width: 95%;
+            margin: 40px auto;
+        }
+
+        .title {
+            margin-bottom: 25px;
+        }
+
+        .title h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .title p {
+            color: #666;
+        }
+
+        .section {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .section h2 {
+            font-size: 20px;
+            margin-bottom: 18px;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .option {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .option:hover {
+            border-color: #1769ff;
+        }
+
+        .option.active {
+            border-color: #1769ff;
+            background: #f0f6ff;
+        }
+
+        .option h3 {
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .option .price {
+            color: #1769ff;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        .option p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .type-options {
+            display: flex;
+            gap: 15px;
+        }
+
+        .type-option {
+            flex: 1;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 18px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .type-option:hover {
+            border-color: #1769ff;
+        }
+
+        .type-option.active {
+            border-color: #1769ff;
+            background: #f0f6ff;
+        }
+
+        .summary {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        .total {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1769ff;
+        }
+
+        .button {
+            width: 100%;
+            border: none;
+            padding: 16px;
+            border-radius: 10px;
+            background: #1769ff;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background: #0d55d9;
+        }
+
+        @media (max-width: 700px) {
+            .options {
+                grid-template-columns: 1fr;
+            }
+
+            .type-options {
+                flex-direction: column;
+            }
+
+            .header {
+                padding: 18px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="header">
+    <div class="logo">TripGo</div>
+</header>
+
+<div class="container">
+
+    <div class="title">
+        <h1>Chọn hạng vé</h1>
+        <p>Vui lòng chọn hạng vé và loại vé phù hợp với nhu cầu của bạn.</p>
+    </div>
+
+    <!-- HẠNG VÉ -->
+    <div class="section">
+        <h2>1. Chọn hạng vé</h2>
+
+        <div class="options">
+
+            <div class="option active" data-class="Phổ thông" data-price="1500000">
+                <h3>Phổ thông</h3>
+                <div class="price">1.500.000đ</div>
+                <p>✓ Hành lý xách tay 7kg</p>
+                <p>✓ Chọn chỗ cơ bản</p>
+                <p>✓ Đổi vé có phí</p>
+            </div>
+
+            <div class="option" data-class="Phổ thông đặc biệt" data-price="2500000">
+                <h3>Phổ thông đặc biệt</h3>
+                <div class="price">2.500.000đ</div>
+                <p>✓ Hành lý xách tay 10kg</p>
+                <p>✓ Hành lý ký gửi 20kg</p>
+                <p>✓ Ưu tiên chọn chỗ</p>
+            </div>
+
+            <div class="option" data-class="Thương gia" data-price="4500000">
+                <h3>Thương gia</h3>
+                <div class="price">4.500.000đ</div>
+                <p>✓ Hành lý xách tay 14kg</p>
+                <p>✓ Hành lý ký gửi 30kg</p>
+                <p>✓ Ưu tiên check-in</p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- LOẠI VÉ -->
+    <div class="section">
+        <h2>2. Chọn loại vé</h2>
+
+        <div class="type-options">
+
+            <div class="type-option active" data-type="Một chiều">
+                <h3>Một chiều</h3>
+                <p>Chỉ đặt chuyến bay đi</p>
+            </div>
+
+            <div class="type-option" data-type="Khứ hồi">
+                <h3>Khứ hồi</h3>
+                <p>Đặt chuyến bay đi và về</p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- TÓM TẮT -->
+    <div class="summary">
+
+        <h2>Tóm tắt lựa chọn</h2>
+
+        <div class="summary-row">
+            <span>Hạng vé</span>
+            <strong id="selectedClass">Phổ thông</strong>
+        </div>
+
+        <div class="summary-row">
+            <span>Loại vé</span>
+            <strong id="selectedType">Một chiều</strong>
+        </div>
+
+        <div class="summary-row">
+            <span>Giá vé</span>
+            <strong class="total" id="totalPrice">1.500.000đ</strong>
+        </div>
+
+    </div>
+
+    <button class="button" onclick="continueBooking()">
+        Tiếp tục
+    </button>
+
+</div>
+
+<script>
+
+    let selectedClass = "Phổ thông";
+    let selectedType = "Một chiều";
+    let selectedPrice = 1500000;
+
+    const classOptions = document.querySelectorAll(".option");
+
+    classOptions.forEach(option => {
+
+        option.addEventListener("click", function() {
+
+            classOptions.forEach(item => {
+                item.classList.remove("active");
+            });
+
+            this.classList.add("active");
+
+            selectedClass = this.dataset.class;
+            selectedPrice = Number(this.dataset.price);
+
+            document.getElementById("selectedClass").textContent = selectedClass;
+
+            document.getElementById("totalPrice").textContent =
+                selectedPrice.toLocaleString("vi-VN") + "đ";
+        });
+
+    });
+
+
+    const typeOptions = document.querySelectorAll(".type-option");
+
+    typeOptions.forEach(option => {
+
+        option.addEventListener("click", function() {
+
+            typeOptions.forEach(item => {
+                item.classList.remove("active");
+            });
+
+            this.classList.add("active");
+
+            selectedType = this.dataset.type;
+
+            document.getElementById("selectedType").textContent = selectedType;
+
+        });
+
+    });
+
+
+    function continueBooking() {
+
+        const ticketData = {
+            ticketClass: selectedClass,
+            ticketType: selectedType,
+            price: selectedPrice
+        };
+
+        localStorage.setItem(
+            "tripgo_ticket",
+            JSON.stringify(ticketData)
+        );
+
+        alert(
+            "Đã chọn " +
+            selectedClass +
+            " - " +
+            selectedType
+        );
+
+        window.location.href = "passenger.html";
+    }
+
+</script>
+
+</body>
+</html>
