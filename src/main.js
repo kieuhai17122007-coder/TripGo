@@ -46,6 +46,15 @@ document.querySelector('#app').innerHTML = `
                <option value="Vietravel Airlines">Vietravel Airlines</option>
              </select>
            </label>
+           <label class="field">
+               <span>Giờ khởi hành</span>
+                <select id="departureTime">
+                <option value="">Tất cả</option>
+                <option value="morning">Sáng (00:00 - 11:59)</option>
+                <option value="afternoon">Chiều (12:00 - 17:59)</option>
+                <option value="evening">Tối (18:00 - 23:59)</option>
+                </select>
+            </label>
         </div>
         <button class="primary-btn search-btn" type="submit">TÌM CHUYẾN BAY</button>
       </form>
@@ -88,7 +97,7 @@ document.querySelector('#swapBtn').addEventListener('click', () => {
 })
 document.querySelector('#search').addEventListener('submit', (event) => {
   event.preventDefault()
-  const search = { from: document.querySelector('#from').value, to: document.querySelector('#to').value, departure: departure.value, returnDate: returnDate.disabled ? '' : returnDate.value, passengers: document.querySelector('#passengers').value,priceRange: document.querySelector('#priceRange').value,airline: document.querySelector('#airline').value, classType: document.querySelector('#classType').value }
+  const search = { from: document.querySelector('#from').value, to: document.querySelector('#to').value, departure: departure.value, returnDate: returnDate.disabled ? '' : returnDate.value, passengers: document.querySelector('#passengers').value,priceRange: document.querySelector('#priceRange').value,airline: document.querySelector('#airline').value,departureTime: document.querySelector('#departureTime').value, classType: document.querySelector('#classType').value }
   localStorage.setItem('tripgo_search', JSON.stringify(search))
   window.location.hash = `search-results?${new URLSearchParams(search).toString()}`
   location.reload()
