@@ -26,6 +26,15 @@ document.querySelector('#app').innerHTML = `
           <label class="field"><span>Ngày đi</span><input type="date" id="departure" required></label>
           <label class="field return-field"><span>Ngày về</span><input type="date" id="returnDate"></label>
           <label class="field"><span>Hành khách</span><select id="passengers"><option value="1">1 hành khách</option><option value="2">2 hành khách</option><option value="3">3 hành khách</option><option value="4">4 hành khách</option></select></label>
+          <label class="field">
+            <span>Khoảng giá</span>
+            <select id="priceRange">
+            <option value="">Tất cả</option>
+            <option value="0-1300000">Dưới 1.300.000 VNĐ</option>
+            <option value="1300000-1600000">1.300.000 - 1.600.000 VNĐ</option>
+            <option value="1600000-99999999">Trên 1.600.000 VNĐ</option>
+            </select>
+          </label>
           <label class="field"><span>Hạng vé</span><select id="classType"><option>Phổ thông</option><option>Thương gia</option></select></label>
         </div>
         <button class="primary-btn search-btn" type="submit">TÌM CHUYẾN BAY</button>
@@ -69,7 +78,7 @@ document.querySelector('#swapBtn').addEventListener('click', () => {
 })
 document.querySelector('#search').addEventListener('submit', (event) => {
   event.preventDefault()
-  const search = { from: document.querySelector('#from').value, to: document.querySelector('#to').value, departure: departure.value, returnDate: returnDate.disabled ? '' : returnDate.value, passengers: document.querySelector('#passengers').value, classType: document.querySelector('#classType').value }
+  const search = { from: document.querySelector('#from').value, to: document.querySelector('#to').value, departure: departure.value, returnDate: returnDate.disabled ? '' : returnDate.value, passengers: document.querySelector('#passengers').value,priceRange: document.querySelector('#priceRange').value, classType: document.querySelector('#classType').value }
   localStorage.setItem('tripgo_search', JSON.stringify(search))
   window.location.hash = `search-results?${new URLSearchParams(search).toString()}`
   location.reload()

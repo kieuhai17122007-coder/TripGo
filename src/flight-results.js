@@ -3,11 +3,17 @@ import { flights } from './flights.js'
 export function renderFlightResults() {
   const search = JSON.parse(localStorage.getItem('tripgo_search'))
 
-  const filteredFlights = flights.filter(flight =>
+const [minPrice, maxPrice] = search.priceRange
+  ? search.priceRange.split('-').map(Number)
+  : [0, Infinity]
+
+const filteredFlights = flights.filter(flight =>
   flight.from === search.from &&
   flight.to === search.to &&
   flight.date === search.departure &&
-  flight.seats >= Number(search.passengers)
+  flight.seats >= Number(search.passengers) &&
+  flight.price >= minPrice &&
+  flight.price <= maxPrice
 )
   if (filteredFlights.length === 0) {
   return `
