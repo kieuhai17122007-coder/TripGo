@@ -36,6 +36,16 @@ document.querySelector('#app').innerHTML = `
             </select>
           </label>
           <label class="field"><span>Hạng vé</span><select id="classType"><option>Phổ thông</option><option>Thương gia</option></select></label>
+          <label class="field">
+              <span>Hãng hàng không</span>
+             <select id="airline">
+               <option value="">Tất cả</option>
+               <option value="Vietnam Airlines">Vietnam Airlines</option>
+               <option value="VietJet Air">VietJet Air</option>
+               <option value="Bamboo Airways">Bamboo Airways</option>
+               <option value="Vietravel Airlines">Vietravel Airlines</option>
+             </select>
+           </label>
         </div>
         <button class="primary-btn search-btn" type="submit">TÌM CHUYẾN BAY</button>
       </form>
@@ -78,7 +88,7 @@ document.querySelector('#swapBtn').addEventListener('click', () => {
 })
 document.querySelector('#search').addEventListener('submit', (event) => {
   event.preventDefault()
-  const search = { from: document.querySelector('#from').value, to: document.querySelector('#to').value, departure: departure.value, returnDate: returnDate.disabled ? '' : returnDate.value, passengers: document.querySelector('#passengers').value,priceRange: document.querySelector('#priceRange').value, classType: document.querySelector('#classType').value }
+  const search = { from: document.querySelector('#from').value, to: document.querySelector('#to').value, departure: departure.value, returnDate: returnDate.disabled ? '' : returnDate.value, passengers: document.querySelector('#passengers').value,priceRange: document.querySelector('#priceRange').value,airline: document.querySelector('#airline').value, classType: document.querySelector('#classType').value }
   localStorage.setItem('tripgo_search', JSON.stringify(search))
   window.location.hash = `search-results?${new URLSearchParams(search).toString()}`
   location.reload()
