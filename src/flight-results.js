@@ -6,7 +6,25 @@ export function renderFlightResults() {
 const [minPrice, maxPrice] = search.priceRange
   ? search.priceRange.split('-').map(Number)
   : [0, Infinity]
+ const matchesTime = (flight) => {
+  if (search.departureTime === '') return true
 
+  const hour = Number(flight.departure.split(':')[0])
+
+  if (search.departureTime === 'morning') {
+    return hour < 12
+  }
+
+  if (search.departureTime === 'afternoon') {
+    return hour >= 12 && hour < 18
+  }
+
+  if (search.departureTime === 'evening') {
+    return hour >= 18
+  }
+
+  return true
+}
 const filteredFlights = flights.filter(flight =>
   flight.from === search.from &&
   flight.to === search.to &&
@@ -14,7 +32,8 @@ const filteredFlights = flights.filter(flight =>
   flight.seats >= Number(search.passengers) &&
   flight.price >= minPrice &&
   flight.price <= maxPrice &&
-  (search.airline === '' || flight.airline === search.airline)
+  (search.airline === '' || flight.airline === search.airline) &&
+  matchesTime(flight)
 )
   if (filteredFlights.length === 0) {
   return `
