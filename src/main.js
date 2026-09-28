@@ -55,6 +55,16 @@ document.querySelector('#app').innerHTML = `
                 <option value="evening">Tối (18:00 - 23:59)</option>
                 </select>
             </label>
+            <label class="field">
+                <span>Sắp xếp</span>
+                 <select id="sortBy">
+                 <option value="">Mặc định</option>
+                 <option value="priceAsc">Giá tăng dần</option>
+                 <option value="priceDesc">Giá giảm dần</option>
+                 <option value="timeAsc">Giờ bay sớm nhất</option>
+                 <option value="timeDesc">Giờ bay muộn nhất</option>
+                </select>
+            </label>
         </div>
         <button class="primary-btn search-btn" type="submit">TÌM CHUYẾN BAY</button>
       </form>
@@ -97,7 +107,7 @@ document.querySelector('#swapBtn').addEventListener('click', () => {
 })
 document.querySelector('#search').addEventListener('submit', (event) => {
   event.preventDefault()
-  const search = { from: document.querySelector('#from').value, to: document.querySelector('#to').value, departure: departure.value, returnDate: returnDate.disabled ? '' : returnDate.value, passengers: document.querySelector('#passengers').value,priceRange: document.querySelector('#priceRange').value,airline: document.querySelector('#airline').value,departureTime: document.querySelector('#departureTime').value, classType: document.querySelector('#classType').value }
+  const search = { from: document.querySelector('#from').value, to: document.querySelector('#to').value, departure: departure.value, returnDate: returnDate.disabled ? '' : returnDate.value, passengers: document.querySelector('#passengers').value,priceRange: document.querySelector('#priceRange').value,airline: document.querySelector('#airline').value,departureTime: document.querySelector('#departureTime').value,sortBy: document.querySelector('#sortBy').value, classType: document.querySelector('#classType').value }
   localStorage.setItem('tripgo_search', JSON.stringify(search))
   window.location.hash = `search-results?${new URLSearchParams(search).toString()}`
   location.reload()
