@@ -6,7 +6,8 @@ export function renderFlightResults() {
   const filteredFlights = flights.filter(flight =>
   flight.from === search.from &&
   flight.to === search.to &&
-  flight.date === search.departure
+  flight.date === search.departure &&
+  flight.seats >= Number(search.passengers)
 )
   if (filteredFlights.length === 0) {
   return `
@@ -24,6 +25,10 @@ export function renderFlightResults() {
       <div class="info">
         <span>${flight.from} → ${flight.to}</span>
         <span>${flight.departure} - ${flight.arrival}</span>
+      </div>
+
+      <div class="info">
+         <span>Còn ${flight.seats} chỗ</span>
       </div>
 
       <div class="info">
