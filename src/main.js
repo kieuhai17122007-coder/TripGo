@@ -1,4 +1,5 @@
 import './style.css'
+import { renderFlightResults } from './flight-results'
 
 document.querySelector('#app').innerHTML = `
   <header class="header">
@@ -71,5 +72,9 @@ document.querySelector('#search').addEventListener('submit', (event) => {
   const search = { from: document.querySelector('#from').value, to: document.querySelector('#to').value, departure: departure.value, returnDate: returnDate.disabled ? '' : returnDate.value, passengers: document.querySelector('#passengers').value, classType: document.querySelector('#classType').value }
   localStorage.setItem('tripgo_search', JSON.stringify(search))
   window.location.hash = `search-results?${new URLSearchParams(search).toString()}`
+  location.reload()
 })
+if (window.location.hash.startsWith('#search-results')) {
+  document.querySelector('#app').innerHTML = renderFlightResults()
+}
 updateReturnDate()
