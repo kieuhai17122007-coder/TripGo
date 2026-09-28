@@ -35,6 +35,25 @@ const filteredFlights = flights.filter(flight =>
   (search.airline === '' || flight.airline === search.airline) &&
   matchesTime(flight)
 )
+  if (search.sortBy === 'priceAsc') {
+  filteredFlights.sort((a, b) => a.price - b.price)
+}
+
+if (search.sortBy === 'priceDesc') {
+  filteredFlights.sort((a, b) => b.price - a.price)
+}
+
+if (search.sortBy === 'timeAsc') {
+  filteredFlights.sort((a, b) =>
+    a.departure.localeCompare(b.departure)
+  )
+}
+
+if (search.sortBy === 'timeDesc') {
+  filteredFlights.sort((a, b) =>
+    b.departure.localeCompare(a.departure)
+  )
+}
   if (filteredFlights.length === 0) {
   return `
     <section class="section">
