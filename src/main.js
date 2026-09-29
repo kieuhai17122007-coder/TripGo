@@ -1,12 +1,17 @@
 import './style.css'
 import { renderFlightResults } from './flight-results'
+import { renderBookingSearch, initBookingSearch } from './booking-search'
 
 document.querySelector('#app').innerHTML = `
   <header class="header">
     <div class="container nav">
       <a class="logo" href="#top"><span aria-hidden="true">✈</span> TripGo</a>
       <nav aria-label="Điều hướng chính">
-        <a href="#top">Đặt vé</a><a href="#search">Chuyến bay</a><a href="#services">Dịch vụ</a><a href="#support">Tra cứu</a><a href="#support">Check-in</a>
+        <a href="#top">Đặt vé</a>
+        <a href="#search">Chuyến bay</a>
+        <a href="#services">Dịch vụ</a>
+        <a href="#booking-search">Tra cứu</a>
+        <a href="#support">Check-in</a>
       </nav>
       <a class="login-btn" href="#support">Đăng nhập</a>
     </div>
@@ -71,8 +76,21 @@ document.querySelector('#app').innerHTML = `
     </div></div></section>
 
     <section class="section" id="services"><div class="container">
-      <div class="section-heading"><span class="eyebrow dark">TRIPGO SERVICES</span><h2>Dịch vụ hàng không</h2><p>Mọi tiện ích cần thiết cho chuyến bay của bạn.</p></div>
-      <div class="service-grid"><a class="service-card" href="#search"><span>✈️</span><h3>Đặt vé máy bay</h3><p>Tìm và chọn chuyến bay phù hợp.</p></a><a class="service-card" href="#support"><span>📋</span><h3>Tra cứu đặt chỗ</h3><p>Kiểm tra thông tin hành trình.</p></a><a class="service-card" href="#support"><span>✓</span><h3>Check-in trực tuyến</h3><p>Làm thủ tục nhanh chóng.</p></a><a class="service-card" href="#search"><span>💺</span><h3>Chọn ghế</h3><p>Chọn vị trí yêu thích trên máy bay.</p></a></div>
+      <div class="section-heading">
+      <span class="eyebrow dark">TRIPGO SERVICES</span>
+      <h2>Dịch vụ hàng không</h2>
+      <p>Mọi tiện ích cần thiết cho chuyến bay của bạn.</p>
+      </div>
+      <div class="service-grid">
+      <a class="service-card" href="#search">
+      <span>✈️</span>
+      <h3>Đặt vé máy bay</h3>
+      <p>Tìm và chọn chuyến bay phù hợp.</p></a>
+      <a class="service-card" href="#booking-search">
+      <span>📋</span>
+      <h3>Tra cứu đặt chỗ</h3>
+      <p>Kiểm tra thông tin hành trình.</p>
+      </a><a class="service-card" href="#support"><span>✓</span><h3>Check-in trực tuyến</h3><p>Làm thủ tục nhanh chóng.</p></a><a class="service-card" href="#search"><span>💺</span><h3>Chọn ghế</h3><p>Chọn vị trí yêu thích trên máy bay.</p></a></div>
     </div></section>
 
     <section class="promo"><div class="container"><div class="section-heading"><span class="eyebrow dark">ƯU ĐÃI</span><h2>Khám phá những hành trình mới</h2></div><div class="promo-grid">
@@ -82,7 +100,7 @@ document.querySelector('#app').innerHTML = `
     <section class="section benefits"><div class="container benefit-grid"><div><span>01</span><h3>Đơn giản</h3><p>Quy trình đặt vé rõ ràng, dễ sử dụng.</p></div><div><span>02</span><h3>Nhanh chóng</h3><p>Tìm kiếm và lựa chọn chuyến bay trong vài bước.</p></div><div><span>03</span><h3>Thuận tiện</h3><p>Lưu thông tin đặt vé ngay trên trình duyệt.</p></div></div></section>
   </main>
 
-  <footer class="footer" id="support"><div class="container footer-grid"><div><a class="logo footer-logo" href="#top"><span>✈</span> TripGo</a><p>Website mô phỏng đặt vé máy bay nội địa.</p></div><div><h4>TripGo</h4><a href="#top">Về chúng tôi</a><a href="#top">Điều khoản</a><a href="#top">Chính sách</a></div><div><h4>Hỗ trợ</h4><a href="#search">Tra cứu đặt vé</a><a href="#search">Check-in</a><a href="#top">Câu hỏi thường gặp</a></div><div><h4>Liên hệ</h4><p>support@tripgo.vn</p><p>1900 0000</p></div></div><div class="copyright">© 2026 TripGo. Front-end project.</div></footer>
+  <footer class="footer" id="support"><div class="container footer-grid"><div><a class="logo footer-logo" href="#top"><span>✈</span> TripGo</a><p>Website mô phỏng đặt vé máy bay nội địa.</p></div><div><h4>TripGo</h4><a href="#top">Về chúng tôi</a><a href="#top">Điều khoản</a><a href="#top">Chính sách</a></div><div><h4>Hỗ trợ</h4><a href="#booking-search">Tra cứu đặt vé</a><a href="#search">Check-in</a><a href="#top">Câu hỏi thường gặp</a></div><div><h4>Liên hệ</h4><p>support@tripgo.vn</p><p>1900 0000</p></div></div><div class="copyright">© 2026 TripGo. Front-end project.</div></footer>
 `
 
 const departure = document.querySelector('#departure')
@@ -112,6 +130,11 @@ document.querySelector('#search').addEventListener('submit', (event) => {
   window.location.hash = `search-results?${new URLSearchParams(search).toString()}`
   location.reload()
 })
+if (window.location.hash === '#booking-search') {
+  document.querySelector('#app').innerHTML = renderBookingSearch()
+  initBookingSearch()
+}
+
 if (window.location.hash.startsWith('#search-results')) {
   document.querySelector('#app').innerHTML = renderFlightResults()
 }
