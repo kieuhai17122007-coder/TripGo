@@ -1,4 +1,5 @@
 import { flights } from './flights.js'
+import { generateBookingCode } from './booking.js'
 
 export function renderFlightResults() {
   const search = JSON.parse(localStorage.getItem('tripgo_search'))
@@ -99,10 +100,11 @@ if (search.sortBy === 'timeDesc') {
 }
 
 window.bookFlight = function () {
-  alert('Đặt vé thành công!')
-  window.location.hash = ''
-  location.reload()
+  const bookingCode = generateBookingCode()
+
+  alert(`Đặt vé thành công!\nMã đặt vé: ${bookingCode}`)
 }
+
 window.viewFlight = function (id) {
   const flight = flights.find(f => f.id === id)
 
