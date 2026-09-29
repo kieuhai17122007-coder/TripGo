@@ -64,7 +64,7 @@ export function initBookingSearch() {
     )
 
     const booking = bookings.find(
-      item => item.bookingCode.toUpperCase() === code
+      item => item.bookingCode?.toUpperCase() === code
     )
 
     if (!booking) {
@@ -79,12 +79,61 @@ export function initBookingSearch() {
       return
     }
 
+    const createdAt = booking.createdAt
+      ? new Date(booking.createdAt).toLocaleString('vi-VN')
+      : 'Chưa có thông tin'
+
     result.innerHTML = `
-      <div class="flight-card">
-        <div>
-          <strong>Đã tìm thấy mã đặt vé</strong>
-          <p>Mã đặt vé: <strong>${booking.bookingCode}</strong></p>
-        </div>
+      <div class="flight-card" style="display:block">
+        <h3>Thông tin vé</h3>
+
+        <p>Mã đặt vé:
+          <strong>${booking.bookingCode}</strong>
+        </p>
+
+        <p>Trạng thái:
+          <strong>${booking.status || 'Đã đặt'}</strong>
+        </p>
+
+        <p>Hãng hàng không:
+          <strong>${booking.airline || 'Chưa có thông tin'}</strong>
+        </p>
+
+        <p>Hành trình:
+          <strong>${booking.from || ''} → ${booking.to || ''}</strong>
+        </p>
+
+        <p>Ngày bay:
+          <strong>${booking.date || 'Chưa có thông tin'}</strong>
+        </p>
+
+        <p>Giờ bay:
+          <strong>${booking.departure || ''} - ${booking.arrival || ''}</strong>
+        </p>
+
+        <p>Hạng vé:
+          <strong>${booking.classType || 'Phổ thông'}</strong>
+        </p>
+
+        <p>Số hành khách:
+          <strong>${booking.passengers || 1}</strong>
+        </p>
+
+        <p>Giá mỗi vé:
+          <strong>
+            ${Number(booking.price || 0).toLocaleString('vi-VN')} VNĐ
+          </strong>
+        </p>
+
+        <p>Tổng tiền:
+          <strong>
+            ${Number(booking.totalPrice || 0).toLocaleString('vi-VN')} VNĐ
+          </strong>
+        </p>
+
+        <p>Ngày đặt:
+          <strong>${createdAt}</strong>
+        </p>
       </div>
     `
   })
