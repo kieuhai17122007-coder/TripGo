@@ -1,5 +1,5 @@
 import { flights } from './flights.js'
-import { generateBookingCode } from './booking.js'
+import { generateBookingCode, saveBooking } from './booking.js'
 
 export function renderFlightResults() {
   const search = JSON.parse(localStorage.getItem('tripgo_search'))
@@ -82,7 +82,7 @@ if (search.sortBy === 'timeDesc') {
         <button onclick="viewFlight('${flight.id}')">
              Xem chi tiết
         </button>
-          <button onclick="bookFlight()">
+          <button onclick="bookFlight('${flight.id}')">
              Đặt vé
         </button>
       </div>
@@ -99,10 +99,35 @@ if (search.sortBy === 'timeDesc') {
   `
 }
 
-window.bookFlight = function () {
+window.bookFlight = function (id) {
+  const flight = flights.find(f => f.id === id)
+  const search = JSON.parse(localStorage.getItem('tripgo_search') || '{}')
+
+  if (!flight) return
+
   const bookingCode = generateBookingCode()
+  const passengers = Number(search.passengers || 1)
+
+  saveBooking({
+    bookingCode,
+    flightId: flight.id,
+    airline: flight.airline,
+    from: flight.from,
+    to: flight.to,
+    date: flight.date,
+    departure: flight.departure,
+    arrival: flight.arrival,
+    price: flight.price,
+    passengers,
+    totalPrice: flight.price * passengers,
+    classType: search.classType || 'Phổ thông',
+    status: 'Đã đặt',
+    createdAt: new Date().toISOString()
+  })
 
   alert(`Đặt vé thành công!\nMã đặt vé: ${bookingCode}`)
+  window.location.hash = ''
+  location.reload()
 }
 
 window.viewFlight = function (id) {
