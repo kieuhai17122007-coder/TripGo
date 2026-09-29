@@ -167,7 +167,7 @@
   }
   function renderOverview() {
     const active = flights.filter((f) => f.status !== "deleted");
-    const confirmed = bookings.filter((b) => b.status === "confirmed");
+    const confirmed = bookings.filter((b) => b.status === "confirmed" || b.status === "Đã đặt");
     $("content").innerHTML =
       `<div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">${[
         ["Chuyến bay", active.length, "✈"],
@@ -175,7 +175,7 @@
         ["Vé xác nhận", confirmed.length, "✓"],
         [
           "Doanh thu mô phỏng",
-          money(confirmed.reduce((n, b) => n + Number(b.total || 0), 0)),
+          money(confirmed.reduce((n, b) => n + Number(b.totalPrice ?? b.total ?? 0), 0)),
           "₫",
         ],
       ]
@@ -192,7 +192,7 @@
               .reverse()
               .map(
                 (b) =>
-                  `<div class="border-b pb-3 text-sm flex flex-wrap justify-between gap-2"><span>Vé <b>${safe(b.code)}</b> · ${safe(b.passenger?.name || "Hành khách")}</span><span>${money(b.total)}</span></div>`,
+                  `<div class="border-b pb-3 text-sm flex flex-wrap justify-between gap-2"><span>Vé <b>${safe(b.bookingCode || b.code)}</b> · ${safe(b.passengerDetails?.[0]?.name || b.passenger?.name || "Hành khách")}</span><span>${money(b.totalPrice ?? b.total)}</span></div>`,
               )
               .join("")}</div>`
           : '<p class="text-slate-500 mt-4">Chưa có vé được đặt.</p>'
@@ -230,7 +230,7 @@
   function renderBookings() {
     const rows = bookings.slice().reverse();
     $("content").innerHTML =
-      `<div class="card"><div class="p-5"><h2 class="font-bold">Danh sách vé đã đặt <span class="text-slate-400 font-normal">(${rows.length})</span></h2></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Mã vé</th><th>Hành khách</th><th>Chuyến bay</th><th>Ngày đi</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>${rows.length ? rows.map((b) => `<tr><td><b>${safe(b.code)}</b></td><td>${safe(b.passenger?.name || "-")}</td><td>${safe(b.flight?.from || "-")} → ${safe(b.flight?.to || "-")}</td><td>${date(b.departureDate)}</td><td>${money(b.total)}</td><td><span class="badge ${b.status === "cancelled" ? "cancel" : b.status === "pending" ? "off" : ""}">${status(b.status)}</span></td><td>${b.status === "cancelled" ? "-" : `<button class="action danger" data-action="cancel" data-id="${safe(b.code)}">Hủy vé</button>`}</td></tr>`).join("") : '<tr><td colspan="7" class="empty">Chưa có vé được đặt.</td></tr>'}</tbody></table></div></div>`;
+      `<div class="card"><div class="p-5"><h2 class="font-bold">Danh sách vé đã đặt <span class="text-slate-400 font-normal">(${rows.length})</span></h2></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Mã vé</th><th>Hành khách</th><th>Chuyến bay</th><th>Ngày đi</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>${rows.length ? rows.map((b) => `<tr><td><b>${safe(b.bookingCode || b.code)}</b></td><td>${safe(b.passengerDetails?.map(p => p.name).join(", ") || b.passenger?.name || "-")}</td><td>${safe(b.from || b.flight?.from || "-")} → ${safe(b.to || b.flight?.to || "-")}</td><td>${date(b.date || b.departureDate)}</td><td>${money(b.totalPrice ?? b.total)}</td><td><span class="badge ${b.status === "cancelled" ? "cancel" : b.status === "pending" ? "off" : ""}">${status(b.status)}</span></td><td>${b.status === "cancelled" ? "-" : `<button class="action danger" data-action="cancel" data-id="${safe(b.bookingCode || b.code)}">Hủy vé</button>`}</td></tr>`).join("") : '<tr><td colspan="7" class="empty">Chưa có vé được đặt.</td></tr>'}</tbody></table></div></div>`;
   }
   function options(select, entries, value) {
     select.innerHTML = entries
@@ -270,6 +270,7 @@
       "duration",
       "price",
       "baggage",
+      "seats",
       "status",
     ])
       form.elements[key].value =
@@ -277,6 +278,7 @@
         {
           date: new Date().toISOString().slice(0, 10),
           baggage: 7,
+          seats: 100,
           status: "active",
         }[key] ??
         "";
@@ -307,6 +309,7 @@
       aircraft: f.aircraft.value,
       price: Number(f.price.value),
       baggage: Number(f.baggage.value),
+      seats: Number(f.seats.value),
       status: f.status.value,
     };
     let error = "";
@@ -333,6 +336,8 @@
       data.price > 100000000
     )
       error = "Giá vé phải từ 100.000 đến 100.000.000 ₫.";
+    else if (!Number.isInteger(data.seats) || data.seats < 0 || data.seats > 500)
+      error = "Số chỗ phải là số nguyên từ 0 đến 500.";
     else if (
       !Number.isInteger(data.baggage) ||
       data.baggage < 0 ||
@@ -373,7 +378,7 @@
     }
     if (action === "cancel") {
       if (!confirm(`Hủy vé ${id}?`)) return;
-      const index = bookings.findIndex((x) => x.code === id);
+      const index = bookings.findIndex((x) => (x.bookingCode || x.code) === id);
       if (index < 0) return;
       bookings[index] = {
         ...bookings[index],
@@ -381,6 +386,11 @@
         cancelledAt: new Date().toISOString(),
       };
       write(KEYS.bookings, bookings);
+      const flightIndex = flights.findIndex(f => f.id === bookings[index].flightId);
+      if (flightIndex >= 0 && Number.isFinite(Number(flights[flightIndex].seats))) {
+        flights[flightIndex].seats = Number(flights[flightIndex].seats) + Number(bookings[index].passengers || 1);
+        saveFlights();
+      }
       render();
       alertMessage("Đã hủy vé.");
     }

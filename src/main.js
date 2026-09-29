@@ -1,5 +1,5 @@
 import './style.css'
-import { renderFlightResults } from './flight-results'
+import { renderFlightResults, initFlightResults } from './flight-results'
 import { renderBookingSearch, initBookingSearch } from './booking-search'
 
 document.querySelector('#app').innerHTML = `
@@ -13,7 +13,7 @@ document.querySelector('#app').innerHTML = `
         <a href="#booking-search">Tra cứu</a>
         <a href="#support">Check-in</a>
       </nav>
-      <a class="login-btn" href="#support">Đăng nhập</a>
+      <a class="login-btn" id="adminPanelLink" href="/admin/">Admin Panel</a>
     </div>
   </header>
 
@@ -105,7 +105,7 @@ document.querySelector('#app').innerHTML = `
 
 const departure = document.querySelector('#departure')
 const returnDate = document.querySelector('#returnDate')
-const today = new Date().toISOString().split('T')[0]
+const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0]
 departure.min = today
 returnDate.min = today
 departure.value = today
@@ -126,16 +126,25 @@ document.querySelector('#swapBtn').addEventListener('click', () => {
 document.querySelector('#search').addEventListener('submit', (event) => {
   event.preventDefault()
   const search = { from: document.querySelector('#from').value, to: document.querySelector('#to').value, departure: departure.value, returnDate: returnDate.disabled ? '' : returnDate.value, passengers: document.querySelector('#passengers').value,priceRange: document.querySelector('#priceRange').value,airline: document.querySelector('#airline').value,departureTime: document.querySelector('#departureTime').value,sortBy: document.querySelector('#sortBy').value, classType: document.querySelector('#classType').value }
+  if (search.from === search.to || !search.departure || search.departure < today || (!returnDate.disabled && search.returnDate && search.returnDate < search.departure)) { alert('Vui lòng kiểm tra điểm đi, điểm đến và ngày bay.'); return }
   localStorage.setItem('tripgo_search', JSON.stringify(search))
   window.location.hash = `search-results?${new URLSearchParams(search).toString()}`
   location.reload()
 })
+window.addEventListener('hashchange', () => { if (window.location.hash === '#booking-search' || window.location.hash.startsWith('#search-results')) location.reload() })
+const sharedHeader = document.querySelector('.header').outerHTML
+const sharedFooter = document.querySelector('.footer').outerHTML
 if (window.location.hash === '#booking-search') {
-  document.querySelector('#app').innerHTML = renderBookingSearch()
+  document.querySelector('#app').innerHTML = sharedHeader + renderBookingSearch() + sharedFooter
   initBookingSearch()
 }
 
 if (window.location.hash.startsWith('#search-results')) {
-  document.querySelector('#app').innerHTML = renderFlightResults()
+  document.querySelector('#app').innerHTML = sharedHeader + renderFlightResults() + sharedFooter
+  initFlightResults()
 }
+const session = (() => { try { return JSON.parse(localStorage.getItem('tripgo_session')) } catch { return null } })()
+const admin = (() => { try { return JSON.parse(localStorage.getItem('tripgo_users') || '[]').find(u => u.id === session?.userId && u.email === 'admin@tripgo.com' && u.role === 'admin') } catch { return null } })()
+const adminLink = document.querySelector('#adminPanelLink')
+if (adminLink) { if (admin) adminLink.textContent = 'Admin Panel'; else { adminLink.textContent = 'Đăng nhập'; adminLink.href = '/admin/' } }
 updateReturnDate()
