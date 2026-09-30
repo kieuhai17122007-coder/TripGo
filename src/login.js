@@ -18,8 +18,9 @@ export function renderLogin() {
                 type="email"
                 id="loginEmail"
                 placeholder="Nhập email"
-                required
+                autocomplete="email"
               >
+              <small id="loginEmailError"></small>
             </label>
 
             <label class="field">
@@ -28,8 +29,9 @@ export function renderLogin() {
                 type="password"
                 id="loginPassword"
                 placeholder="Nhập mật khẩu"
-                required
+                autocomplete="current-password"
               >
+              <small id="loginPasswordError"></small>
             </label>
 
             <button class="primary-btn search-btn" type="submit">
@@ -47,23 +49,37 @@ export function renderLogin() {
 
 export function initLogin() {
   const form = document.querySelector('#loginForm')
+  const emailInput = document.querySelector('#loginEmail')
+  const passwordInput = document.querySelector('#loginPassword')
+  const emailError = document.querySelector('#loginEmailError')
+  const passwordError = document.querySelector('#loginPasswordError')
   const message = document.querySelector('#loginMessage')
 
-  if (!form || !message) return
+  if (!form || !emailInput || !passwordInput) return
 
   form.addEventListener('submit', (event) => {
     event.preventDefault()
 
-    const email = document
-      .querySelector('#loginEmail')
-      .value
-      .trim()
-      .toLowerCase()
+    emailError.textContent = ''
+    passwordError.textContent = ''
+    message.textContent = ''
 
-    const password = document.querySelector('#loginPassword').value
+    const email = emailInput.value.trim().toLowerCase()
+    const password = passwordInput.value
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-    if (!email || !password) {
-      message.textContent = 'Vui lòng nhập email và mật khẩu.'
+    if (!email) {
+      emailError.textContent = 'Vui lòng nhập email.'
+      return
+    }
+
+    if (!emailPattern.test(email)) {
+      emailError.textContent = 'Email không hợp lệ.'
+      return
+    }
+
+    if (!password) {
+      passwordError.textContent = 'Vui lòng nhập mật khẩu.'
       return
     }
 
@@ -71,12 +87,15 @@ export function initLogin() {
       localStorage.getItem('tripgo_users') || '[]'
     )
 
-    const user = users.find(
-      item => item.email === email && item.password === password
-    )
+    const user = users.find(item => item.email === email)
 
     if (!user) {
-      message.textContent = 'Thông tin đăng nhập không chính xác.'
+      emailError.textContent = 'Email chưa được đăng ký.'
+      return
+    }
+
+    if (user.password !== password) {
+      passwordError.textContent = 'Mật khẩu không chính xác.'
       return
     }
 
