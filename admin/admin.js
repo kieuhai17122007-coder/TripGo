@@ -56,6 +56,26 @@
     const [y, m, d] = value.split("-");
     return `${d}/${m}/${y}`;
   };
+  const localToday = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  };
+  const validDate = (value) => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value || "")) return false;
+    const [year, month, day] = value.split("-").map(Number);
+    const parsed = new Date(year, month - 1, day);
+    return (
+      parsed.getFullYear() === year &&
+      parsed.getMonth() === month - 1 &&
+      parsed.getDate() === day
+    );
+  };
+  const bookingState = (booking) => {
+    const value = String(booking.status || "").toLowerCase();
+    if (value === "cancelled" || value === "đã hủy") return "cancelled";
+    if (value === "pending" || value === "chờ thanh toán") return "pending";
+    return "confirmed";
+  };
   let page = "overview",
     editing = null,
     flights = [],
@@ -132,9 +152,9 @@
     write(KEYS.flights, flights);
   }
   function status(s) {
-    return s === "cancelled"
+    return s === "cancelled" || s === "đã hủy"
       ? "Đã hủy"
-      : s === "pending"
+      : s === "pending" || s === "chờ thanh toán"
         ? "Chờ thanh toán"
         : "Đã xác nhận";
   }
@@ -167,7 +187,7 @@
   }
   function renderOverview() {
     const active = flights.filter((f) => f.status !== "deleted");
-    const confirmed = bookings.filter((b) => b.status === "confirmed" || b.status === "Đã đặt");
+    const confirmed = bookings.filter((b) => bookingState(b) === "confirmed");
     $("content").innerHTML =
       `<div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">${[
         ["Chuyến bay", active.length, "✈"],
@@ -175,7 +195,12 @@
         ["Vé xác nhận", confirmed.length, "✓"],
         [
           "Doanh thu mô phỏng",
-          money(confirmed.reduce((n, b) => n + Number(b.totalPrice ?? b.total ?? 0), 0)),
+          money(
+            confirmed.reduce(
+              (n, b) => n + Number(b.totalPrice ?? b.total ?? 0),
+              0,
+            ),
+          ),
           "₫",
         ],
       ]
@@ -230,7 +255,60 @@
   function renderBookings() {
     const rows = bookings.slice().reverse();
     $("content").innerHTML =
-      `<div class="card"><div class="p-5"><h2 class="font-bold">Danh sách vé đã đặt <span class="text-slate-400 font-normal">(${rows.length})</span></h2></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Mã vé</th><th>Hành khách</th><th>Chuyến bay</th><th>Ngày đi</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>${rows.length ? rows.map((b) => `<tr><td><b>${safe(b.bookingCode || b.code)}</b></td><td>${safe(b.passengerDetails?.map(p => p.name).join(", ") || b.passenger?.name || "-")}</td><td>${safe(b.from || b.flight?.from || "-")} → ${safe(b.to || b.flight?.to || "-")}</td><td>${date(b.date || b.departureDate)}</td><td>${money(b.totalPrice ?? b.total)}</td><td><span class="badge ${b.status === "cancelled" ? "cancel" : b.status === "pending" ? "off" : ""}">${status(b.status)}</span></td><td>${b.status === "cancelled" ? "-" : `<button class="action danger" data-action="cancel" data-id="${safe(b.bookingCode || b.code)}">Hủy vé</button>`}</td></tr>`).join("") : '<tr><td colspan="7" class="empty">Chưa có vé được đặt.</td></tr>'}</tbody></table></div></div>`;
+      `<div class="card"><div class="booking-tools"><h2 class="font-bold">Danh sách vé đã đặt <span id="bookingCount" class="text-slate-400 font-normal">(${rows.length})</span></h2><div class="booking-filters"><input id="bookingSearch" class="field" aria-label="Tìm vé đã đặt" placeholder="Tìm mã vé, hành khách, chuyến bay"><select id="bookingStatus" class="field" aria-label="Lọc theo trạng thái"><option value="all">Tất cả trạng thái</option><option value="confirmed">Đã xác nhận</option><option value="pending">Chờ thanh toán</option><option value="cancelled">Đã hủy</option></select></div></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Mã vé</th><th>Hành khách</th><th>Chuyến bay</th><th>Ngày đi</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody id="bookingRows"></tbody></table></div></div>`;
+    $("bookingSearch").addEventListener("input", fillBookings);
+    $("bookingStatus").addEventListener("change", fillBookings);
+    fillBookings();
+  }
+  function fillBookings() {
+    const query = ($("bookingSearch").value || "").trim().toLowerCase();
+    const selectedStatus = $("bookingStatus").value;
+    const matches = bookings
+      .slice()
+      .reverse()
+      .filter((booking) => {
+        const names = (booking.passengerDetails || [])
+          .map((person) => person.name)
+          .join(" ");
+        const searchable = [
+          booking.bookingCode,
+          booking.code,
+          booking.flightId,
+          booking.airline,
+          booking.from,
+          booking.to,
+          names,
+          booking.passenger?.name,
+          booking.flight?.from,
+          booking.flight?.to,
+        ];
+        return (
+          (selectedStatus === "all" ||
+            bookingState(booking) === selectedStatus) &&
+          searchable.some((value) =>
+            String(value || "")
+              .toLowerCase()
+              .includes(query),
+          )
+        );
+      });
+    $("bookingCount").textContent = `(${matches.length}/${bookings.length})`;
+    $("bookingRows").innerHTML = matches.length
+      ? matches
+          .map((booking) => {
+            const bookingStatus = bookingState(booking);
+            const code = booking.bookingCode || booking.code;
+            const passenger =
+              (booking.passengerDetails || [])
+                .map((person) => person.name)
+                .filter(Boolean)
+                .join(", ") ||
+              booking.passenger?.name ||
+              "-";
+            return `<tr><td><b>${safe(code || "-")}</b></td><td>${safe(passenger)}</td><td>${safe(booking.from || booking.flight?.from || "-")} → ${safe(booking.to || booking.flight?.to || "-")}</td><td>${date(booking.date || booking.departureDate)}</td><td>${money(booking.totalPrice ?? booking.total)}</td><td><span class="badge ${bookingStatus === "cancelled" ? "cancel" : bookingStatus === "pending" ? "off" : ""}">${status(booking.status)}</span></td><td>${bookingStatus === "cancelled" ? "-" : `<button class="action danger" data-action="cancel" data-id="${safe(code)}">Hủy vé</button>`}</td></tr>`;
+          })
+          .join("")
+      : '<tr><td colspan="7" class="empty">Không tìm thấy vé phù hợp.</td></tr>';
   }
   function options(select, entries, value) {
     select.innerHTML = entries
@@ -276,12 +354,13 @@
       form.elements[key].value =
         f?.[key] ??
         {
-          date: new Date().toISOString().slice(0, 10),
+          date: localToday(),
           baggage: 7,
           seats: 100,
           status: "active",
         }[key] ??
         "";
+    form.elements.date.min = localToday();
     form.elements.id.disabled = !!editing;
     $("modalTitle").textContent = editing
       ? "Sửa chuyến bay"
@@ -320,12 +399,10 @@
       error = "Mã chuyến bay đã tồn tại.";
     else if (data.from === data.to)
       error = "Điểm đi và điểm đến phải khác nhau.";
-    else if (
-      !/^\d{4}-\d{2}-\d{2}$/.test(data.date) ||
-      !data.departure ||
-      !data.arrival
-    )
+    else if (!validDate(data.date) || !data.departure || !data.arrival)
       error = "Vui lòng nhập đủ ngày và giờ bay.";
+    else if (data.date < localToday())
+      error = "Ngày bay không được ở trong quá khứ.";
     else if (data.departure === data.arrival)
       error = "Giờ đi và giờ đến không được trùng nhau.";
     else if (!data.duration || !data.airline || !data.aircraft)
@@ -336,7 +413,11 @@
       data.price > 100000000
     )
       error = "Giá vé phải từ 100.000 đến 100.000.000 ₫.";
-    else if (!Number.isInteger(data.seats) || data.seats < 0 || data.seats > 500)
+    else if (
+      !Number.isInteger(data.seats) ||
+      data.seats < 0 ||
+      data.seats > 500
+    )
       error = "Số chỗ phải là số nguyên từ 0 đến 500.";
     else if (
       !Number.isInteger(data.baggage) ||
@@ -386,9 +467,16 @@
         cancelledAt: new Date().toISOString(),
       };
       write(KEYS.bookings, bookings);
-      const flightIndex = flights.findIndex(f => f.id === bookings[index].flightId);
-      if (flightIndex >= 0 && Number.isFinite(Number(flights[flightIndex].seats))) {
-        flights[flightIndex].seats = Number(flights[flightIndex].seats) + Number(bookings[index].passengers || 1);
+      const flightIndex = flights.findIndex(
+        (f) => f.id === bookings[index].flightId,
+      );
+      if (
+        flightIndex >= 0 &&
+        Number.isFinite(Number(flights[flightIndex].seats))
+      ) {
+        flights[flightIndex].seats =
+          Number(flights[flightIndex].seats) +
+          Number(bookings[index].passengers || 1);
         saveFlights();
       }
       render();

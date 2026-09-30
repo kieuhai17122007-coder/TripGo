@@ -28,6 +28,7 @@ body {
 }
 .admin-main {
   min-height: calc(100vh - 128px);
+  margin: 0;
 }
 .field {
   display: block;
@@ -106,8 +107,34 @@ body {
 .card {
   background: white;
   border: 1px solid #e2e8f0;
-  border-radius: 18px;
+  border-radius: 8px;
   box-shadow: 0 2px 12px #0f172a08;
+}
+.booking-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+}
+.booking-filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 190px;
+  gap: 10px;
+  width: min(100%, 520px);
+}
+.admin-footer-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.admin-footer-inner a {
+  color: #1d4ed8;
+  font-weight: 600;
 }
 .table-scroll {
   overflow-x: auto;
@@ -204,5 +231,22 @@ body {
   }
   .admin-sidebar .nav {
     flex: 0 0 auto;
+  }
+  .admin-layout {
+    width: 100%;
+  }
+  .booking-tools {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 16px;
+  }
+  .booking-filters {
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+  }
+  .admin-footer-inner {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 0 16px;
   }
 }

@@ -74,7 +74,9 @@
           </div>
         </div>
       </header>
-      <div class="admin-layout max-w-7xl md:flex min-h-[calc(100vh-128px)]">
+      <div
+        class="admin-layout mx-auto max-w-7xl md:flex min-h-[calc(100vh-128px)]"
+      >
         <nav
           class="admin-sidebar p-4 md:pt-8 md:w-60 flex md:flex-col gap-2 overflow-x-auto shrink-0"
           aria-label="Menu quản trị"
@@ -87,7 +89,7 @@
             ▤ <span>Vé đã đặt</span>
           </button>
         </nav>
-        <main class="admin-main mx-10 flex-1 min-w-0 p-4 sm:p-6 md:py-8">
+        <main class="admin-main flex-1 min-w-0 p-4 sm:p-6 md:py-8">
           <div class="flex items-start justify-between gap-3 flex-wrap mb-6">
             <div>
               <p
@@ -113,7 +115,10 @@
       <footer
         class="admin-footer bg-white border-t text-center text-xs text-slate-500 py-5"
       >
-        © TripGo · Dự án mô phỏng đặt vé máy bay
+        <div class="admin-footer-inner">
+          <span>© 2026 TripGo · Quản trị chuyến bay và đặt chỗ</span
+          ><a href="../index.html">Về trang chủ</a>
+        </div>
       </footer>
     </div>
     <div
@@ -191,7 +196,15 @@
                 step="1000"
                 required /></label
             ><label class="label"
-              >Số chỗ còn lại<input class="field" name="seats" type="number" min="0" max="500" required /></label><label class="label">Hành lý (kg)<input
+              >Số chỗ còn lại<input
+                class="field"
+                name="seats"
+                type="number"
+                min="0"
+                max="500"
+                required /></label
+            ><label class="label"
+              >Hành lý (kg)<input
                 class="field"
                 name="baggage"
                 type="number"
