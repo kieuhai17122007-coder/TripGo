@@ -3,6 +3,7 @@ import { renderFlightResults } from './flight-results'
 import { renderBookingSearch, initBookingSearch } from './booking-search'
 import { renderMyBookings } from './my-bookings'
 import { renderRegister, initRegister } from './register.js'
+import { renderLogin, initLogin } from './login.js'
 
 document.querySelector('#app').innerHTML = `
   <header class="header">
@@ -16,7 +17,7 @@ document.querySelector('#app').innerHTML = `
         <a href="#support">Check-in</a>
         <a href="#my-bookings">Vé của tôi</a>
       </nav>
-      <a class="login-btn" href="#register">Đăng ký</a>
+      <a class="login-btn" href="#login">Đăng nhập</a>
     </div>
   </header>
 
@@ -141,6 +142,11 @@ if (window.location.hash === '#booking-search') {
 if (window.location.hash === '#register') {
   document.querySelector('#app').innerHTML = renderRegister()
   initRegister()
+}
+
+if (window.location.hash === '#login') {
+  document.querySelector('#app').innerHTML = renderLogin()
+  initLogin()
 }
 
 if (window.location.hash.startsWith('#search-results')) {
