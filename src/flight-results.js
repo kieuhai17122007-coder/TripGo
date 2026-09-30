@@ -3,6 +3,11 @@ import { generateBookingCode, saveBooking } from './booking.js'
 
 export function renderFlightResults() {
   const search = JSON.parse(localStorage.getItem('tripgo_search'))
+  const getPrice = (flight) => {
+  return search.classType === 'Thương gia'
+    ? flight.businessPrice
+    : flight.economyPrice
+}
 
 const [minPrice, maxPrice] = search.priceRange
   ? search.priceRange.split('-').map(Number)
@@ -31,17 +36,21 @@ const filteredFlights = flights.filter(flight =>
   flight.to === search.to &&
   flight.date === search.departure &&
   flight.seats >= Number(search.passengers) &&
-  flight.price >= minPrice &&
-  flight.price <= maxPrice &&
+  getPrice(flight) >= minPrice &&
+  getPrice(flight) <= maxPrice && 
   (search.airline === '' || flight.airline === search.airline) &&
   matchesTime(flight)
 )
   if (search.sortBy === 'priceAsc') {
-  filteredFlights.sort((a, b) => a.price - b.price)
+  filteredFlights.sort((a, b) =>
+  getPrice(a) - getPrice(b)
+)
 }
 
 if (search.sortBy === 'priceDesc') {
-  filteredFlights.sort((a, b) => b.price - a.price)
+  filteredFlights.sort((a, b) =>
+    getPrice(b) - getPrice(a)
+  )
 }
 
 if (search.sortBy === 'timeAsc') {
@@ -78,7 +87,7 @@ if (search.sortBy === 'timeDesc') {
       </div>
 
       <div class="info">
-        <span class="price">${flight.price.toLocaleString()} VNĐ</span>
+        <span class="price">${getPrice(flight).toLocaleString()} VNĐ</span>
         <button onclick="viewFlight('${flight.id}')">
              Xem chi tiết
         </button>
@@ -105,6 +114,11 @@ window.bookFlight = function (id) {
 
   if (!flight) return
 
+  const price =
+    search.classType === 'Thương gia'
+      ? flight.businessPrice
+      : flight.economyPrice
+
   const bookingCode = generateBookingCode()
   const passengers = Number(search.passengers || 1)
 
@@ -117,9 +131,9 @@ window.bookFlight = function (id) {
     date: flight.date,
     departure: flight.departure,
     arrival: flight.arrival,
-    price: flight.price,
+    price: price,
     passengers,
-    totalPrice: flight.price * passengers,
+    totalPrice: price * passengers,
     classType: search.classType || 'Phổ thông',
     status: 'Đã đặt',
     createdAt: new Date().toISOString()
@@ -132,6 +146,14 @@ window.bookFlight = function (id) {
 
 window.viewFlight = function (id) {
   const flight = flights.find(f => f.id === id)
+  const search = JSON.parse(localStorage.getItem('tripgo_search') || '{}')
+
+  if (!flight) return
+
+  const price =
+    search.classType === 'Thương gia'
+      ? flight.businessPrice
+      : flight.economyPrice
 
   alert(`
 Mã chuyến bay: ${flight.id}
@@ -140,7 +162,8 @@ Tuyến: ${flight.from} → ${flight.to}
 Ngày bay: ${flight.date}
 Giờ khởi hành: ${flight.departure}
 Giờ hạ cánh: ${flight.arrival}
-Giá vé: ${flight.price.toLocaleString()} VNĐ
+Hạng vé: ${search.classType || 'Phổ thông'}
+Giá vé: ${price.toLocaleString()} VNĐ
 Số ghế còn lại: ${flight.seats}
   `)
 }
