@@ -1,6 +1,7 @@
 import './style.css'
 import { renderFlightResults } from './flight-results'
 import { renderBookingSearch, initBookingSearch } from './booking-search'
+import { renderMyBookings } from './my-bookings'
 
 document.querySelector('#app').innerHTML = `
   <header class="header">
@@ -12,6 +13,7 @@ document.querySelector('#app').innerHTML = `
         <a href="#services">Dịch vụ</a>
         <a href="#booking-search">Tra cứu</a>
         <a href="#support">Check-in</a>
+        <a href="#my-bookings">Vé của tôi</a>
       </nav>
       <a class="login-btn" href="#support">Đăng nhập</a>
     </div>
@@ -139,3 +141,7 @@ if (window.location.hash.startsWith('#search-results')) {
   document.querySelector('#app').innerHTML = renderFlightResults()
 }
 updateReturnDate()
+
+if (window.location.hash === '#my-bookings') {
+  document.querySelector('#app').innerHTML = renderMyBookings()
+}
