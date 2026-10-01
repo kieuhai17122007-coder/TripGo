@@ -3,7 +3,7 @@ export function renderBookingSearch() {
     <main>
       <section class="section">
         <div class="container">
-          <a href="#top" onclick="location.reload()">← Về trang chủ</a>
+          <a href="#top">← Về trang chủ</a>
 
           <div class="section-heading">
             <span class="eyebrow dark">TRA CỨU</span>

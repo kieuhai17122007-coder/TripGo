@@ -108,5 +108,8 @@ export function initRegister() {
 
     message.textContent = 'Đăng ký thành công.'
     form.reset()
+    setTimeout(() => {
+      window.location.hash = '#login'
+    }, 500)
   })
 }

@@ -141,7 +141,7 @@ window.bookFlight = function (id) {
 
   alert(`Đặt vé thành công!\nMã đặt vé: ${bookingCode}`)
   window.location.hash = ''
-  location.reload()
+
 }
 
 window.viewFlight = function (id) {

@@ -111,10 +111,9 @@ export function initLogin() {
     )
 
     message.textContent = 'Đăng nhập thành công.'
-
-    setTimeout(() => {
-      window.location.hash = 'top'
-      location.reload()
-    }, 500)
+      form.reset()
+      setTimeout(() => {
+        window.location.hash = '#top'
+      }, 500)
   })
 }

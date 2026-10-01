@@ -67,7 +67,7 @@ export function renderMyBookings() {
       <main>
         <section class="section">
           <div class="container">
-            <a href="#top" onclick="location.reload()">← Về trang chủ</a>
+            <a href="#top">← Về trang chủ</a>
 
             <div class="section-heading">
               <span class="eyebrow dark">VÉ CỦA TÔI</span>
@@ -84,12 +84,11 @@ export function renderMyBookings() {
     <main>
       <section class="section">
         <div class="container">
-          <a href="#top" onclick="location.reload()">← Về trang chủ</a>
+          <a href="#top">← Về trang chủ</a>
 
           <div class="section-heading">
             <span class="eyebrow dark">VÉ CỦA TÔI</span>
             <h2>Danh sách vé</h2>
-            <p>Các vé đang được lưu trong LocalStorage.</p>
           </div>
 
           <div class="flight-list">
