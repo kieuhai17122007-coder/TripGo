@@ -4,6 +4,7 @@ import { renderBookingSearch, initBookingSearch } from './booking-search'
 import { renderMyBookings } from './my-bookings'
 import { renderRegister, initRegister } from './register.js'
 import { renderLogin, initLogin } from './login.js'
+import { renderAccount } from './account.js'
 
 function getCurrentUser() {
   try {
@@ -16,8 +17,11 @@ function getCurrentUser() {
 function renderHeader() {
   const user = getCurrentUser()
   const authLink = user
-    ? `<a class="login-btn" href="#logout" id="logoutBtn">${user.name || user.email} · Đăng xuất</a>`
-    : `<a class="login-btn" href="#login">Đăng nhập</a>`
+  ? `<span class="auth-user">
+      <a href="#account">${user.name || user.email}</a> ·
+      <a href="#logout">Đăng xuất</a>
+    </span>`
+  : `<a class="login-btn" href="#login">Đăng nhập</a>`
 
   return `
     <header class="header">
@@ -283,6 +287,11 @@ function renderApp() {
 
   if (hash === '#my-bookings') {
     app.innerHTML = renderHeader() + renderMyBookings()
+    return
+  }
+
+  if (hash === '#account') {
+    app.innerHTML = renderHeader() + renderAccount()
     return
   }
 
