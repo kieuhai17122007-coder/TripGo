@@ -51,6 +51,7 @@
   const write = (key, value) =>
     localStorage.setItem(key, JSON.stringify(value));
   const money = (value) => Number(value || 0).toLocaleString("vi-VN") + " ₫";
+  const THEME_KEY = "tripgo_admin_theme";
   const date = (value) => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(value || "")) return "-";
     const [y, m, d] = value.split("-");
@@ -116,6 +117,21 @@
       render();
       load().then(render);
     }
+  }
+  function setTheme(theme) {
+    const isDark = theme === "dark";
+    document.body.classList.toggle("admin-dark", isDark);
+    $("themeToggle").setAttribute(
+      "aria-label",
+      isDark ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối",
+    );
+    $("themeToggle").title = isDark
+      ? "Chuyển sang giao diện sáng"
+      : "Chuyển sang giao diện tối";
+    $("themeIcon").className = `fa-solid ${isDark ? "fa-sun" : "fa-moon"}`;
+    $("themeToggle").querySelector("span").textContent = isDark
+      ? "Giao diện sáng"
+      : "Giao diện tối";
   }
   function alertMessage(message, error = false) {
     const el = $("notice");
@@ -879,6 +895,14 @@
   $("logout").addEventListener("click", () => {
     localStorage.removeItem(KEYS.session);
     showAuth();
+  });
+  setTheme(localStorage.getItem(THEME_KEY) || "light");
+  $("themeToggle").addEventListener("click", () => {
+    const theme = document.body.classList.contains("admin-dark")
+      ? "light"
+      : "dark";
+    localStorage.setItem(THEME_KEY, theme);
+    setTheme(theme);
   });
   document.querySelectorAll(".nav").forEach((item) =>
     item.addEventListener("click", () => {

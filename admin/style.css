@@ -19,6 +19,9 @@ body {
 .admin-app {
   background: linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
 }
+.admin-app {
+  width: 100%;
+}
 .admin-header {
   box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
   backdrop-filter: blur(12px);
@@ -28,10 +31,12 @@ body {
   background: rgba(255, 255, 255, 0.78);
   border-right: 1px solid #e2e8f0;
   backdrop-filter: blur(10px);
+  flex: 0 0 240px;
 }
 .admin-main {
   min-height: calc(100vh - 128px);
   margin: 0;
+  width: calc(100% - 240px);
 }
 .field {
   display: block;
@@ -237,7 +242,6 @@ body {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  max-width: 1280px;
   margin: 0 auto;
   padding: 0 24px;
 }
@@ -368,6 +372,7 @@ body {
 }
 @media (max-width: 767px) {
   .admin-sidebar {
+    flex-basis: auto;
     border-right: 0;
     border-bottom: 1px solid #e2e8f0;
     padding-top: 12px;
@@ -377,6 +382,9 @@ body {
     flex: 0 0 auto;
   }
   .admin-layout {
+    width: 100%;
+  }
+  .admin-main {
     width: 100%;
   }
   .booking-tools {
@@ -393,4 +401,147 @@ body {
     flex-direction: column;
     padding: 0 16px;
   }
+}
+
+.admin-dark,
+.admin-dark .admin-app {
+  color: #e2e8f0;
+  background: #0b1220;
+}
+.admin-dark .admin-header {
+  background: rgba(15, 23, 42, 0.94);
+  border-color: #263449;
+}
+.admin-dark .admin-sidebar,
+.admin-dark .admin-footer {
+  background: #111b2d;
+  border-color: #263449;
+}
+.admin-dark .admin-main {
+  color: #e2e8f0;
+}
+.admin-dark .card,
+.admin-dark .modal-backdrop > div,
+.admin-dark #loginView > div {
+  color: #e2e8f0;
+  background: #152238;
+  border-color: #2b3a52;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
+}
+.admin-dark .nav {
+  color: #a8b6ca;
+}
+.admin-dark .nav:hover,
+.admin-dark .nav.active {
+  color: #bfdbfe;
+  background: #1c3455;
+  border-color: #31547e;
+  box-shadow: none;
+}
+.admin-dark .field,
+.admin-dark select.field,
+.admin-dark input.field {
+  color: #e2e8f0;
+  background: #0f1a2b;
+  border-color: #364861;
+}
+.admin-dark .field::placeholder {
+  color: #8090a7;
+}
+.admin-dark .secondary {
+  color: #dbeafe;
+  background: #1b2b42;
+  border-color: #364861;
+}
+.admin-dark .secondary:hover {
+  background: #263b59;
+}
+.admin-dark .data-table th {
+  color: #a8b6ca;
+  background: #101b2d;
+}
+.admin-dark .data-table th,
+.admin-dark .data-table td {
+  border-color: #2b3a52;
+}
+.admin-dark .data-table tbody tr:hover td,
+.admin-dark .selected-row td {
+  background: #1b2b42;
+}
+.admin-dark .customer-detail-card,
+.admin-dark .mini-stat,
+.admin-dark .support-item {
+  color: #e2e8f0;
+  background: #101b2d;
+  border-color: #2b3a52;
+}
+.admin-dark .mini-stat strong,
+.admin-dark .stat-value,
+.admin-dark .font-semibold,
+.admin-dark .font-bold {
+  color: #f1f5f9;
+}
+.admin-dark .stat-label,
+.admin-dark .text-slate-500,
+.admin-dark .text-slate-400,
+.admin-dark .label {
+  color: #a8b6ca;
+}
+.admin-dark .stat-icon,
+.admin-dark .service-icon {
+  color: #bfdbfe;
+  background: #1c3455;
+}
+.admin-dark .badge.off {
+  color: #cbd5e1;
+  background: #29384e;
+}
+.admin-dark .badge.cancel {
+  color: #fecaca;
+  background: #562b38;
+}
+.admin-dark .admin-footer-inner,
+.admin-dark .admin-footer-inner a {
+  color: #9fb0c7;
+}
+.admin-dark .text-slate-800,
+.admin-dark .text-slate-700,
+.admin-dark .text-slate-600 {
+  color: #dbe5f2;
+}
+.admin-dark .text-blue-900 {
+  color: #bfdbfe;
+}
+.admin-dark .text-blue-700 {
+  color: #93c5fd;
+}
+.admin-dark .modal-backdrop {
+  background: rgba(2, 6, 23, 0.78);
+}
+.admin-dark #loginView {
+  color: #e2e8f0;
+}
+.theme-toggle {
+  gap: 8px;
+}
+.admin-body,
+.admin-header,
+.admin-sidebar,
+.card,
+.admin-footer,
+.field,
+.secondary,
+.nav {
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease;
+}
+.admin-dark {
+  color-scheme: dark;
+}
+.admin-dark .bg-slate-100 {
+  color: #dbe5f2;
+  background: #1b2b42;
 }
