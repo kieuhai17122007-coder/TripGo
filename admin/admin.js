@@ -176,6 +176,8 @@
       bookings: ["Vé đã đặt", "Theo dõi danh sách vé và trạng thái đặt chỗ."],
       customers: ["Khách hàng", "Theo dõi hồ sơ, chi tiêu và hoạt động của khách hàng."],
       reports: ["Báo cáo", "Theo dõi doanh thu và xu hướng đặt vé theo thời gian."],
+      services: ["Dịch vụ", "Cập nhật gói tiện ích, ưu đãi và trải nghiệm bán vé."],
+      support: ["Hỗ trợ khách hàng", "Theo dõi phản hồi, xử lý yêu cầu và chăm sóc khách hàng."],
     };
     $("pageTitle").textContent = titles[page][0];
     $("pageDescription").textContent = titles[page][1];
@@ -199,9 +201,12 @@
     if (page === "bookings") renderBookings();
     if (page === "customers") renderCustomers();
     if (page === "reports") renderReports();
+    if (page === "services") renderServices();
+    if (page === "support") renderSupport();
   }
   function renderOverview() {
     const active = flights.filter((f) => f.status === "active");
+    const flying = flights.filter((f) => f.status === "flying");
     const confirmed = bookings.filter((b) => bookingState(b) === "confirmed");
     const cancelled = bookings.filter((b) => bookingState(b) === "cancelled");
     const revenue = confirmed.reduce(
@@ -232,12 +237,12 @@
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
     const stats = [
-      ["Chuyến bay đang mở", active.length, "✈"],
-      ["Vé đã đặt", bookings.length, "▤"],
-      ["Đã xác nhận", confirmed.length, "✓"],
-      ["Doanh thu", money(revenue), "₫"],
-      ["Tỷ lệ hủy", `${bookings.length ? Math.round((cancelled.length / bookings.length) * 100) : 0}%`, "↩"],
-      ["Khách hàng", customerEmails.size, "👥"],
+      ["Chuyến bay đang mở", active.length, "<i class=\"fa-solid fa-plane\"></i>"],
+      ["Đang bay", flying.length, "<i class=\"fa-solid fa-plane-up\"></i>"],
+      ["Vé đã đặt", bookings.length, "<i class=\"fa-solid fa-ticket\"></i>"],
+      ["Doanh thu", money(revenue), "<i class=\"fa-solid fa-money-bill-wave\"></i>"],
+      ["Tỷ lệ hủy", `${bookings.length ? Math.round((cancelled.length / bookings.length) * 100) : 0}%`, "<i class=\"fa-solid fa-rotate-left\"></i>"],
+      ["Khách hàng", customerEmails.size, "<i class=\"fa-solid fa-users\"></i>"],
     ];
     $("content").innerHTML = `
       <div class="stats-grid">${stats
@@ -248,7 +253,10 @@
         .join("")}</div>
       <div class="grid xl:grid-cols-[1.25fr_0.75fr] gap-6 mt-6">
         <div class="card p-6">
-          <h2 class="font-bold text-lg">Top tuyến phổ biến</h2>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="font-bold text-lg">Top tuyến phổ biến</h2>
+            <span class="chip chip-blue"><i class="fa-solid fa-arrow-trend-up mr-1"></i>Xu hướng</span>
+          </div>
           <div class="mt-4">
             ${routeCounts.length ? `<table class="data-table compact"><thead><tr><th>Tuyến</th><th>Vé</th></tr></thead><tbody>${routeCounts
               .map(
@@ -259,7 +267,10 @@
           </div>
         </div>
         <div class="card p-6">
-          <h2 class="font-bold text-lg">Hoạt động gần đây</h2>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="font-bold text-lg">Hoạt động gần đây</h2>
+            <span class="chip chip-green"><i class="fa-solid fa-clock mr-1"></i>Mới</span>
+          </div>
           ${bookings.length ? `<div class="mt-4 space-y-3">${bookings
             .slice(-5)
             .reverse()
@@ -268,6 +279,85 @@
                 `<div class="border-b pb-3 text-sm flex flex-wrap justify-between gap-2"><span>Vé <b>${safe(b.bookingCode || b.code)}</b> · ${safe(b.passengerDetails?.[0]?.name || b.passenger?.name || "Hành khách")}</span><span>${money(b.totalPrice ?? b.total)}</span></div>`,
             )
             .join("")}</div>` : '<p class="text-slate-500 mt-4">Chưa có vé được đặt.</p>'}
+        </div>
+      </div>
+    `;
+  }
+  function renderServices() {
+    const serviceCards = [
+      { title: "Đặt vé nhanh", icon: "fa-solid fa-bolt", desc: "Thao tác đặt chỗ tối ưu, hỗ trợ nhiều hành khách / nhiều tuyến." },
+      { title: "Check-in online", icon: "fa-solid fa-qrcode", desc: "Giảm thời gian chờ tại sân bay với quy trình đơn giản." },
+      { title: "Hành lý & ưu đãi", icon: "fa-solid fa-suitcase-rolling", desc: "Quản lý thêm hành lý, gói ưu đãi và khuyến mãi theo mùa." },
+      { title: "Hỗ trợ 24/7", icon: "fa-solid fa-headset", desc: "Đội ngũ chăm sóc và xử lý khiếu nại nhanh chóng." },
+    ];
+    $("content").innerHTML = `
+      <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
+        ${serviceCards
+          .map(
+            (service) => `
+              <div class="card p-5 service-card">
+                <div class="service-icon"><i class="${service.icon}"></i></div>
+                <h3 class="font-bold mt-4">${service.title}</h3>
+                <p class="text-slate-500 text-sm mt-2">${service.desc}</p>
+                <button class="secondary mt-4"><i class="fa-solid fa-pen-to-square mr-2"></i>Chỉnh sửa</button>
+              </div>
+            `,
+          )
+          .join("")}
+      </div>
+      <div class="card p-6 mt-6">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+          <h2 class="font-bold text-lg">Tổng quan dịch vụ</h2>
+          <button class="primary"><i class="fa-solid fa-plus mr-2"></i>Thêm dịch vụ</button>
+        </div>
+        <div class="mt-4 grid md:grid-cols-3 gap-4">
+          <div class="mini-stat"><span>Đặt vé</span><strong>${bookings.length || 0}</strong></div>
+          <div class="mini-stat"><span>Check-in</span><strong>${Math.max(12, Math.round(bookings.length * 0.7))}</strong></div>
+          <div class="mini-stat"><span>Khách hàng cần hỗ trợ</span><strong>${Math.max(3, Math.round(bookings.length * 0.25))}</strong></div>
+        </div>
+      </div>
+    `;
+  }
+  function renderSupport() {
+    const tickets = [
+      { name: "Nguyễn Thị Lan", issue: "Mất vé đã đặt", status: "Đang xử lý", time: "5 phút trước" },
+      { name: "Trần Minh Hoàng", issue: "Yêu cầu đổi lịch bay", status: "Chờ xác nhận", time: "18 phút trước" },
+      { name: "Phạm Hồng Anh", issue: "Thắc mắc về hành lý", status: "Đã trả lời", time: "1 giờ trước" },
+    ];
+    $("content").innerHTML = `
+      <div class="grid xl:grid-cols-[1.1fr_0.9fr] gap-6">
+        <div class="card p-6">
+          <div class="flex items-center justify-between gap-3 flex-wrap">
+            <h2 class="font-bold text-lg">Yêu cầu hỗ trợ mới</h2>
+            <span class="chip chip-orange"><i class="fa-solid fa-bell mr-1"></i>3 tin nhắn</span>
+          </div>
+          <div class="mt-5 space-y-3">
+            ${tickets
+              .map(
+                (ticket) => `
+                  <div class="support-item">
+                    <div>
+                      <p class="font-semibold">${safe(ticket.name)}</p>
+                      <p class="text-sm text-slate-500">${safe(ticket.issue)}</p>
+                    </div>
+                    <div class="text-right">
+                      <span class="chip ${ticket.status === "Đã trả lời" ? "chip-green" : ticket.status === "Đang xử lý" ? "chip-blue" : "chip-orange"}">${ticket.status}</span>
+                      <p class="text-xs text-slate-400 mt-2">${ticket.time}</p>
+                    </div>
+                  </div>
+                `,
+              )
+              .join("")}
+          </div>
+        </div>
+        <div class="card p-6">
+          <h2 class="font-bold text-lg">Tổng hợp CSKH</h2>
+          <div class="mt-5 space-y-4">
+            <div class="mini-stat"><span>Chăm sóc hôm nay</span><strong>28 cuộc</strong></div>
+            <div class="mini-stat"><span>Thời gian phản hồi</span><strong>12 phút</strong></div>
+            <div class="mini-stat"><span>Tỷ lệ hài lòng</span><strong>94%</strong></div>
+          </div>
+          <button class="primary w-full mt-5"><i class="fa-solid fa-message mr-2"></i>Phản hồi nhanh</button>
         </div>
       </div>
     `;

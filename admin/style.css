@@ -17,14 +17,17 @@ body {
 }
 .admin-body,
 .admin-app {
-  background: #f4f7fb;
+  background: linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
 }
 .admin-header {
   box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.92);
 }
 .admin-sidebar {
-  background: #fff;
+  background: rgba(255, 255, 255, 0.78);
   border-right: 1px solid #e2e8f0;
+  backdrop-filter: blur(10px);
 }
 .admin-main {
   min-height: calc(100vh - 128px);
@@ -92,17 +95,26 @@ body {
   align-items: center;
   gap: 12px;
   text-align: left;
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 12px 15px;
   white-space: nowrap;
   font-weight: 600;
   font-size: 14px;
   color: #64748b;
+  transition: all 180ms ease;
+  border: 1px solid transparent;
+}
+.nav i {
+  width: 18px;
+  text-align: center;
+  font-size: 15px;
 }
 .nav:hover,
 .nav.active {
-  background: #dbeafe;
+  background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
   color: #1e40af;
+  border-color: #bfdbfe;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.08);
 }
 .card {
   background: white;
@@ -117,6 +129,16 @@ body {
 }
 .stat-card {
   padding: 20px 18px;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 82px;
+  height: 82px;
+  background: radial-gradient(circle, rgba(191, 219, 254, 0.35), transparent 60%);
 }
 .stat-icon {
   display: inline-flex;
@@ -128,11 +150,15 @@ body {
   background: #dbeafe;
   color: #1d4ed8;
   font-size: 20px;
+  position: relative;
+  z-index: 1;
 }
 .stat-label {
   margin-top: 18px;
   font-size: 13px;
   color: #64748b;
+  position: relative;
+  z-index: 1;
 }
 .stat-value {
   margin-top: 8px;
@@ -140,6 +166,58 @@ body {
   line-height: 1.15;
   font-weight: 800;
   color: #0f172a;
+  position: relative;
+  z-index: 1;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.chip-blue {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+.chip-green {
+  background: #dcfce7;
+  color: #166534;
+}
+.chip-orange {
+  background: #ffedd5;
+  color: #c2410c;
+}
+.service-card {
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.service-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 24px rgba(15, 23, 42, 0.08);
+}
+.service-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #dbeafe, #eff6ff);
+  color: #1d4ed8;
+  font-size: 24px;
+}
+.support-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #f8fafc;
 }
 .booking-tools {
   display: flex;
@@ -196,6 +274,9 @@ body {
 }
 .data-table tr:last-child td {
   border-bottom: 0;
+}
+.data-table tbody tr:hover td {
+  background: rgba(239, 246, 255, 0.5);
 }
 .selected-row td {
   background: #eff6ff;

@@ -5,6 +5,27 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>TripGo · Admin Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            boxShadow: {
+              soft: '0 12px 30px rgba(15, 23, 42, 0.08)',
+            },
+            colors: {
+              brand: {
+                50: '#eef6ff',
+                100: '#dfeeff',
+                500: '#2563eb',
+                600: '#1d4ed8',
+                700: '#1e3a8a'
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body class="admin-body bg-slate-50 text-slate-800">
@@ -69,8 +90,11 @@
             ></a
           >
           <div class="flex gap-3 items-center text-sm">
-            <span class="hidden sm:inline text-slate-500">admin@tripgo.com</span
-            ><button id="logout" class="secondary">Đăng xuất</button>
+            <div class="hidden sm:flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5">
+              <span class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-white"><i class="fa-solid fa-user-shield"></i></span>
+              <span class="text-slate-600">admin@tripgo.com</span>
+            </div>
+            <button id="logout" class="secondary"><i class="fa-solid fa-right-from-bracket mr-2"></i>Đăng xuất</button>
           </div>
         </div>
       </header>
@@ -88,9 +112,13 @@
           ><button data-page="bookings" class="nav">
             ▤ <span>Vé đã đặt</span></button
           ><button data-page="customers" class="nav">
-            👥 <span>Khách hàng</span></button
+            <i class="fa-solid fa-users"></i> <span>Khách hàng</span></button
           ><button data-page="reports" class="nav">
-            📊 <span>Báo cáo</span>
+            <i class="fa-solid fa-chart-column"></i> <span>Báo cáo</span></button
+          ><button data-page="services" class="nav">
+            <i class="fa-solid fa-bag-shopping"></i> <span>Dịch vụ</span></button
+          ><button data-page="support" class="nav">
+            <i class="fa-solid fa-headset"></i> <span>Hỗ trợ</span>
           </button>
         </nav>
         <main class="admin-main flex-1 min-w-0 p-4 sm:p-6 md:py-8">
