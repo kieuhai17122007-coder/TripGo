@@ -4,7 +4,7 @@ import { generateBookingCode, saveBooking } from './booking.js'
 const format = amount => Number(amount).toLocaleString('vi-VN') + ' VNĐ'
 const readSearch = () => { try { return JSON.parse(localStorage.getItem('tripgo_search')) || {} } catch { return {} } }
 const search = readSearch()
-const available = () => getFlights().filter(f => f.status !== 'inactive' && f.status !== 'deleted')
+const available = () => getFlights().filter(f => f.status === 'active')
 const returnLink = '<a class="back-link" href="/">← Về trang chủ</a>'
 
 export function renderFlightResults() {

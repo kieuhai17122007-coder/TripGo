@@ -86,7 +86,11 @@
           ><button data-page="flights" class="nav">
             ✈ <span>Chuyến bay</span></button
           ><button data-page="bookings" class="nav">
-            ▤ <span>Vé đã đặt</span>
+            ▤ <span>Vé đã đặt</span></button
+          ><button data-page="customers" class="nav">
+            👥 <span>Khách hàng</span></button
+          ><button data-page="reports" class="nav">
+            📊 <span>Báo cáo</span>
           </button>
         </nav>
         <main class="admin-main flex-1 min-w-0 p-4 sm:p-6 md:py-8">
@@ -213,8 +217,9 @@
                 required /></label
             ><label class="label"
               >Trạng thái<select class="field" name="status">
-                <option value="active">Đang bán</option>
-                <option value="inactive">Tạm dừng</option>
+                <option value="active">Đang hoạt động</option>
+                <option value="flying">Đang bay</option>
+                <option value="cancelled">Đã bị huỷ</option>
               </select></label
             >
           </div>

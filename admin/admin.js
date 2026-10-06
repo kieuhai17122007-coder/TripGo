@@ -79,7 +79,8 @@
   let page = "overview",
     editing = null,
     flights = [],
-    bookings = [];
+    bookings = [],
+    selectedCustomerEmail = null;
   function ensureAdmin() {
     const users = read(KEYS.users, []);
     const existing = users.find(
@@ -152,17 +153,29 @@
     write(KEYS.flights, flights);
   }
   function status(s) {
-    return s === "cancelled" || s === "đã hủy"
-      ? "Đã hủy"
+    return s === "cancelled" || s === "đã hủy" || s === "đã bị hủy"
+      ? "Đã bị huỷ"
       : s === "pending" || s === "chờ thanh toán"
         ? "Chờ thanh toán"
         : "Đã xác nhận";
+  }
+  function flightStatusLabel(s) {
+    return s === "cancelled" || s === "đã bị hủy"
+      ? "Đã bị huỷ"
+      : s === "flying" || s === "đang bay"
+        ? "Đang bay"
+        : "Đang hoạt động";
+  }
+  function flightStatusClass(s) {
+    return s === "cancelled" ? "cancel" : s === "flying" ? "off" : "";
   }
   function header() {
     const titles = {
       overview: ["Tổng quan", "Theo dõi dữ liệu đặt vé và chuyến bay."],
       flights: ["Quản lý chuyến bay", "Thêm, cập nhật và quản lý lịch bay."],
       bookings: ["Vé đã đặt", "Theo dõi danh sách vé và trạng thái đặt chỗ."],
+      customers: ["Khách hàng", "Theo dõi hồ sơ, chi tiêu và hoạt động của khách hàng."],
+      reports: ["Báo cáo", "Theo dõi doanh thu và xu hướng đặt vé theo thời gian."],
     };
     $("pageTitle").textContent = titles[page][0];
     $("pageDescription").textContent = titles[page][1];
@@ -184,44 +197,307 @@
     if (page === "overview") renderOverview();
     if (page === "flights") renderFlights();
     if (page === "bookings") renderBookings();
+    if (page === "customers") renderCustomers();
+    if (page === "reports") renderReports();
   }
   function renderOverview() {
-    const active = flights.filter((f) => f.status !== "deleted");
+    const active = flights.filter((f) => f.status === "active");
     const confirmed = bookings.filter((b) => bookingState(b) === "confirmed");
-    $("content").innerHTML =
-      `<div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">${[
-        ["Chuyến bay", active.length, "✈"],
-        ["Vé đã đặt", bookings.length, "▤"],
-        ["Vé xác nhận", confirmed.length, "✓"],
-        [
-          "Doanh thu mô phỏng",
-          money(
-            confirmed.reduce(
-              (n, b) => n + Number(b.totalPrice ?? b.total ?? 0),
-              0,
-            ),
-          ),
-          "₫",
-        ],
-      ]
+    const cancelled = bookings.filter((b) => bookingState(b) === "cancelled");
+    const revenue = confirmed.reduce(
+      (total, booking) => total + Number(booking.totalPrice ?? booking.total ?? 0),
+      0,
+    );
+    const customerEmails = new Set(
+      [
+        ...bookings
+          .map((booking) => String(booking.email || "").trim().toLowerCase())
+          .filter(Boolean),
+        ...read(KEYS.users, [])
+          .filter((user) => String(user.role || "customer").toLowerCase() !== "admin")
+          .map((user) => String(user.email || "").trim().toLowerCase())
+          .filter(Boolean),
+      ],
+    );
+    const routeCounts = Object.values(
+      bookings.reduce((map, booking) => {
+        const from = booking.from || booking.flight?.from || "-";
+        const to = booking.to || booking.flight?.to || "-";
+        const key = `${from} → ${to}`;
+        map[key] = (map[key] || { route: key, count: 0 });
+        map[key].count += 1;
+        return map;
+      }, {}),
+    )
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+    const stats = [
+      ["Chuyến bay đang mở", active.length, "✈"],
+      ["Vé đã đặt", bookings.length, "▤"],
+      ["Đã xác nhận", confirmed.length, "✓"],
+      ["Doanh thu", money(revenue), "₫"],
+      ["Tỷ lệ hủy", `${bookings.length ? Math.round((cancelled.length / bookings.length) * 100) : 0}%`, "↩"],
+      ["Khách hàng", customerEmails.size, "👥"],
+    ];
+    $("content").innerHTML = `
+      <div class="stats-grid">${stats
         .map(
           ([label, value, icon]) =>
-            `<div class="card p-6"><div class="text-blue-700 text-xl">${icon}</div><p class="text-slate-500 text-sm mt-4">${label}</p><p class="text-2xl font-bold mt-2">${value}</p></div>`,
+            `<div class="card stat-card"><div class="stat-icon">${icon}</div><p class="stat-label">${label}</p><p class="stat-value">${value}</p></div>`,
         )
-        .join(
-          "",
-        )}</div><div class="card mt-6 p-6"><h2 class="font-bold text-lg">Hoạt động gần đây</h2>${
-        bookings.length
-          ? `<div class="mt-4 space-y-3">${bookings
-              .slice(-5)
-              .reverse()
+        .join("")}</div>
+      <div class="grid xl:grid-cols-[1.25fr_0.75fr] gap-6 mt-6">
+        <div class="card p-6">
+          <h2 class="font-bold text-lg">Top tuyến phổ biến</h2>
+          <div class="mt-4">
+            ${routeCounts.length ? `<table class="data-table compact"><thead><tr><th>Tuyến</th><th>Vé</th></tr></thead><tbody>${routeCounts
               .map(
-                (b) =>
-                  `<div class="border-b pb-3 text-sm flex flex-wrap justify-between gap-2"><span>Vé <b>${safe(b.bookingCode || b.code)}</b> · ${safe(b.passengerDetails?.[0]?.name || b.passenger?.name || "Hành khách")}</span><span>${money(b.totalPrice ?? b.total)}</span></div>`,
+                ({ route, count }) =>
+                  `<tr><td>${safe(route)}</td><td><span class="badge off">${count}</span></td></tr>`,
               )
-              .join("")}</div>`
-          : '<p class="text-slate-500 mt-4">Chưa có vé được đặt.</p>'
-      }</div>`;
+              .join("")}</tbody></table>` : '<p class="text-slate-500 mt-3">Chưa có dữ liệu tuyến bay.</p>'}
+          </div>
+        </div>
+        <div class="card p-6">
+          <h2 class="font-bold text-lg">Hoạt động gần đây</h2>
+          ${bookings.length ? `<div class="mt-4 space-y-3">${bookings
+            .slice(-5)
+            .reverse()
+            .map(
+              (b) =>
+                `<div class="border-b pb-3 text-sm flex flex-wrap justify-between gap-2"><span>Vé <b>${safe(b.bookingCode || b.code)}</b> · ${safe(b.passengerDetails?.[0]?.name || b.passenger?.name || "Hành khách")}</span><span>${money(b.totalPrice ?? b.total)}</span></div>`,
+            )
+            .join("")}</div>` : '<p class="text-slate-500 mt-4">Chưa có vé được đặt.</p>'}
+        </div>
+      </div>
+    `;
+  }
+  function getMonthKey(dateValue) {
+    const value = dateValue || "";
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+  }
+  function formatMonthLabel(key) {
+    if (!key) return "-";
+    const [year, month] = key.split("-").map(Number);
+    return `${String(month).padStart(2, "0")}/${year}`;
+  }
+  function csvEscape(value) {
+    return `"${String(value ?? "").replace(/"/g, '""')}"`;
+  }
+  function downloadCsv(filename, rows) {
+    if (!rows.length) return;
+    const csv = rows
+      .map((row) => row.map((cell) => csvEscape(cell)).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+  }
+  function exportBookingsCsv() {
+    const rows = [
+      ["Mã vé", "Hành khách", "Chuyến bay", "Ngày đi", "Tổng tiền", "Trạng thái", "Email"],
+      ...bookings.map((booking) => {
+        const passenger =
+          (booking.passengerDetails || [])
+            .map((person) => person.name)
+            .filter(Boolean)
+            .join(", ") ||
+          booking.passenger?.name ||
+          "-";
+        return [
+          booking.bookingCode || booking.code || "-",
+          passenger,
+          `${booking.from || booking.flight?.from || "-"} → ${booking.to || booking.flight?.to || "-"}`,
+          booking.date || booking.departureDate || "-",
+          Number(booking.totalPrice ?? booking.total ?? 0),
+          status(booking.status),
+          booking.email || "-",
+        ];
+      }),
+    ];
+    downloadCsv("tripgo-danh-sach-ve.csv", rows);
+  }
+  function exportCustomersCsv() {
+    const rows = [
+      ["Tên", "Email", "Vai trò", "Số vé", "Tổng chi tiêu", "Ngày đăng ký"],
+      ...read(KEYS.users, []).map((user) => {
+        const customerBookings = bookings.filter(
+          (booking) =>
+            String(booking.email || "").trim().toLowerCase() ===
+            String(user.email || "").trim().toLowerCase(),
+        );
+        return [
+          user.name || "Khách hàng",
+          user.email || "-",
+          user.role || "customer",
+          customerBookings.length,
+          customerBookings.reduce(
+            (sum, booking) => sum + Number(booking.totalPrice ?? booking.total ?? 0),
+            0,
+          ),
+          user.createdAt ? user.createdAt.slice(0, 10) : "-",
+        ];
+      }),
+    ];
+    downloadCsv("tripgo-khach-hang.csv", rows);
+  }
+  function renderReports() {
+    const months = Array.from({ length: 6 }, (_, index) => {
+      const date = new Date();
+      date.setDate(1);
+      date.setMonth(date.getMonth() - (5 - index));
+      return {
+        key: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`,
+        label: `${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`,
+      };
+    });
+    const reportRows = months.map((month) => {
+      const monthBookings = bookings.filter(
+        (booking) => getMonthKey(booking.date || booking.createdAt || booking.departureDate) === month.key,
+      );
+      const confirmed = monthBookings.filter((booking) => bookingState(booking) === "confirmed");
+      const cancelled = monthBookings.filter((booking) => bookingState(booking) === "cancelled");
+      const revenue = confirmed.reduce(
+        (sum, booking) => sum + Number(booking.totalPrice ?? booking.total ?? 0),
+        0,
+      );
+      return {
+        ...month,
+        bookings: monthBookings.length,
+        revenue,
+        cancelled: cancelled.length,
+      };
+    });
+    const totalRevenue = reportRows.reduce((sum, month) => sum + month.revenue, 0);
+    const totalBookings = reportRows.reduce((sum, month) => sum + month.bookings, 0);
+    const avgOrder = totalBookings ? totalRevenue / totalBookings : 0;
+    $("content").innerHTML = `
+      <div class="card p-4 sm:p-5">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h2 class="font-bold">Báo cáo theo tháng</h2>
+          <button id="exportMonthlyReport" class="secondary">Xuất CSV</button>
+        </div>
+        <div class="stats-grid mt-5">
+          <div class="card stat-card"><div class="stat-icon">▤</div><p class="stat-label">Tổng vé</p><p class="stat-value">${totalBookings}</p></div>
+          <div class="card stat-card"><div class="stat-icon">₫</div><p class="stat-label">Doanh thu</p><p class="stat-value">${money(totalRevenue)}</p></div>
+          <div class="card stat-card"><div class="stat-icon">↩</div><p class="stat-label">Giá trị trung bình / vé</p><p class="stat-value">${money(avgOrder)}</p></div>
+        </div>
+        <div class="table-scroll mt-6">
+          <table class="data-table">
+            <thead><tr><th>Tháng</th><th>Vé đặt</th><th>Doanh thu</th><th>Đã hủy</th></tr></thead>
+            <tbody>
+              ${reportRows
+                .map(
+                  (month) =>
+                    `<tr><td>${safe(month.label)}</td><td><span class="badge off">${month.bookings}</span></td><td>${money(month.revenue)}</td><td>${month.cancelled}</td></tr>`,
+                )
+                .join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    $("exportMonthlyReport").addEventListener("click", () => {
+      downloadCsv(
+        "tripgo-bao-cao-theo-thang.csv",
+        [
+          ["Tháng", "Vé đặt", "Doanh thu", "Đã hủy"],
+          ...reportRows.map((month) => [month.label, month.bookings, month.revenue, month.cancelled]),
+        ],
+      );
+    });
+  }
+  function renderCustomers() {
+    const users = read(KEYS.users, []);
+    const selectedUser =
+      selectedCustomerEmail && users.find((user) => String(user.email || "").toLowerCase() === String(selectedCustomerEmail).toLowerCase());
+    const customerBookings = selectedUser
+      ? bookings.filter(
+          (booking) =>
+            String(booking.email || "").trim().toLowerCase() ===
+            String(selectedUser.email || "").trim().toLowerCase(),
+        )
+      : [];
+    const detailSpend = customerBookings.reduce(
+      (sum, booking) => sum + Number(booking.totalPrice ?? booking.total ?? 0),
+      0,
+    );
+    $("content").innerHTML = `
+      <div class="card p-4 sm:p-5 mb-6">
+        ${selectedUser ? `
+          <div class="customer-detail-card">
+            <div>
+              <p class="text-xs uppercase tracking-widest text-amber-600 font-bold">Khách hàng chi tiết</p>
+              <h2 class="font-bold text-xl mt-2">${safe(selectedUser.name || "Khách hàng")}</h2>
+            </div>
+            <div class="mt-4 grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+              <div class="mini-stat"><span>Email</span><strong>${safe(selectedUser.email || "-")}</strong></div>
+              <div class="mini-stat"><span>Số vé</span><strong>${customerBookings.length}</strong></div>
+              <div class="mini-stat"><span>Tổng chi tiêu</span><strong>${money(detailSpend)}</strong></div>
+              <div class="mini-stat"><span>Vai trò</span><strong>${safe((selectedUser.role || "customer") === "admin" ? "Quản trị" : "Khách hàng")}</strong></div>
+            </div>
+            <div class="mt-5">
+              <h3 class="font-bold mb-3">Lịch sử đặt vé</h3>
+              ${customerBookings.length ? `<div class="space-y-3">${customerBookings
+                .slice()
+                .reverse()
+                .slice(0, 5)
+                .map(
+                  (booking) =>
+                    `<div class="border-b pb-2 text-sm flex flex-wrap justify-between gap-2"><span>Vé <b>${safe(booking.bookingCode || booking.code || "-")}</b> · ${safe(booking.from || booking.flight?.from || "-")} → ${safe(booking.to || booking.flight?.to || "-")}</span><span>${money(booking.totalPrice ?? booking.total)}</span></div>`,
+                )
+                .join("")}</div>` : '<p class="text-slate-500 mt-2">Khách hàng chưa có vé nào.</p>'}
+            </div>
+          </div>
+        ` : '<p class="text-slate-500">Chọn một khách hàng để xem thông tin chi tiết.</p>'}
+      </div>
+      <div class="card"><div class="p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3"><h2 class="font-bold">Khách hàng đã đăng ký <span class="text-slate-400 font-normal">(${users.length})</span></h2><div class="booking-filters"><input id="customerSearch" class="field" aria-label="Tìm khách hàng" placeholder="Tìm tên hoặc email"><select id="customerRole" class="field" aria-label="Lọc khách hàng theo vai trò"><option value="all">Tất cả</option><option value="customer">Khách hàng</option><option value="admin">Quản trị</option></select><button id="exportCustomersCsv" class="secondary">Xuất CSV</button></div></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Khách hàng</th><th>Email</th><th>Số vé</th><th>Tổng chi tiêu</th><th>Đăng ký</th><th>Thao tác</th></tr></thead><tbody id="customerRows"></tbody></table></div></div>`;
+    $("customerSearch").addEventListener("input", fillCustomers);
+    $("customerRole").addEventListener("change", fillCustomers);
+    $("exportCustomersCsv").addEventListener("click", exportCustomersCsv);
+    fillCustomers();
+  }
+  function fillCustomers() {
+    const users = read(KEYS.users, []);
+    const query = ($("customerSearch").value || "").trim().toLowerCase();
+    const selectedRole = $("customerRole").value;
+    const rows = users.filter((user) => {
+      const role = String(user.role || "customer").toLowerCase();
+      const text = `${user.name || ""} ${user.email || ""}`.toLowerCase();
+      return (
+        (selectedRole === "all" || role === selectedRole) &&
+        (!query || text.includes(query))
+      );
+    });
+    $("customerRows").innerHTML = rows.length
+      ? rows
+          .map((user) => {
+            const customerBookings = bookings.filter(
+              (booking) =>
+                String(booking.email || "").trim().toLowerCase() ===
+                String(user.email || "").trim().toLowerCase(),
+            );
+            const totalSpend = customerBookings.reduce(
+              (sum, booking) => sum + Number(booking.totalPrice ?? booking.total ?? 0),
+              0,
+            );
+            const createdAt = user.createdAt || user.created_at || "";
+            const selected =
+              String(user.email || "").toLowerCase() ===
+              String(selectedCustomerEmail || "").toLowerCase();
+            return `<tr class="${selected ? "selected-row" : ""}"><td><b>${safe(user.name || "Khách hàng")}</b><br><span class="text-slate-500">${safe((user.role || "customer") === "admin" ? "Quản trị" : "Khách hàng")}</span></td><td>${safe(user.email || "-")}</td><td><span class="badge off">${customerBookings.length}</span></td><td>${money(totalSpend)}</td><td>${createdAt ? date(createdAt.slice(0, 10)) : "-"}</td><td><button class="action" data-action="customer-detail" data-id="${safe(String(user.email || user.id || ""))}">Chi tiết</button></td></tr>`;
+          })
+          .join("")
+      : '<tr><td colspan="6" class="empty">Không tìm thấy khách hàng phù hợp.</td></tr>';
   }
   function renderFlights() {
     let query = ($("flightSearch")?.value || "").trim().toLowerCase();
@@ -247,17 +523,18 @@
       ? matches
           .map(
             (f) =>
-              `<tr><td><b>${safe(f.id)}</b><br><span class="text-slate-500">${safe(f.airline)}</span></td><td>${safe(AIRPORTS[f.from] || f.from)} → ${safe(AIRPORTS[f.to] || f.to)}</td><td>${date(f.date)}<br><span class="text-slate-500">${safe(f.departure)} – ${safe(f.arrival)}</span></td><td>${money(f.price)}</td><td><span class="badge ${f.status === "inactive" ? "off" : ""}">${f.status === "inactive" ? "Tạm dừng" : "Đang bán"}</span></td><td><button class="action" data-action="edit" data-id="${safe(f.id)}">Sửa</button><button class="action danger" data-action="delete" data-id="${safe(f.id)}">Xóa</button></td></tr>`,
+              `<tr><td><b>${safe(f.id)}</b><br><span class="text-slate-500">${safe(f.airline)}</span></td><td>${safe(AIRPORTS[f.from] || f.from)} → ${safe(AIRPORTS[f.to] || f.to)}</td><td>${date(f.date)}<br><span class="text-slate-500">${safe(f.departure)} – ${safe(f.arrival)}</span></td><td>${money(f.price)}</td><td><span class="badge ${flightStatusClass(f.status)}">${flightStatusLabel(f.status)}</span></td><td><button class="action" data-action="edit" data-id="${safe(f.id)}">Sửa</button></td></tr>`,
           )
           .join("")
-      : '<tr><td colspan="6" class="empty">Không tìm thấy chuyến bay nào.</td></tr>';
+      : '<tr><td colspan="5" class="empty">Không tìm thấy chuyến bay nào.</td></tr>';
   }
   function renderBookings() {
     const rows = bookings.slice().reverse();
     $("content").innerHTML =
-      `<div class="card"><div class="booking-tools"><h2 class="font-bold">Danh sách vé đã đặt <span id="bookingCount" class="text-slate-400 font-normal">(${rows.length})</span></h2><div class="booking-filters"><input id="bookingSearch" class="field" aria-label="Tìm vé đã đặt" placeholder="Tìm mã vé, hành khách, chuyến bay"><select id="bookingStatus" class="field" aria-label="Lọc theo trạng thái"><option value="all">Tất cả trạng thái</option><option value="confirmed">Đã xác nhận</option><option value="pending">Chờ thanh toán</option><option value="cancelled">Đã hủy</option></select></div></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Mã vé</th><th>Hành khách</th><th>Chuyến bay</th><th>Ngày đi</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody id="bookingRows"></tbody></table></div></div>`;
+      `<div class="card"><div class="booking-tools"><h2 class="font-bold">Danh sách vé đã đặt <span id="bookingCount" class="text-slate-400 font-normal">(${rows.length})</span></h2><div class="booking-filters"><input id="bookingSearch" class="field" aria-label="Tìm vé đã đặt" placeholder="Tìm mã vé, hành khách, chuyến bay"><select id="bookingStatus" class="field" aria-label="Lọc theo trạng thái"><option value="all">Tất cả trạng thái</option><option value="confirmed">Đã xác nhận</option><option value="pending">Chờ thanh toán</option><option value="cancelled">Đã hủy</option></select><button id="exportBookingsCsv" class="secondary">Xuất CSV</button></div></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Mã vé</th><th>Hành khách</th><th>Chuyến bay</th><th>Ngày đi</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody id="bookingRows"></tbody></table></div></div>`;
     $("bookingSearch").addEventListener("input", fillBookings);
     $("bookingStatus").addEventListener("change", fillBookings);
+    $("exportBookingsCsv").addEventListener("click", exportBookingsCsv);
     fillBookings();
   }
   function fillBookings() {
@@ -450,13 +727,6 @@
       const f = flights.find((x) => x.id === id);
       if (f) openModal(f);
     }
-    if (action === "delete") {
-      if (!confirm(`Xóa chuyến bay ${id}?`)) return;
-      flights = flights.filter((x) => x.id !== id);
-      saveFlights();
-      render();
-      alertMessage("Đã xóa chuyến bay.");
-    }
     if (action === "cancel") {
       if (!confirm(`Hủy vé ${id}?`)) return;
       const index = bookings.findIndex((x) => (x.bookingCode || x.code) === id);
@@ -481,6 +751,16 @@
       }
       render();
       alertMessage("Đã hủy vé.");
+    }
+    if (action === "customer-detail") {
+      const user = read(KEYS.users, []).find(
+        (item) =>
+          String(item.email || "").toLowerCase() === String(id).toLowerCase() ||
+          String(item.id || "").toLowerCase() === String(id).toLowerCase(),
+      );
+      if (!user) return;
+      selectedCustomerEmail = user.email || user.id || null;
+      renderCustomers();
     }
   }
   $("loginForm").addEventListener("submit", (event) => {
