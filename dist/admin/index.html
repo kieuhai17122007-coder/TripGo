@@ -26,7 +26,7 @@
       };
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <script type="module" crossorigin src="/assets/admin-CpUBn5DX.js"></script>
+    <script type="module" crossorigin src="/assets/admin-RpAjG_JC.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-P2Xu9kJm.js">
     <link rel="stylesheet" crossorigin href="/assets/admin-Czi1DUmB.css">
   </head>
@@ -261,6 +261,57 @@
           <div class="flex justify-end gap-3 mt-6">
             <button id="cancelModal" type="button" class="secondary">Hủy</button
             ><button class="primary">Lưu chuyến bay</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div
+      id="serviceModal"
+      class="modal-backdrop hidden fixed inset-0 z-40 bg-slate-950/60 p-4 overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="serviceModalTitle"
+    >
+      <div class="bg-white rounded-3xl max-w-xl mx-auto my-8 p-5 sm:p-8 shadow-2xl">
+        <div class="flex justify-between gap-4">
+          <div>
+            <p class="text-xs text-amber-600 uppercase font-bold">Dịch vụ TripGo</p>
+            <h2 id="serviceModalTitle" class="text-2xl font-bold mt-1">Thêm dịch vụ</h2>
+          </div>
+          <button id="closeServiceModal" class="text-2xl self-start" aria-label="Đóng">×</button>
+        </div>
+        <form id="serviceForm" novalidate class="mt-6 space-y-4">
+          <label class="label">Tên dịch vụ<input class="field" name="title" maxlength="60" required placeholder="Ví dụ: Hành lý ký gửi" /></label>
+          <label class="label">Mô tả<input class="field" name="description" maxlength="160" required placeholder="Mô tả ngắn về dịch vụ" /></label>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <label class="label">Biểu tượng
+              <select class="field" name="icon">
+                <option value="fa-plane">Máy bay</option>
+                <option value="fa-ticket">Vé</option>
+                <option value="fa-qrcode">Check-in</option>
+                <option value="fa-chair">Ghế</option>
+                <option value="fa-suitcase-rolling">Hành lý</option>
+                <option value="fa-headset">Hỗ trợ</option>
+                <option value="fa-bolt">Nhanh</option>
+                <option value="fa-circle-info">Thông tin</option>
+              </select>
+            </label>
+            <label class="label">Khi nhấn vào dịch vụ
+              <select class="field" name="href">
+                <option value="#search">Tìm chuyến bay</option>
+                <option value="#booking-search">Tra cứu đặt chỗ</option>
+                <option value="#support">Hỗ trợ</option>
+              </select>
+            </label>
+          </div>
+          <label class="flex items-center gap-3 text-sm font-semibold text-slate-600">
+            <input type="checkbox" name="enabled" checked class="h-4 w-4 accent-blue-700" />
+            Hiển thị trên trang bán vé
+          </label>
+          <p id="serviceFormError" role="alert" class="text-red-600 text-sm"></p>
+          <div class="flex justify-end gap-3">
+            <button id="cancelServiceModal" type="button" class="secondary">Hủy</button>
+            <button class="primary" type="submit">Lưu dịch vụ</button>
           </div>
         </form>
       </div>

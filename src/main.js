@@ -1,6 +1,7 @@
 import './style.css'
 import { renderFlightResults, initFlightResults } from './flight-results'
 import { renderBookingSearch, initBookingSearch } from './booking-search'
+import { getServices } from './service-store'
 
 document.querySelector('#app').innerHTML = `
   <header class="header">
@@ -102,6 +103,44 @@ document.querySelector('#app').innerHTML = `
 
   <footer class="footer" id="support"><div class="container footer-grid"><div><a class="logo footer-logo" href="#top"><span>✈</span> TripGo</a><p>Website mô phỏng đặt vé máy bay nội địa.</p></div><div><h4>TripGo</h4><a href="#top">Về chúng tôi</a><a href="#top">Điều khoản</a><a href="#top">Chính sách</a></div><div><h4>Hỗ trợ</h4><a href="#booking-search">Tra cứu đặt vé</a><a href="#search">Check-in</a><a href="#top">Câu hỏi thường gặp</a></div><div><h4>Liên hệ</h4><p>support@tripgo.vn</p><p>1900 0000</p></div></div><div class="copyright">© 2026 TripGo. Front-end project.</div></footer>
 `
+
+function renderServices() {
+  const serviceGrid = document.querySelector('.service-grid')
+  if (!serviceGrid) return
+  const icons = {
+    'fa-plane': 'fa-solid fa-plane',
+    'fa-ticket': 'fa-solid fa-ticket',
+    'fa-qrcode': 'fa-solid fa-qrcode',
+    'fa-chair': 'fa-solid fa-chair',
+    'fa-suitcase-rolling': 'fa-solid fa-suitcase-rolling',
+    'fa-headset': 'fa-solid fa-headset',
+    'fa-bolt': 'fa-solid fa-bolt',
+    'fa-circle-info': 'fa-solid fa-circle-info',
+  }
+  const escapeHTML = value =>
+    String(value ?? '').replace(/[&<>"']/g, char => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    })[char])
+  const services = getServices().filter(service => service.enabled !== false)
+  serviceGrid.innerHTML = services.length
+    ? services.map(service => `
+      <a class="service-card" href="${escapeHTML(service.href)}">
+        <span><i class="${icons[service.icon] || icons['fa-circle-info']}" aria-hidden="true"></i></span>
+        <h3>${escapeHTML(service.title)}</h3>
+        <p>${escapeHTML(service.description)}</p>
+      </a>
+    `).join('')
+    : '<p class="service-empty">Hiện chưa có dịch vụ nào. Vui lòng quay lại sau.</p>'
+}
+
+renderServices()
+window.addEventListener('storage', event => {
+  if (event.key === 'tripgo_services') renderServices()
+})
 
 const departure = document.querySelector('#departure')
 const returnDate = document.querySelector('#returnDate')

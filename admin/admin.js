@@ -1,5 +1,12 @@
 (() => {
   "use strict";
+  const SERVICE_KEY = "tripgo_services";
+  const DEFAULT_SERVICES = [
+    { id: "booking", title: "Đặt vé máy bay", description: "Tìm và chọn chuyến bay phù hợp.", icon: "fa-plane", href: "#search", enabled: true },
+    { id: "booking-lookup", title: "Tra cứu đặt chỗ", description: "Kiểm tra thông tin hành trình.", icon: "fa-ticket", href: "#booking-search", enabled: true },
+    { id: "check-in", title: "Check-in trực tuyến", description: "Làm thủ tục nhanh chóng, thuận tiện.", icon: "fa-qrcode", href: "#support", enabled: true },
+    { id: "seat-selection", title: "Chọn ghế", description: "Chọn vị trí yêu thích trên máy bay.", icon: "fa-chair", href: "#search", enabled: true },
+  ];
   const KEYS = {
     users: "tripgo_users",
     session: "tripgo_session",
@@ -50,6 +57,22 @@
   };
   const write = (key, value) =>
     localStorage.setItem(key, JSON.stringify(value));
+  function getServiceCatalog() {
+    try {
+      const value = localStorage.getItem(SERVICE_KEY);
+      if (value === null) {
+        write(SERVICE_KEY, DEFAULT_SERVICES);
+        return DEFAULT_SERVICES.map((service) => ({ ...service }));
+      }
+      const services = JSON.parse(value);
+      return Array.isArray(services) ? services : DEFAULT_SERVICES.map((service) => ({ ...service }));
+    } catch {
+      return DEFAULT_SERVICES.map((service) => ({ ...service }));
+    }
+  }
+  function saveServiceCatalog(services) {
+    write(SERVICE_KEY, services);
+  }
   const money = (value) => Number(value || 0).toLocaleString("vi-VN") + " ₫";
   const THEME_KEY = "tripgo_admin_theme";
   const date = (value) => {
@@ -79,6 +102,7 @@
   };
   let page = "overview",
     editing = null,
+    editingServiceId = null,
     flights = [],
     bookings = [],
     selectedCustomerEmail = null;
@@ -300,39 +324,96 @@
     `;
   }
   function renderServices() {
-    const serviceCards = [
-      { title: "Đặt vé nhanh", icon: "fa-solid fa-bolt", desc: "Thao tác đặt chỗ tối ưu, hỗ trợ nhiều hành khách / nhiều tuyến." },
-      { title: "Check-in online", icon: "fa-solid fa-qrcode", desc: "Giảm thời gian chờ tại sân bay với quy trình đơn giản." },
-      { title: "Hành lý & ưu đãi", icon: "fa-solid fa-suitcase-rolling", desc: "Quản lý thêm hành lý, gói ưu đãi và khuyến mãi theo mùa." },
-      { title: "Hỗ trợ 24/7", icon: "fa-solid fa-headset", desc: "Đội ngũ chăm sóc và xử lý khiếu nại nhanh chóng." },
-    ];
+    const serviceCards = getServiceCatalog();
     $("content").innerHTML = `
-      <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div class="card p-5 sm:p-6 mb-6">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <h2 class="font-bold text-lg">Danh mục dịch vụ</h2>
+            <p class="text-slate-500 text-sm mt-1">Thêm dịch vụ hoặc cập nhật nội dung được hiển thị trên trang bán vé.</p>
+          </div>
+          <button id="addService" class="primary"><i class="fa-solid fa-plus mr-2"></i>Thêm dịch vụ</button>
+        </div>
+      </div>
+      <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
         ${serviceCards
           .map(
             (service) => `
               <div class="card p-5 service-card">
-                <div class="service-icon"><i class="${service.icon}"></i></div>
-                <h3 class="font-bold mt-4">${service.title}</h3>
-                <p class="text-slate-500 text-sm mt-2">${service.desc}</p>
-                <button class="secondary mt-4"><i class="fa-solid fa-pen-to-square mr-2"></i>Chỉnh sửa</button>
+                <div class="flex justify-between items-start gap-3">
+                  <div class="service-icon"><i class="fa-solid ${safe(service.icon)}"></i></div>
+                  <span class="chip ${service.enabled === false ? "chip-orange" : "chip-green"}">${service.enabled === false ? "Đang ẩn" : "Đang hiển thị"}</span>
+                </div>
+                <h3 class="font-bold mt-4">${safe(service.title)}</h3>
+                <p class="text-slate-500 text-sm mt-2 min-h-10">${safe(service.description)}</p>
+                <p class="text-xs text-slate-400 mt-3">Liên kết: ${safe(service.href)}</p>
+                <div class="flex gap-2 mt-4">
+                  <button class="secondary" data-action="edit-service" data-id="${safe(service.id)}"><i class="fa-solid fa-pen-to-square mr-2"></i>Sửa</button>
+                  <button class="secondary" data-action="toggle-service" data-id="${safe(service.id)}">${service.enabled === false ? '<i class="fa-solid fa-eye mr-2"></i>Hiện' : '<i class="fa-solid fa-eye-slash mr-2"></i>Ẩn'}</button>
+                </div>
               </div>
             `,
           )
-          .join("")}
-      </div>
-      <div class="card p-6 mt-6">
-        <div class="flex items-center justify-between gap-3 flex-wrap">
-          <h2 class="font-bold text-lg">Tổng quan dịch vụ</h2>
-          <button class="primary"><i class="fa-solid fa-plus mr-2"></i>Thêm dịch vụ</button>
-        </div>
-        <div class="mt-4 grid md:grid-cols-3 gap-4">
-          <div class="mini-stat"><span>Đặt vé</span><strong>${bookings.length || 0}</strong></div>
-          <div class="mini-stat"><span>Check-in</span><strong>${Math.max(12, Math.round(bookings.length * 0.7))}</strong></div>
-          <div class="mini-stat"><span>Khách hàng cần hỗ trợ</span><strong>${Math.max(3, Math.round(bookings.length * 0.25))}</strong></div>
-        </div>
+          .join("") || '<div class="card empty md:col-span-2 xl:col-span-3">Chưa có dịch vụ. Hãy thêm dịch vụ đầu tiên.</div>'}
       </div>
     `;
+    $("addService").addEventListener("click", () => openServiceModal());
+  }
+  function openServiceModal(service = null) {
+    const form = $("serviceForm");
+    form.reset();
+    editingServiceId = service?.id || null;
+    form.elements.title.value = service?.title || "";
+    form.elements.description.value = service?.description || "";
+    form.elements.icon.value = service?.icon || "fa-circle-info";
+    form.elements.href.value = service?.href || "#search";
+    form.elements.enabled.checked = service?.enabled !== false;
+    $("serviceModalTitle").textContent = editingServiceId ? "Chỉnh sửa dịch vụ" : "Thêm dịch vụ";
+    $("serviceFormError").textContent = "";
+    $("serviceModal").classList.remove("hidden");
+    form.elements.title.focus();
+  }
+  function closeServiceModal() {
+    $("serviceModal").classList.add("hidden");
+    editingServiceId = null;
+  }
+  function saveService(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const isEditing = !!editingServiceId;
+    const title = form.elements.title.value.trim();
+    const description = form.elements.description.value.trim();
+    const href = form.elements.href.value;
+    if (title.length < 2 || description.length < 5) {
+      $("serviceFormError").textContent = "Tên dịch vụ cần ít nhất 2 ký tự và mô tả cần ít nhất 5 ký tự.";
+      return;
+    }
+    if (!["#search", "#booking-search", "#support"].includes(href)) {
+      $("serviceFormError").textContent = "Liên kết dịch vụ không hợp lệ.";
+      return;
+    }
+    const services = getServiceCatalog();
+    const service = {
+      id: editingServiceId || `service-${Date.now()}`,
+      title,
+      description,
+      icon: form.elements.icon.value,
+      href,
+      enabled: form.elements.enabled.checked,
+    };
+    try {
+      const updated = editingServiceId
+        ? services.map((item) => item.id === editingServiceId ? service : item)
+        : [...services, service];
+      saveServiceCatalog(updated);
+    } catch (error) {
+      $("serviceFormError").textContent = "Không thể lưu dịch vụ vào bộ nhớ trình duyệt. Hãy kiểm tra dung lượng hoặc quyền lưu trữ.";
+      console.error("Could not save service catalog", error);
+      return;
+    }
+    closeServiceModal();
+    renderServices();
+    alertMessage(isEditing ? "Đã cập nhật dịch vụ trên trang bán vé." : "Đã thêm dịch vụ vào trang bán vé.");
   }
   function renderSupport() {
     const tickets = [
@@ -829,6 +910,29 @@
     const button = event.target.closest("button[data-action]");
     if (!button) return;
     const { action, id } = button.dataset;
+    if (action === "edit-service" || action === "toggle-service") {
+      const services = getServiceCatalog();
+      const service = services.find((item) => item.id === id);
+      if (!service) return;
+      if (action === "edit-service") {
+        openServiceModal(service);
+        return;
+      }
+      try {
+        saveServiceCatalog(
+          services.map((item) =>
+            item.id === id ? { ...item, enabled: item.enabled === false } : item,
+          ),
+        );
+      } catch (error) {
+        alertMessage("Không thể cập nhật trạng thái dịch vụ.", true);
+        console.error("Could not toggle service visibility", error);
+        return;
+      }
+      renderServices();
+      alertMessage(service.enabled === false ? "Dịch vụ đã được hiển thị trên trang bán vé." : "Dịch vụ đã được ẩn khỏi trang bán vé.");
+      return;
+    }
     if (action === "edit") {
       const f = flights.find((x) => x.id === id);
       if (f) openModal(f);
@@ -919,10 +1023,19 @@
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !$("modal").classList.contains("hidden"))
       closeModal();
+    if (event.key === "Escape" && !$("serviceModal").classList.contains("hidden"))
+      closeServiceModal();
   });
   $("flightForm").addEventListener("submit", saveFlight);
+  $("serviceForm").addEventListener("submit", saveService);
+  $("closeServiceModal").addEventListener("click", closeServiceModal);
+  $("cancelServiceModal").addEventListener("click", closeServiceModal);
+  $("serviceModal").addEventListener("click", (event) => {
+    if (event.target === $("serviceModal")) closeServiceModal();
+  });
   $("content").addEventListener("click", handleAction);
   window.addEventListener("storage", (event) => {
+    if (event.key === SERVICE_KEY && page === "services") renderServices();
     if (Object.values(KEYS).includes(event.key)) showAuth();
   });
   ensureAdmin();
