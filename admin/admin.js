@@ -2,10 +2,38 @@
   "use strict";
   const SERVICE_KEY = "tripgo_services";
   const DEFAULT_SERVICES = [
-    { id: "booking", title: "Đặt vé máy bay", description: "Tìm và chọn chuyến bay phù hợp.", icon: "fa-plane", href: "#search", enabled: true },
-    { id: "booking-lookup", title: "Tra cứu đặt chỗ", description: "Kiểm tra thông tin hành trình.", icon: "fa-ticket", href: "#booking-search", enabled: true },
-    { id: "check-in", title: "Check-in trực tuyến", description: "Làm thủ tục nhanh chóng, thuận tiện.", icon: "fa-qrcode", href: "#support", enabled: true },
-    { id: "seat-selection", title: "Chọn ghế", description: "Chọn vị trí yêu thích trên máy bay.", icon: "fa-chair", href: "#search", enabled: true },
+    {
+      id: "booking",
+      title: "Đặt vé máy bay",
+      description: "Tìm và chọn chuyến bay phù hợp.",
+      icon: "fa-plane",
+      href: "#search",
+      enabled: true,
+    },
+    {
+      id: "booking-lookup",
+      title: "Tra cứu đặt chỗ",
+      description: "Kiểm tra thông tin hành trình.",
+      icon: "fa-ticket",
+      href: "#booking-search",
+      enabled: true,
+    },
+    {
+      id: "check-in",
+      title: "Check-in trực tuyến",
+      description: "Làm thủ tục nhanh chóng, thuận tiện.",
+      icon: "fa-qrcode",
+      href: "#support",
+      enabled: true,
+    },
+    {
+      id: "seat-selection",
+      title: "Chọn ghế",
+      description: "Chọn vị trí yêu thích trên máy bay.",
+      icon: "fa-chair",
+      href: "#search",
+      enabled: true,
+    },
   ];
   const KEYS = {
     users: "tripgo_users",
@@ -65,7 +93,9 @@
         return DEFAULT_SERVICES.map((service) => ({ ...service }));
       }
       const services = JSON.parse(value);
-      return Array.isArray(services) ? services : DEFAULT_SERVICES.map((service) => ({ ...service }));
+      return Array.isArray(services)
+        ? services
+        : DEFAULT_SERVICES.map((service) => ({ ...service }));
     } catch {
       return DEFAULT_SERVICES.map((service) => ({ ...service }));
     }
@@ -214,10 +244,22 @@
       overview: ["Tổng quan", "Theo dõi dữ liệu đặt vé và chuyến bay."],
       flights: ["Quản lý chuyến bay", "Thêm, cập nhật và quản lý lịch bay."],
       bookings: ["Vé đã đặt", "Theo dõi danh sách vé và trạng thái đặt chỗ."],
-      customers: ["Khách hàng", "Theo dõi hồ sơ, chi tiêu và hoạt động của khách hàng."],
-      reports: ["Báo cáo", "Theo dõi doanh thu và xu hướng đặt vé theo thời gian."],
-      services: ["Dịch vụ", "Cập nhật gói tiện ích, ưu đãi và trải nghiệm bán vé."],
-      support: ["Hỗ trợ khách hàng", "Theo dõi phản hồi, xử lý yêu cầu và chăm sóc khách hàng."],
+      customers: [
+        "Khách hàng",
+        "Theo dõi hồ sơ, chi tiêu và hoạt động của khách hàng.",
+      ],
+      reports: [
+        "Báo cáo",
+        "Theo dõi doanh thu và xu hướng đặt vé theo thời gian.",
+      ],
+      services: [
+        "Dịch vụ",
+        "Cập nhật gói tiện ích, ưu đãi và trải nghiệm bán vé.",
+      ],
+      support: [
+        "Hỗ trợ khách hàng",
+        "Theo dõi phản hồi, xử lý yêu cầu và chăm sóc khách hàng.",
+      ],
     };
     $("pageTitle").textContent = titles[page][0];
     $("pageDescription").textContent = titles[page][1];
@@ -250,26 +292,35 @@
     const confirmed = bookings.filter((b) => bookingState(b) === "confirmed");
     const cancelled = bookings.filter((b) => bookingState(b) === "cancelled");
     const revenue = confirmed.reduce(
-      (total, booking) => total + Number(booking.totalPrice ?? booking.total ?? 0),
+      (total, booking) =>
+        total + Number(booking.totalPrice ?? booking.total ?? 0),
       0,
     );
-    const customerEmails = new Set(
-      [
-        ...bookings
-          .map((booking) => String(booking.email || "").trim().toLowerCase())
-          .filter(Boolean),
-        ...read(KEYS.users, [])
-          .filter((user) => String(user.role || "customer").toLowerCase() !== "admin")
-          .map((user) => String(user.email || "").trim().toLowerCase())
-          .filter(Boolean),
-      ],
-    );
+    const customerEmails = new Set([
+      ...bookings
+        .map((booking) =>
+          String(booking.email || "")
+            .trim()
+            .toLowerCase(),
+        )
+        .filter(Boolean),
+      ...read(KEYS.users, [])
+        .filter(
+          (user) => String(user.role || "customer").toLowerCase() !== "admin",
+        )
+        .map((user) =>
+          String(user.email || "")
+            .trim()
+            .toLowerCase(),
+        )
+        .filter(Boolean),
+    ]);
     const routeCounts = Object.values(
       bookings.reduce((map, booking) => {
         const from = booking.from || booking.flight?.from || "-";
         const to = booking.to || booking.flight?.to || "-";
         const key = `${from} → ${to}`;
-        map[key] = (map[key] || { route: key, count: 0 });
+        map[key] = map[key] || { route: key, count: 0 };
         map[key].count += 1;
         return map;
       }, {}),
@@ -277,12 +328,24 @@
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
     const stats = [
-      ["Chuyến bay đang mở", active.length, "<i class=\"fa-solid fa-plane\"></i>"],
-      ["Đang bay", flying.length, "<i class=\"fa-solid fa-plane-up\"></i>"],
-      ["Vé đã đặt", bookings.length, "<i class=\"fa-solid fa-ticket\"></i>"],
-      ["Doanh thu", money(revenue), "<i class=\"fa-solid fa-money-bill-wave\"></i>"],
-      ["Tỷ lệ hủy", `${bookings.length ? Math.round((cancelled.length / bookings.length) * 100) : 0}%`, "<i class=\"fa-solid fa-rotate-left\"></i>"],
-      ["Khách hàng", customerEmails.size, "<i class=\"fa-solid fa-users\"></i>"],
+      [
+        "Chuyến bay đang mở",
+        active.length,
+        '<i class="fa-solid fa-plane"></i>',
+      ],
+      ["Đang bay", flying.length, '<i class="fa-solid fa-plane-up"></i>'],
+      ["Vé đã đặt", bookings.length, '<i class="fa-solid fa-ticket"></i>'],
+      [
+        "Doanh thu",
+        money(revenue),
+        '<i class="fa-solid fa-money-bill-wave"></i>',
+      ],
+      [
+        "Tỷ lệ hủy",
+        `${bookings.length ? Math.round((cancelled.length / bookings.length) * 100) : 0}%`,
+        '<i class="fa-solid fa-rotate-left"></i>',
+      ],
+      ["Khách hàng", customerEmails.size, '<i class="fa-solid fa-users"></i>'],
     ];
     $("content").innerHTML = `
       <div class="stats-grid">${stats
@@ -298,12 +361,16 @@
             <span class="chip chip-blue"><i class="fa-solid fa-arrow-trend-up mr-1"></i>Xu hướng</span>
           </div>
           <div class="mt-4">
-            ${routeCounts.length ? `<table class="data-table compact"><thead><tr><th>Tuyến</th><th>Vé</th></tr></thead><tbody>${routeCounts
-              .map(
-                ({ route, count }) =>
-                  `<tr><td>${safe(route)}</td><td><span class="badge off">${count}</span></td></tr>`,
-              )
-              .join("")}</tbody></table>` : '<p class="text-slate-500 mt-3">Chưa có dữ liệu tuyến bay.</p>'}
+            ${
+              routeCounts.length
+                ? `<table class="data-table compact"><thead><tr><th>Tuyến</th><th>Vé</th></tr></thead><tbody>${routeCounts
+                    .map(
+                      ({ route, count }) =>
+                        `<tr><td>${safe(route)}</td><td><span class="badge off">${count}</span></td></tr>`,
+                    )
+                    .join("")}</tbody></table>`
+                : '<p class="text-slate-500 mt-3">Chưa có dữ liệu tuyến bay.</p>'
+            }
           </div>
         </div>
         <div class="card p-6">
@@ -311,14 +378,18 @@
             <h2 class="font-bold text-lg">Hoạt động gần đây</h2>
             <span class="chip chip-green"><i class="fa-solid fa-clock mr-1"></i>Mới</span>
           </div>
-          ${bookings.length ? `<div class="mt-4 space-y-3">${bookings
-            .slice(-5)
-            .reverse()
-            .map(
-              (b) =>
-                `<div class="border-b pb-3 text-sm flex flex-wrap justify-between gap-2"><span>Vé <b>${safe(b.bookingCode || b.code)}</b> · ${safe(b.passengerDetails?.[0]?.name || b.passenger?.name || "Hành khách")}</span><span>${money(b.totalPrice ?? b.total)}</span></div>`,
-            )
-            .join("")}</div>` : '<p class="text-slate-500 mt-4">Chưa có vé được đặt.</p>'}
+          ${
+            bookings.length
+              ? `<div class="mt-4 space-y-3">${bookings
+                  .slice(-5)
+                  .reverse()
+                  .map(
+                    (b) =>
+                      `<div class="border-b pb-3 text-sm flex flex-wrap justify-between gap-2"><span>Vé <b>${safe(b.bookingCode || b.code)}</b> · ${safe(b.passengerDetails?.[0]?.name || b.passenger?.name || "Hành khách")}</span><span>${money(b.totalPrice ?? b.total)}</span></div>`,
+                  )
+                  .join("")}</div>`
+              : '<p class="text-slate-500 mt-4">Chưa có vé được đặt.</p>'
+          }
         </div>
       </div>
     `;
@@ -336,9 +407,10 @@
         </div>
       </div>
       <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-        ${serviceCards
-          .map(
-            (service) => `
+        ${
+          serviceCards
+            .map(
+              (service) => `
               <div class="card p-5 service-card">
                 <div class="flex justify-between items-start gap-3">
                   <div class="service-icon"><i class="fa-solid ${safe(service.icon)}"></i></div>
@@ -353,8 +425,10 @@
                 </div>
               </div>
             `,
-          )
-          .join("") || '<div class="card empty md:col-span-2 xl:col-span-3">Chưa có dịch vụ. Hãy thêm dịch vụ đầu tiên.</div>'}
+            )
+            .join("") ||
+          '<div class="card empty md:col-span-2 xl:col-span-3">Chưa có dịch vụ. Hãy thêm dịch vụ đầu tiên.</div>'
+        }
       </div>
     `;
     $("addService").addEventListener("click", () => openServiceModal());
@@ -368,7 +442,9 @@
     form.elements.icon.value = service?.icon || "fa-circle-info";
     form.elements.href.value = service?.href || "#search";
     form.elements.enabled.checked = service?.enabled !== false;
-    $("serviceModalTitle").textContent = editingServiceId ? "Chỉnh sửa dịch vụ" : "Thêm dịch vụ";
+    $("serviceModalTitle").textContent = editingServiceId
+      ? "Chỉnh sửa dịch vụ"
+      : "Thêm dịch vụ";
     $("serviceFormError").textContent = "";
     $("serviceModal").classList.remove("hidden");
     form.elements.title.focus();
@@ -385,7 +461,8 @@
     const description = form.elements.description.value.trim();
     const href = form.elements.href.value;
     if (title.length < 2 || description.length < 5) {
-      $("serviceFormError").textContent = "Tên dịch vụ cần ít nhất 2 ký tự và mô tả cần ít nhất 5 ký tự.";
+      $("serviceFormError").textContent =
+        "Tên dịch vụ cần ít nhất 2 ký tự và mô tả cần ít nhất 5 ký tự.";
       return;
     }
     if (!["#search", "#booking-search", "#support"].includes(href)) {
@@ -403,23 +480,45 @@
     };
     try {
       const updated = editingServiceId
-        ? services.map((item) => item.id === editingServiceId ? service : item)
+        ? services.map((item) =>
+            item.id === editingServiceId ? service : item,
+          )
         : [...services, service];
       saveServiceCatalog(updated);
     } catch (error) {
-      $("serviceFormError").textContent = "Không thể lưu dịch vụ vào bộ nhớ trình duyệt. Hãy kiểm tra dung lượng hoặc quyền lưu trữ.";
+      $("serviceFormError").textContent =
+        "Không thể lưu dịch vụ vào bộ nhớ trình duyệt. Hãy kiểm tra dung lượng hoặc quyền lưu trữ.";
       console.error("Could not save service catalog", error);
       return;
     }
     closeServiceModal();
     renderServices();
-    alertMessage(isEditing ? "Đã cập nhật dịch vụ trên trang bán vé." : "Đã thêm dịch vụ vào trang bán vé.");
+    alertMessage(
+      isEditing
+        ? "Đã cập nhật dịch vụ trên trang bán vé."
+        : "Đã thêm dịch vụ vào trang bán vé.",
+    );
   }
   function renderSupport() {
     const tickets = [
-      { name: "Nguyễn Thị Lan", issue: "Mất vé đã đặt", status: "Đang xử lý", time: "5 phút trước" },
-      { name: "Trần Minh Hoàng", issue: "Yêu cầu đổi lịch bay", status: "Chờ xác nhận", time: "18 phút trước" },
-      { name: "Phạm Hồng Anh", issue: "Thắc mắc về hành lý", status: "Đã trả lời", time: "1 giờ trước" },
+      {
+        name: "Nguyễn Thị Lan",
+        issue: "Mất vé đã đặt",
+        status: "Đang xử lý",
+        time: "5 phút trước",
+      },
+      {
+        name: "Trần Minh Hoàng",
+        issue: "Yêu cầu đổi lịch bay",
+        status: "Chờ xác nhận",
+        time: "18 phút trước",
+      },
+      {
+        name: "Phạm Hồng Anh",
+        issue: "Thắc mắc về hành lý",
+        status: "Đã trả lời",
+        time: "1 giờ trước",
+      },
     ];
     $("content").innerHTML = `
       <div class="grid xl:grid-cols-[1.1fr_0.9fr] gap-6">
@@ -491,7 +590,15 @@
   }
   function exportBookingsCsv() {
     const rows = [
-      ["Mã vé", "Hành khách", "Chuyến bay", "Ngày đi", "Tổng tiền", "Trạng thái", "Email"],
+      [
+        "Mã vé",
+        "Hành khách",
+        "Chuyến bay",
+        "Ngày đi",
+        "Tổng tiền",
+        "Trạng thái",
+        "Email",
+      ],
       ...bookings.map((booking) => {
         const passenger =
           (booking.passengerDetails || [])
@@ -519,8 +626,12 @@
       ...read(KEYS.users, []).map((user) => {
         const customerBookings = bookings.filter(
           (booking) =>
-            String(booking.email || "").trim().toLowerCase() ===
-            String(user.email || "").trim().toLowerCase(),
+            String(booking.email || "")
+              .trim()
+              .toLowerCase() ===
+            String(user.email || "")
+              .trim()
+              .toLowerCase(),
         );
         return [
           user.name || "Khách hàng",
@@ -528,7 +639,8 @@
           user.role || "customer",
           customerBookings.length,
           customerBookings.reduce(
-            (sum, booking) => sum + Number(booking.totalPrice ?? booking.total ?? 0),
+            (sum, booking) =>
+              sum + Number(booking.totalPrice ?? booking.total ?? 0),
             0,
           ),
           user.createdAt ? user.createdAt.slice(0, 10) : "-",
@@ -549,12 +661,20 @@
     });
     const reportRows = months.map((month) => {
       const monthBookings = bookings.filter(
-        (booking) => getMonthKey(booking.date || booking.createdAt || booking.departureDate) === month.key,
+        (booking) =>
+          getMonthKey(
+            booking.date || booking.createdAt || booking.departureDate,
+          ) === month.key,
       );
-      const confirmed = monthBookings.filter((booking) => bookingState(booking) === "confirmed");
-      const cancelled = monthBookings.filter((booking) => bookingState(booking) === "cancelled");
+      const confirmed = monthBookings.filter(
+        (booking) => bookingState(booking) === "confirmed",
+      );
+      const cancelled = monthBookings.filter(
+        (booking) => bookingState(booking) === "cancelled",
+      );
       const revenue = confirmed.reduce(
-        (sum, booking) => sum + Number(booking.totalPrice ?? booking.total ?? 0),
+        (sum, booking) =>
+          sum + Number(booking.totalPrice ?? booking.total ?? 0),
         0,
       );
       return {
@@ -564,8 +684,14 @@
         cancelled: cancelled.length,
       };
     });
-    const totalRevenue = reportRows.reduce((sum, month) => sum + month.revenue, 0);
-    const totalBookings = reportRows.reduce((sum, month) => sum + month.bookings, 0);
+    const totalRevenue = reportRows.reduce(
+      (sum, month) => sum + month.revenue,
+      0,
+    );
+    const totalBookings = reportRows.reduce(
+      (sum, month) => sum + month.bookings,
+      0,
+    );
     const avgOrder = totalBookings ? totalRevenue / totalBookings : 0;
     $("content").innerHTML = `
       <div class="card p-4 sm:p-5">
@@ -594,24 +720,35 @@
       </div>
     `;
     $("exportMonthlyReport").addEventListener("click", () => {
-      downloadCsv(
-        "tripgo-bao-cao-theo-thang.csv",
-        [
-          ["Tháng", "Vé đặt", "Doanh thu", "Đã hủy"],
-          ...reportRows.map((month) => [month.label, month.bookings, month.revenue, month.cancelled]),
-        ],
-      );
+      downloadCsv("tripgo-bao-cao-theo-thang.csv", [
+        ["Tháng", "Vé đặt", "Doanh thu", "Đã hủy"],
+        ...reportRows.map((month) => [
+          month.label,
+          month.bookings,
+          month.revenue,
+          month.cancelled,
+        ]),
+      ]);
     });
   }
   function renderCustomers() {
     const users = read(KEYS.users, []);
     const selectedUser =
-      selectedCustomerEmail && users.find((user) => String(user.email || "").toLowerCase() === String(selectedCustomerEmail).toLowerCase());
+      selectedCustomerEmail &&
+      users.find(
+        (user) =>
+          String(user.email || "").toLowerCase() ===
+          String(selectedCustomerEmail).toLowerCase(),
+      );
     const customerBookings = selectedUser
       ? bookings.filter(
           (booking) =>
-            String(booking.email || "").trim().toLowerCase() ===
-            String(selectedUser.email || "").trim().toLowerCase(),
+            String(booking.email || "")
+              .trim()
+              .toLowerCase() ===
+            String(selectedUser.email || "")
+              .trim()
+              .toLowerCase(),
         )
       : [];
     const detailSpend = customerBookings.reduce(
@@ -620,7 +757,9 @@
     );
     $("content").innerHTML = `
       <div class="card p-4 sm:p-5 mb-6">
-        ${selectedUser ? `
+        ${
+          selectedUser
+            ? `
           <div class="customer-detail-card">
             <div>
               <p class="text-xs uppercase tracking-widest text-amber-600 font-bold">Khách hàng chi tiết</p>
@@ -634,18 +773,24 @@
             </div>
             <div class="mt-5">
               <h3 class="font-bold mb-3">Lịch sử đặt vé</h3>
-              ${customerBookings.length ? `<div class="space-y-3">${customerBookings
-                .slice()
-                .reverse()
-                .slice(0, 5)
-                .map(
-                  (booking) =>
-                    `<div class="border-b pb-2 text-sm flex flex-wrap justify-between gap-2"><span>Vé <b>${safe(booking.bookingCode || booking.code || "-")}</b> · ${safe(booking.from || booking.flight?.from || "-")} → ${safe(booking.to || booking.flight?.to || "-")}</span><span>${money(booking.totalPrice ?? booking.total)}</span></div>`,
-                )
-                .join("")}</div>` : '<p class="text-slate-500 mt-2">Khách hàng chưa có vé nào.</p>'}
+              ${
+                customerBookings.length
+                  ? `<div class="space-y-3">${customerBookings
+                      .slice()
+                      .reverse()
+                      .slice(0, 5)
+                      .map(
+                        (booking) =>
+                          `<div class="border-b pb-2 text-sm flex flex-wrap justify-between gap-2"><span>Vé <b>${safe(booking.bookingCode || booking.code || "-")}</b> · ${safe(booking.from || booking.flight?.from || "-")} → ${safe(booking.to || booking.flight?.to || "-")}</span><span>${money(booking.totalPrice ?? booking.total)}</span></div>`,
+                      )
+                      .join("")}</div>`
+                  : '<p class="text-slate-500 mt-2">Khách hàng chưa có vé nào.</p>'
+              }
             </div>
           </div>
-        ` : '<p class="text-slate-500">Chọn một khách hàng để xem thông tin chi tiết.</p>'}
+        `
+            : '<p class="text-slate-500">Chọn một khách hàng để xem thông tin chi tiết.</p>'
+        }
       </div>
       <div class="card"><div class="p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3"><h2 class="font-bold">Khách hàng đã đăng ký <span class="text-slate-400 font-normal">(${users.length})</span></h2><div class="booking-filters"><input id="customerSearch" class="field" aria-label="Tìm khách hàng" placeholder="Tìm tên hoặc email"><select id="customerRole" class="field" aria-label="Lọc khách hàng theo vai trò"><option value="all">Tất cả</option><option value="customer">Khách hàng</option><option value="admin">Quản trị</option></select><button id="exportCustomersCsv" class="secondary">Xuất CSV</button></div></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Khách hàng</th><th>Email</th><th>Số vé</th><th>Tổng chi tiêu</th><th>Đăng ký</th><th>Thao tác</th></tr></thead><tbody id="customerRows"></tbody></table></div></div>`;
     $("customerSearch").addEventListener("input", fillCustomers);
@@ -670,11 +815,16 @@
           .map((user) => {
             const customerBookings = bookings.filter(
               (booking) =>
-                String(booking.email || "").trim().toLowerCase() ===
-                String(user.email || "").trim().toLowerCase(),
+                String(booking.email || "")
+                  .trim()
+                  .toLowerCase() ===
+                String(user.email || "")
+                  .trim()
+                  .toLowerCase(),
             );
             const totalSpend = customerBookings.reduce(
-              (sum, booking) => sum + Number(booking.totalPrice ?? booking.total ?? 0),
+              (sum, booking) =>
+                sum + Number(booking.totalPrice ?? booking.total ?? 0),
               0,
             );
             const createdAt = user.createdAt || user.created_at || "";
@@ -921,7 +1071,9 @@
       try {
         saveServiceCatalog(
           services.map((item) =>
-            item.id === id ? { ...item, enabled: item.enabled === false } : item,
+            item.id === id
+              ? { ...item, enabled: item.enabled === false }
+              : item,
           ),
         );
       } catch (error) {
@@ -930,7 +1082,11 @@
         return;
       }
       renderServices();
-      alertMessage(service.enabled === false ? "Dịch vụ đã được hiển thị trên trang bán vé." : "Dịch vụ đã được ẩn khỏi trang bán vé.");
+      alertMessage(
+        service.enabled === false
+          ? "Dịch vụ đã được hiển thị trên trang bán vé."
+          : "Dịch vụ đã được ẩn khỏi trang bán vé.",
+      );
       return;
     }
     if (action === "edit") {
@@ -1023,7 +1179,10 @@
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !$("modal").classList.contains("hidden"))
       closeModal();
-    if (event.key === "Escape" && !$("serviceModal").classList.contains("hidden"))
+    if (
+      event.key === "Escape" &&
+      !$("serviceModal").classList.contains("hidden")
+    )
       closeServiceModal();
   });
   $("flightForm").addEventListener("submit", saveFlight);
