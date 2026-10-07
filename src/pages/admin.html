@@ -1,88 +1,300 @@
 <!doctype html>
 <html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>TripGo - Quản trị</title>
-  <link rel="stylesheet" href="/src/css/main.css">
-  <link rel="stylesheet" href="/src/css/pages.css">
-  <style>
-    .admin-page{background:#f5f7fb;min-height:100vh;padding:34px 0 70px}
-    .admin-head{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:28px}
-    .admin-head h1{font-family:"Playfair Display",Georgia,serif;font-size:38px}
-    .admin-actions{display:flex;gap:10px;align-items:center}
-    .admin-btn{border:1px solid #ccd7e3;background:#fff;border-radius:8px;padding:10px 16px;font-weight:700;color:#344054}
-    .admin-btn.danger{color:#b42318;border-color:#f1c2bd}
-    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:26px}
-    .stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:22px;box-shadow:0 5px 18px rgba(15,34,58,.04)}
-    .stat small{color:#667085;font-weight:700}.stat strong{display:block;font-size:27px;margin-top:7px}
-    .admin-section{background:#fff;border:1px solid var(--line);border-radius:13px;padding:24px;margin-bottom:22px;overflow:auto}
-    .admin-section h2{font-size:19px;margin-bottom:18px}
-    .admin-form{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
-    .admin-form label{font-size:12px;font-weight:800;color:#344054}.admin-form input{width:100%;height:42px;border:1px solid #d5dde7;border-radius:7px;padding:0 10px;margin-top:6px}
-    .admin-form button{height:42px;align-self:end}
-    .admin-table{width:100%;border-collapse:collapse;min-width:760px}.admin-table th,.admin-table td{padding:12px 10px;border-bottom:1px solid #edf0f4;text-align:left;font-size:13px}.admin-table th{background:#f8fafc;font-size:12px;color:#667085}.admin-table small{color:#667085}
-    .status{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef7ff;color:#0757a0;font-size:11px;font-weight:800}.status-admin{background:#fff5dc;color:#8a5a00}.booking-status{height:34px;border:1px solid #d5dde7;border-radius:6px;padding:0 7px}.table-btn{border:0;border-radius:6px;padding:7px 10px;font-weight:700}.table-btn.danger{background:#fff1f1;color:#b42318}.empty{text-align:center;color:#667085}
-    #adminMessage{margin-bottom:16px}
-    @media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}.admin-form{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:600px){.stats{grid-template-columns:1fr}.admin-head{align-items:flex-start;flex-direction:column}.admin-form{grid-template-columns:1fr}}
-  </style>
-</head>
-<body>
-<header class="header">
-  <div class="container nav">
-    <a class="logo" href="/">✈ TripGo Admin</a>
-    <nav>
-      <a href="/">Website</a>
-      <a href="/src/pages/admin.html">Quản trị</a>
-    </nav>
-    <button id="logoutAdmin" class="login-btn">Đăng xuất</button>
-  </div>
-</header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TripGo - Trang Quản trị</title>
+    <link rel="stylesheet" href="/src/css/main.css" />
+    <link rel="stylesheet" href="/src/css/pages.css" />
+    <style>
+      .admin-page {
+        background: #f5f7fb;
+        min-height: 100vh;
+        padding: 34px 0 70px;
+      }
+      .admin-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 28px;
+      }
+      .admin-head h1 {
+        font-family: "Playfair Display", Georgia, serif;
+        font-size: 38px;
+      }
+      .admin-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .admin-btn {
+        border: 1px solid #ccd7e3;
+        background: #fff;
+        border-radius: 8px;
+        padding: 10px 16px;
+        font-weight: 700;
+        color: #344054;
+      }
+      .admin-btn.danger {
+        color: #b42318;
+        border-color: #f1c2bd;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 26px;
+      }
+      .stat {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 13px;
+        padding: 22px;
+        box-shadow: 0 5px 18px rgba(15, 34, 58, 0.04);
+      }
+      .stat small {
+        color: #667085;
+        font-weight: 700;
+      }
+      .stat strong {
+        display: block;
+        font-size: 27px;
+        margin-top: 7px;
+      }
+      .admin-section {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 13px;
+        padding: 24px;
+        margin-bottom: 22px;
+        overflow: auto;
+      }
+      .admin-section h2 {
+        font-size: 19px;
+        margin-bottom: 18px;
+      }
+      .admin-form {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+      .admin-form label {
+        font-size: 12px;
+        font-weight: 800;
+        color: #344054;
+      }
+      .admin-form input {
+        width: 100%;
+        height: 42px;
+        border: 1px solid #d5dde7;
+        border-radius: 7px;
+        padding: 0 10px;
+        margin-top: 6px;
+      }
+      .admin-form button {
+        height: 42px;
+        align-self: end;
+      }
+      .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 760px;
+      }
+      .admin-table th,
+      .admin-table td {
+        padding: 12px 10px;
+        border-bottom: 1px solid #edf0f4;
+        text-align: left;
+        font-size: 13px;
+      }
+      .admin-table th {
+        background: #f8fafc;
+        font-size: 12px;
+        color: #667085;
+      }
+      .admin-table small {
+        color: #667085;
+      }
+      .status {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: #eef7ff;
+        color: #0757a0;
+        font-size: 11px;
+        font-weight: 800;
+      }
+      .status-admin {
+        background: #fff5dc;
+        color: #8a5a00;
+      }
+      .booking-status {
+        height: 34px;
+        border: 1px solid #d5dde7;
+        border-radius: 6px;
+        padding: 0 7px;
+      }
+      .table-btn {
+        border: 0;
+        border-radius: 6px;
+        padding: 7px 10px;
+        font-weight: 700;
+      }
+      .table-btn.danger {
+        background: #fff1f1;
+        color: #b42318;
+      }
+      .empty {
+        text-align: center;
+        color: #667085;
+      }
+      #adminMessage {
+        margin-bottom: 16px;
+      }
+      @media (max-width: 900px) {
+        .stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .admin-form {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      @media (max-width: 600px) {
+        .stats {
+          grid-template-columns: 1fr;
+        }
+        .admin-head {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+        .admin-form {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="container nav">
+        <a class="logo" href="/">✈ TripGo Admin</a>
+        <nav>
+          <a href="/">Website</a>
+          <a href="/src/pages/admin.html">Quản trị</a>
+        </nav>
+        <button id="logoutAdmin" class="login-btn">Đăng xuất</button>
+      </div>
+    </header>
 
-<main class="admin-page">
-  <div class="container">
-    <div class="admin-head">
-      <div><p class="eyebrow dark">ADMIN DASHBOARD</p><h1>Quản trị TripGo</h1></div>
-      <div class="admin-actions"><span id="adminUser"></span></div>
-    </div>
+    <main class="admin-page">
+      <div class="container">
+        <div class="admin-head">
+          <div>
+            <p class="eyebrow dark">ADMIN DASHBOARD</p>
+            <h1>Quản trị TripGo</h1>
+          </div>
+          <div class="admin-actions"><span id="adminUser"></span></div>
+        </div>
 
-    <div class="stats">
-      <div class="stat"><small>KHÁCH HÀNG</small><strong id="statUsers">0</strong></div>
-      <div class="stat"><small>ĐẶT VÉ</small><strong id="statBookings">0</strong></div>
-      <div class="stat"><small>DOANH THU</small><strong id="statRevenue">0 ₫</strong></div>
-      <div class="stat"><small>CHUYẾN BAY</small><strong id="statFlights">0</strong></div>
-    </div>
+        <div class="stats">
+          <div class="stat">
+            <small>KHÁCH HÀNG</small><strong id="statUsers">0</strong>
+          </div>
+          <div class="stat">
+            <small>ĐẶT VÉ</small><strong id="statBookings">0</strong>
+          </div>
+          <div class="stat">
+            <small>DOANH THU</small><strong id="statRevenue">0 ₫</strong>
+          </div>
+          <div class="stat">
+            <small>CHUYẾN BAY</small><strong id="statFlights">0</strong>
+          </div>
+        </div>
 
-    <div id="adminMessage"></div>
+        <div id="adminMessage"></div>
 
-    <section class="admin-section">
-      <h2>Quản lý chuyến bay</h2>
-      <form id="flightForm" class="admin-form">
-        <label>Mã chuyến<input name="id" placeholder="TG999" required></label>
-        <label>Hãng bay<input name="airline" value="TripGo Airlines" required></label>
-        <label>Điểm đi<input name="from" placeholder="HAN" maxlength="3" required></label>
-        <label>Điểm đến<input name="to" placeholder="SGN" maxlength="3" required></label>
-        <label>Giờ đi<input name="departure" type="time" required></label>
-        <label>Giờ đến<input name="arrival" type="time" required></label>
-        <label>Giá vé<input name="price" type="number" min="0" required></label>
-        <label>Máy bay<input name="aircraft" value="A320"></label>
-        <button class="primary-btn" type="submit">THÊM CHUYẾN</button>
-      </form>
-      <table class="admin-table"><thead><tr><th>Mã</th><th>Hãng</th><th>Hành trình</th><th>Giờ</th><th>Giá</th><th></th></tr></thead><tbody id="flightsTable"></tbody></table>
-    </section>
+        <section class="admin-section">
+          <h2>Quản lý chuyến bay</h2>
+          <form id="flightForm" class="admin-form">
+            <label
+              >Mã chuyến<input name="id" placeholder="TG999" required
+            /></label>
+            <label
+              >Hãng bay<input name="airline" value="TripGo Airlines" required
+            /></label>
+            <label
+              >Điểm đi<input
+                name="from"
+                placeholder="HAN"
+                maxlength="3"
+                required
+            /></label>
+            <label
+              >Điểm đến<input
+                name="to"
+                placeholder="SGN"
+                maxlength="3"
+                required
+            /></label>
+            <label>Giờ đi<input name="departure" type="time" required /></label>
+            <label>Giờ đến<input name="arrival" type="time" required /></label>
+            <label
+              >Giá vé<input name="price" type="number" min="0" required
+            /></label>
+            <label>Máy bay<input name="aircraft" value="A320" /></label>
+            <button class="primary-btn" type="submit">THÊM CHUYẾN</button>
+          </form>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Mã</th>
+                <th>Hãng</th>
+                <th>Hành trình</th>
+                <th>Giờ</th>
+                <th>Giá</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="flightsTable"></tbody>
+          </table>
+        </section>
 
-    <section class="admin-section">
-      <h2>Quản lý đặt vé</h2>
-      <table class="admin-table"><thead><tr><th>Mã</th><th>Hành khách</th><th>Chuyến bay</th><th>Ghế</th><th>Tổng</th><th>Trạng thái</th></tr></thead><tbody id="bookingsTable"></tbody></table>
-    </section>
+        <section class="admin-section">
+          <h2>Quản lý đặt vé</h2>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Mã</th>
+                <th>Hành khách</th>
+                <th>Chuyến bay</th>
+                <th>Ghế</th>
+                <th>Tổng</th>
+                <th>Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody id="bookingsTable"></tbody>
+          </table>
+        </section>
 
-    <section class="admin-section">
-      <h2>Quản lý tài khoản</h2>
-      <table class="admin-table"><thead><tr><th>ID</th><th>Họ tên</th><th>Email</th><th>Điện thoại</th><th>Vai trò</th><th>Ngày tạo</th></tr></thead><tbody id="usersTable"></tbody></table>
-    </section>
-  </div>
-</main>
-<script type="module" src="/src/js/admin.js"></script>
-</body>
+        <section class="admin-section">
+          <h2>Quản lý tài khoản</h2>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Họ tên</th>
+                <th>Email</th>
+                <th>Điện thoại</th>
+                <th>Vai trò</th>
+                <th>Ngày tạo</th>
+              </tr>
+            </thead>
+            <tbody id="usersTable"></tbody>
+          </table>
+        </section>
+      </div>
+    </main>
+    <script type="module" src="/src/js/admin.js"></script>
+  </body>
 </html>
