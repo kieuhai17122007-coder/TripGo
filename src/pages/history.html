@@ -1,66 +1,117 @@
-<!DOCTYPE html>
-<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TripGo - Lịch sử đặt vé</title>
-<link rel="stylesheet" href="/src/css/main.css"><link rel="stylesheet" href="/src/css/pages.css"></head>
-<body>
-<header class="header">
-  <div class="container nav">
-    <a class="logo" href="/" aria-label="TripGo - Trang chủ">
-      <span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 24 24" role="img"><path d="M21.7 10.9c.4.2.4.8 0 1l-7.2 3.3-1.5 5.1c-.1.4-.5.7-.9.7h-1c-.3 0-.5-.3-.4-.6l.8-4.2-3.2 1.4-1.8 2.2c-.2.2-.5.3-.8.2l-.8-.3c-.3-.1-.4-.5-.2-.8l1.2-2.8-3.1-1.4c-.4-.2-.4-.7 0-.9l.8-.4c.2-.1.4-.1.6 0l4 1.1 3.1-1.5-.9-4.2c-.1-.3.1-.6.4-.7l.9-.2c.4-.1.8.1 1 .4l2 3.4 7.2-2.7c.7-.2 1.3.1 1.6.7l.2.4z"/></svg></span><span class="logo-text">TripGo</span></a>
-    <nav class="main-nav" aria-label="Điều hướng chính">
-      <a data-nav="home" href="/">Đặt vé</a>
-      <a data-nav="flights" href="/src/pages/search.html">Chuyến bay</a>
-      <a data-nav="services" href="/#services">Dịch vụ</a>
-      <a data-nav="booking" href="/src/pages/booking.html">Tra cứu</a>
-      <a data-nav="checkin" href="/src/pages/checkin.html">Check-in</a>
-    </nav>
-    <div class="nav-account">
-      <a class="login-btn" data-auth-link href="/src/pages/login.html">Đăng nhập</a>
-    </div>
-  </div>
-</header>
-<main class="page history-page">
-  <div class="container">
-    <div class="page-title"><p class="eyebrow dark">MY TRIPGO</p><h1>Lịch sử đặt vé</h1><p>Xem lại các hành trình đã đặt và trạng thái vé của bạn.</p></div>
-    <div id="historyContent"></div>
-  </div>
-</main>
-<script type="module">
-import '../js/auth.js';
-const auth = window.TripGoAuth;
-if (!auth.requireLogin(location.pathname)) throw new Error('redirect');
-const user = auth.getCurrentUser();
-const root = document.getElementById('historyContent');
-const escape = v => String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-const money = v => Number(v||0).toLocaleString('vi-VN')+' ₫';
-const date = v => v ? new Date(v).toLocaleDateString('vi-VN') : '—';
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TripGo - Lịch sử đặt vé</title>
+    <link rel="stylesheet" href="/src/css/main.css" />
+    <link rel="stylesheet" href="/src/css/pages.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="container nav">
+        <a class="logo" href="/" aria-label="TripGo - Trang chủ">
+          <span class="logo-mark" aria-hidden="true"
+            ><svg viewBox="0 0 24 24" role="img">
+              <path
+                d="M21.7 10.9c.4.2.4.8 0 1l-7.2 3.3-1.5 5.1c-.1.4-.5.7-.9.7h-1c-.3 0-.5-.3-.4-.6l.8-4.2-3.2 1.4-1.8 2.2c-.2.2-.5.3-.8.2l-.8-.3c-.3-.1-.4-.5-.2-.8l1.2-2.8-3.1-1.4c-.4-.2-.4-.7 0-.9l.8-.4c.2-.1.4-.1.6 0l4 1.1 3.1-1.5-.9-4.2c-.1-.3.1-.6.4-.7l.9-.2c.4-.1.8.1 1 .4l2 3.4 7.2-2.7c.7-.2 1.3.1 1.6.7l.2.4z"
+              /></svg></span
+          ><span class="logo-text">TripGo</span></a
+        >
+        <nav class="main-nav" aria-label="Điều hướng chính">
+          <a data-nav="home" href="/">Đặt vé</a>
+          <a data-nav="flights" href="/src/pages/search.html">Chuyến bay</a>
+          <a data-nav="services" href="/#services">Dịch vụ</a>
+          <a data-nav="booking" href="/src/pages/booking.html">Tra cứu</a>
+          <a data-nav="checkin" href="/src/pages/checkin.html">Check-in</a>
+        </nav>
+        <div class="nav-account">
+          <a class="login-btn" data-auth-link href="/src/pages/login.html"
+            >Đăng nhập</a
+          >
+        </div>
+      </div>
+    </header>
+    <main class="page history-page">
+      <div class="container">
+        <div class="page-title">
+          <p class="eyebrow dark">MY TRIPGO</p>
+          <h1>Lịch sử đặt vé</h1>
+          <p>Xem lại các hành trình đã đặt và trạng thái vé của bạn.</p>
+        </div>
+        <div id="historyContent"></div>
+      </div>
+    </main>
+    <script type="module">
+      import "../js/auth.js";
+      const auth = window.TripGoAuth;
+      if (!auth.requireLogin(location.pathname)) throw new Error("redirect");
+      const user = auth.getCurrentUser();
+      const root = document.getElementById("historyContent");
+      const escape = (v) =>
+        String(v ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#039;",
+            })[c],
+        );
+      const money = (v) => Number(v || 0).toLocaleString("vi-VN") + " ₫";
+      const date = (v) => (v ? new Date(v).toLocaleDateString("vi-VN") : "—");
 
-function render() {
-  const bookings = auth.getBookings().filter(b =>
-    b.userEmail?.toLowerCase() === user.email?.toLowerCase() ||
-    b.passenger?.email?.toLowerCase() === user.email?.toLowerCase()
-  ).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+      function render() {
+        const bookings = auth
+          .getBookings()
+          .filter(
+            (b) =>
+              b.userEmail?.toLowerCase() === user.email?.toLowerCase() ||
+              b.passenger?.email?.toLowerCase() === user.email?.toLowerCase(),
+          )
+          .sort(
+            (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
+          );
 
-  if (!bookings.length) {
-    root.innerHTML = `<div class="empty-history"><div class="empty-history-icon">✈</div><h2>Chưa có chuyến bay nào</h2><p>Đặt chuyến bay đầu tiên để lịch sử hành trình xuất hiện tại đây.</p><a class="primary-btn" href="/">Tìm chuyến bay</a></div>`;
-    return;
-  }
-  root.innerHTML = `<div class="history-list">${bookings.map((b,i)=>{
-    const seats=(b.seats||b.seat||[]); const seatText=Array.isArray(seats)?seats.join(', '):seats;
-    const statusClass=(b.status||'').includes('hủy')?'cancelled':(b.status||'').includes('check-in')?'checked':'confirmed';
-    return `<article class="history-card">
-      <div class="history-top"><div><span class="history-code">${escape(b.bookingCode)}</span><span class="status-pill ${statusClass}">${escape(b.status||'Đã đặt vé')}</span></div><small>Đặt ngày ${date(b.createdAt)}</small></div>
-      <div class="history-route"><div><strong>${escape(b.flight?.from)}</strong><span>${escape(b.flight?.departure||'')}</span></div><div class="history-plane">✈<i></i><small>${escape(b.flight?.flightNumber)}</small></div><div><strong>${escape(b.flight?.to)}</strong><span>${escape(b.flight?.arrival||'')}</span></div></div>
-      <div class="history-meta"><span>👤 ${escape(b.passenger?.fullName)}</span><span>💺 ${escape(seatText||'Chưa chọn')}</span><span>👥 ${escape(b.passengerCount||1)} hành khách</span><strong>${money(b.totalPrice)}</strong></div>
-      <div class="history-actions"><a class="secondary-btn" href="/src/pages/booking.html">Xem đặt chỗ</a>${b.status!=='Đã hủy'&&b.status!=='Đã check-in'?`<button class="text-danger cancel-booking" data-code="${escape(b.bookingCode)}">Hủy đặt vé</button>`:''}</div>
+        if (!bookings.length) {
+          root.innerHTML = `<div class="empty-history"><div class="empty-history-icon">✈</div><h2>Chưa có chuyến bay nào</h2><p>Đặt chuyến bay đầu tiên để lịch sử hành trình xuất hiện tại đây.</p><a class="primary-btn" href="/">Tìm chuyến bay</a></div>`;
+          return;
+        }
+        root.innerHTML = `<div class="history-list">${bookings
+          .map((b, i) => {
+            const seats = b.seats || b.seat || [];
+            const seatText = Array.isArray(seats) ? seats.join(", ") : seats;
+            const statusClass = (b.status || "").includes("hủy")
+              ? "cancelled"
+              : (b.status || "").includes("check-in")
+                ? "checked"
+                : "confirmed";
+            return `<article class="history-card">
+      <div class="history-top"><div><span class="history-code">${escape(b.bookingCode)}</span><span class="status-pill ${statusClass}">${escape(b.status || "Đã đặt vé")}</span></div><small>Đặt ngày ${date(b.createdAt)}</small></div>
+      <div class="history-route"><div><strong>${escape(b.flight?.from)}</strong><span>${escape(b.flight?.departure || "")}</span></div><div class="history-plane">✈<i></i><small>${escape(b.flight?.flightNumber)}</small></div><div><strong>${escape(b.flight?.to)}</strong><span>${escape(b.flight?.arrival || "")}</span></div></div>
+      <div class="history-meta"><span>👤 ${escape(b.passenger?.fullName)}</span><span>💺 ${escape(seatText || "Chưa chọn")}</span><span>👥 ${escape(b.passengerCount || 1)} hành khách</span><strong>${money(b.totalPrice)}</strong></div>
+      <div class="history-actions"><a class="secondary-btn" href="/src/pages/booking.html">Xem đặt chỗ</a>${b.status !== "Đã hủy" && b.status !== "Đã check-in" ? `<button class="text-danger cancel-booking" data-code="${escape(b.bookingCode)}">Hủy đặt vé</button>` : ""}</div>
     </article>`;
-  }).join('')}</div>`;
-  root.querySelectorAll('.cancel-booking').forEach(btn=>btn.addEventListener('click',()=>{
-    if(!confirm('Bạn có chắc muốn hủy đặt vé này?')) return;
-    const list=auth.getBookings(); const b=list.find(x=>x.bookingCode===btn.dataset.code); if(b){b.status='Đã hủy';auth.saveBookings(list);render();}
-  }));
-}
-auth.updateAuthUI(); render();
-</script>
-<script type="module" src="/src/js/auth-page.js"></script>
-</body></html>
+          })
+          .join("")}</div>`;
+        root.querySelectorAll(".cancel-booking").forEach((btn) =>
+          btn.addEventListener("click", () => {
+            if (!confirm("Bạn có chắc muốn hủy đặt vé này?")) return;
+            const list = auth.getBookings();
+            const b = list.find((x) => x.bookingCode === btn.dataset.code);
+            if (b) {
+              b.status = "Đã hủy";
+              auth.saveBookings(list);
+              render();
+            }
+          }),
+        );
+      }
+      auth.updateAuthUI();
+      render();
+    </script>
+    <script type="module" src="/src/js/auth-page.js"></script>
+  </body>
+</html>
