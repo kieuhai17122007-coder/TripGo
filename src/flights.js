@@ -8,6 +8,7 @@ export const flights = [
     arrival: "07:55",
     date: "2026-10-01",
     seats: 2,
+    price: 1250000,
     economyPrice: 1250000,
     businessPrice: 2950000
   },
@@ -21,6 +22,7 @@ export const flights = [
     arrival: "10:10",
     date: "2026-10-01",
     seats: 1,
+    price: 1450000,
     economyPrice: 1450000,
     businessPrice: 3200000
   },
@@ -34,6 +36,7 @@ export const flights = [
     arrival: "11:40",
     date: "2026-10-02",
     seats: 2,
+    price: 1750000,
     economyPrice: 1750000,
     businessPrice: 3500000
   },
@@ -47,6 +50,7 @@ export const flights = [
     arrival: "14:25",
     date: "2026-10-03",
     seats: 2,
+    price: 1350000,
     economyPrice: 1350000,
     businessPrice: 3050000
   },
@@ -60,6 +64,7 @@ export const flights = [
     arrival: "19:45",
     date: "2026-10-01",
     seats: 1,
+    price: 1200000,
     economyPrice: 1200000,
     businessPrice: 2800000
   },
@@ -73,6 +78,9 @@ export const flights = [
     arrival: "22:00",
     date: "2026-10-02",
     seats: 3,
+    price: 1600000,
+  },
+];
     economyPrice: 1600000,
     businessPrice: 3300000
   },

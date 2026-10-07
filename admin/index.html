@@ -5,6 +5,27 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>TripGo · Admin Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            boxShadow: {
+              soft: '0 12px 30px rgba(15, 23, 42, 0.08)',
+            },
+            colors: {
+              brand: {
+                50: '#eef6ff',
+                100: '#dfeeff',
+                500: '#2563eb',
+                600: '#1d4ed8',
+                700: '#1e3a8a'
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body class="admin-body bg-slate-50 text-slate-800">
@@ -60,7 +81,7 @@
         class="admin-header bg-white border-b border-slate-200 sticky top-0 z-20"
       >
         <div
-          class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex justify-between items-center"
+          class="w-full px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center"
         >
           <a href="../index.html" class="text-2xl font-black text-blue-900"
             >✈ TripGo<span class="text-amber-500">.</span
@@ -69,12 +90,21 @@
             ></a
           >
           <div class="flex gap-3 items-center text-sm">
-            <span class="hidden sm:inline text-slate-500">admin@tripgo.com</span
-            ><button id="logout" class="secondary">Đăng xuất</button>
+            <button id="themeToggle" class="secondary theme-toggle" type="button" aria-label="Chuyển sang giao diện tối" title="Chuyển giao diện">
+              <i id="themeIcon" class="fa-solid fa-moon"></i>
+              <span class="hidden sm:inline">Giao diện tối</span>
+            </button>
+            <div class="hidden sm:flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5">
+              <span class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-white"><i class="fa-solid fa-user-shield"></i></span>
+              <span class="text-slate-600">admin@tripgo.com</span>
+            </div>
+            <button id="logout" class="secondary"><i class="fa-solid fa-right-from-bracket mr-2"></i>Đăng xuất</button>
           </div>
         </div>
       </header>
-      <div class="admin-layout max-w-7xl md:flex min-h-[calc(100vh-128px)]">
+      <div
+        class="admin-layout w-full md:flex min-h-[calc(100vh-128px)]"
+      >
         <nav
           class="admin-sidebar p-4 md:pt-8 md:w-60 flex md:flex-col gap-2 overflow-x-auto shrink-0"
           aria-label="Menu quản trị"
@@ -84,10 +114,18 @@
           ><button data-page="flights" class="nav">
             ✈ <span>Chuyến bay</span></button
           ><button data-page="bookings" class="nav">
-            ▤ <span>Vé đã đặt</span>
+            ▤ <span>Vé đã đặt</span></button
+          ><button data-page="customers" class="nav">
+            <i class="fa-solid fa-users"></i> <span>Khách hàng</span></button
+          ><button data-page="reports" class="nav">
+            <i class="fa-solid fa-chart-column"></i> <span>Báo cáo</span></button
+          ><button data-page="services" class="nav">
+            <i class="fa-solid fa-bag-shopping"></i> <span>Dịch vụ</span></button
+          ><button data-page="support" class="nav">
+            <i class="fa-solid fa-headset"></i> <span>Hỗ trợ</span>
           </button>
         </nav>
-        <main class="admin-main mx-10 flex-1 min-w-0 p-4 sm:p-6 md:py-8">
+        <main class="admin-main flex-1 min-w-0 p-4 sm:p-6 md:py-8">
           <div class="flex items-start justify-between gap-3 flex-wrap mb-6">
             <div>
               <p
@@ -113,7 +151,10 @@
       <footer
         class="admin-footer bg-white border-t text-center text-xs text-slate-500 py-5"
       >
-        © TripGo · Dự án mô phỏng đặt vé máy bay
+        <div class="admin-footer-inner w-full">
+          <span>© 2026 TripGo · Quản trị chuyến bay và đặt chỗ</span
+          ><a href="../index.html">Về trang chủ</a>
+        </div>
       </footer>
     </div>
     <div
@@ -191,6 +232,14 @@
                 step="1000"
                 required /></label
             ><label class="label"
+              >Số chỗ còn lại<input
+                class="field"
+                name="seats"
+                type="number"
+                min="0"
+                max="500"
+                required /></label
+            ><label class="label"
               >Hành lý (kg)<input
                 class="field"
                 name="baggage"
@@ -200,8 +249,9 @@
                 required /></label
             ><label class="label"
               >Trạng thái<select class="field" name="status">
-                <option value="active">Đang bán</option>
-                <option value="inactive">Tạm dừng</option>
+                <option value="active">Đang hoạt động</option>
+                <option value="flying">Đang bay</option>
+                <option value="cancelled">Đã bị huỷ</option>
               </select></label
             >
           </div>
@@ -213,6 +263,57 @@
         </form>
       </div>
     </div>
-    <script src="admin.js" defer></script>
+    <div
+      id="serviceModal"
+      class="modal-backdrop hidden fixed inset-0 z-40 bg-slate-950/60 p-4 overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="serviceModalTitle"
+    >
+      <div class="bg-white rounded-3xl max-w-xl mx-auto my-8 p-5 sm:p-8 shadow-2xl">
+        <div class="flex justify-between gap-4">
+          <div>
+            <p class="text-xs text-amber-600 uppercase font-bold">Dịch vụ TripGo</p>
+            <h2 id="serviceModalTitle" class="text-2xl font-bold mt-1">Thêm dịch vụ</h2>
+          </div>
+          <button id="closeServiceModal" class="text-2xl self-start" aria-label="Đóng">×</button>
+        </div>
+        <form id="serviceForm" novalidate class="mt-6 space-y-4">
+          <label class="label">Tên dịch vụ<input class="field" name="title" maxlength="60" required placeholder="Ví dụ: Hành lý ký gửi" /></label>
+          <label class="label">Mô tả<input class="field" name="description" maxlength="160" required placeholder="Mô tả ngắn về dịch vụ" /></label>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <label class="label">Biểu tượng
+              <select class="field" name="icon">
+                <option value="fa-plane">Máy bay</option>
+                <option value="fa-ticket">Vé</option>
+                <option value="fa-qrcode">Check-in</option>
+                <option value="fa-chair">Ghế</option>
+                <option value="fa-suitcase-rolling">Hành lý</option>
+                <option value="fa-headset">Hỗ trợ</option>
+                <option value="fa-bolt">Nhanh</option>
+                <option value="fa-circle-info">Thông tin</option>
+              </select>
+            </label>
+            <label class="label">Khi nhấn vào dịch vụ
+              <select class="field" name="href">
+                <option value="#search">Tìm chuyến bay</option>
+                <option value="#booking-search">Tra cứu đặt chỗ</option>
+                <option value="#support">Hỗ trợ</option>
+              </select>
+            </label>
+          </div>
+          <label class="flex items-center gap-3 text-sm font-semibold text-slate-600">
+            <input type="checkbox" name="enabled" checked class="h-4 w-4 accent-blue-700" />
+            Hiển thị trên trang bán vé
+          </label>
+          <p id="serviceFormError" role="alert" class="text-red-600 text-sm"></p>
+          <div class="flex justify-end gap-3">
+            <button id="cancelServiceModal" type="button" class="secondary">Hủy</button>
+            <button class="primary" type="submit">Lưu dịch vụ</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <script type="module" src="./admin.js"></script>
   </body>
 </html>
