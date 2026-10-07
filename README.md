@@ -1,6 +1,6 @@
 # TripGo — bản tích hợp Admin và đặt vé
 
-## Chạy dự án
+## Chạy dự ána
 
 ```bash
 npm install
