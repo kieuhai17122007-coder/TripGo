@@ -1,52 +1,953 @@
 @import url('../backup/css/main.css');
 @import url('../backup/css/responsive.css');
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#f5f5f5;
+
+:root {
+  --primary: #0757a0;
+  --primary-dark: #043d72;
+  --primary-soft: #eef6ff;
+  --accent: #e7b44a;
+  --ink: #172033;
+  --muted: #667085;
+  --line: #e4e9f0;
+  --surface: #f5f7fb;
+  --white: #fff;
+  --success: #0b7a53;
+  --success-soft: #ecfdf3;
+  --danger: #b42318;
+  --danger-soft: #fff1f1;
+  --shadow-sm: 0 8px 24px rgba(15, 34, 58, 0.06);
+  --shadow-md: 0 16px 36px rgba(15, 34, 58, 0.09);
+  --shadow-lg: 0 24px 60px rgba(15, 34, 58, 0.14);
 }
 
-.container{
-  width:80%;
-  margin:30px auto;
+html {
+  scroll-behavior: smooth;
 }
 
-h1{
-  text-align:center;
-  margin-bottom:30px;
+body {
+  background:
+    radial-gradient(
+      circle at 8% 0%,
+      rgba(7, 87, 160, 0.045),
+      transparent 28%
+    ),
+    var(--surface);
+  color: var(--ink);
+  min-height: 100vh;
 }
 
-.flight-card{
-  background:white;
-  padding:20px;
-  margin-bottom:15px;
-  border-radius:10px;
-  box-shadow:0 2px 8px rgba(0,0,0,.1);
-
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+::selection {
+  background: rgba(7, 87, 160, 0.16);
 }
 
-.price{
-  text-align:right;
+a,
+button,
+input,
+select {
+  -webkit-tap-highlight-color: transparent;
 }
 
-.price h2{
-  color:red;
-  margin-bottom:10px;
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(7, 87, 160, 0.22);
+  outline-offset: 2px;
 }
 
-button{
-  background:#0d6efd;
-  color:white;
-  border:none;
-  padding:10px 15px;
-  border-radius:5px;
-  cursor:pointer;
+/* =========================================================
+   HEADER
+========================================================= */
+
+.header {
+  background: rgba(255, 255, 255, 0.93);
+  border-bottom-color: rgba(7, 87, 160, 0.09);
+  box-shadow: 0 3px 18px rgba(15, 34, 58, 0.035);
+}
+
+.nav {
+  gap: 32px;
+}
+
+.logo {
+  min-width: max-content;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.logo:hover {
+  transform: translateY(-1px);
+  color: var(--primary-dark);
+}
+
+.nav nav {
+  gap: 8px;
+}
+
+.nav nav a {
+  padding: 10px 13px;
+  border-radius: 999px;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.nav nav a:after {
+  display: none;
+}
+
+.nav nav a:hover {
+  background: var(--primary-soft);
+}
+
+.login-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 9px 16px;
+  border: 1px solid #c7d7e8;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(7, 87, 160, 0.06);
+  transition: 0.2s ease;
+}
+
+.login-btn:hover {
+  border-color: #a9c5de;
+  background: var(--primary-soft);
+  transform: translateY(-1px);
+}
+
+/* =========================================================
+   HOME HERO
+========================================================= */
+
+.hero {
+  min-height: 700px;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(3, 31, 59, 0.92) 0%,
+      rgba(5, 58, 103, 0.72) 43%,
+      rgba(7, 87, 160, 0.2) 100%
+    ),
+    linear-gradient(
+      135deg,
+      #07375f 0%,
+      #2186bf 55%,
+      #b9e2f5 100%
+    );
+}
+
+.hero-overlay {
+  padding: 72px 0 96px;
+}
+
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.hero h1 {
+  text-wrap: balance;
+}
+
+.hero-content > p:not(.eyebrow) {
+  max-width: 620px;
+}
+
+/* =========================================================
+   BOOKING SEARCH FORM
+========================================================= */
+
+.search-box {
+  border: 1px solid rgba(7, 87, 160, 0.1);
+  border-radius: 18px;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(8px);
+}
+
+main:not(#top) .search-box,
+.section .search-box:not(#search) {
+  width: min(760px, 100%);
+  margin: 0 auto;
+}
+
+.trip-type {
+  gap: 10px;
+  border-bottom: 0;
+  padding-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.trip-type label {
+  min-height: 38px;
+  padding: 7px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #f8fafc;
+  transition: 0.2s ease;
+}
+
+.trip-type label:has(input:checked) {
+  color: var(--primary);
+  background: var(--primary-soft);
+  border-color: #bcd5e9;
+}
+
+.trip-type input {
+  margin: 0;
+}
+
+/* =========================================================
+   SEARCH GRID - FIXED
+========================================================= */
+
+.search-grid {
+  display: grid;
+
+  /*
+    Cột:
+    1 = Điểm đi
+    2 = Nút đổi
+    3 = Điểm đến
+    4 = Ngày đi
+    5 = Ngày về
+    6 = Hành khách
+    7 = Khoảng giá
+  */
+
+  grid-template-columns:
+    minmax(0, 1.05fr)
+    40px
+    minmax(0, 1.05fr)
+    minmax(0, 1fr)
+    minmax(0, 1fr)
+    minmax(0, 1fr)
+    minmax(0, 1fr);
+
+  gap: 12px;
+  align-items: end;
+}
+
+/*
+  Quan trọng:
+  Cho phép các ô select co lại đúng theo kích thước
+  của grid, không để nội dung bên trong kéo rộng cột.
+*/
+
+.search-grid .field {
+  min-width: 0;
+  width: 100%;
+}
+
+.search-grid .field select,
+.search-grid .field input {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/*
+  Hàng thứ 2:
+
+  Hạng vé            -> cột 1
+  Cột 2              -> bỏ trống cho đúng vị trí nút swap
+  Hãng hàng không    -> cột 3
+  Giờ khởi hành      -> cột 4
+  Sắp xếp            -> cột 5
+*/
+
+.search-grid .field:has(#classType) {
+  grid-column: 1;
+}
+
+.search-grid .field:has(#airline) {
+  grid-column: 3;
+}
+
+.search-grid .field:has(#departureTime) {
+  grid-column: 4;
+}
+
+.search-grid .field:has(#sortBy) {
+  grid-column: 5;
 }
 
 button:hover{
   opacity:.9;
-}/* Booking and lookup views */
+}
 .results-wrap,.lookup-wrap{max-width:1080px;margin:0 auto}.back-link{display:inline-block;margin:0 0 25px;color:#164a91;font-weight:700;text-decoration:none}.result-card,.booking-panel{background:#fff;border:1px solid #e0e8f2;border-radius:18px;padding:25px;margin:18px 0;box-shadow:0 8px 28px #0c35630b}.result-card{display:flex;align-items:center;justify-content:space-between;gap:20px}.result-card h2{margin:12px 0}.result-card p{color:#52637a}.result-actions{text-align:right;display:grid;gap:12px}.result-actions strong{font-size:21px;color:#0b4c98}.booking-panel h2{margin-top:0}.booking-panel .field{display:block;margin:15px 0}.booking-panel input{display:block;width:100%;padding:12px;border:1px solid #bac9d9;border-radius:9px}.passenger-row,.lookup-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.form-error{color:#c32727}.secondary-btn{border:1px solid #b1c4dd;background:#fff;color:#164a91;padding:11px 18px;border-radius:9px;cursor:pointer}.lookup-wrap .search-box{display:flex;align-items:end;gap:15px;flex-wrap:wrap}.lookup-wrap .search-box .field{flex:1;min-width:220px}.lookup-wrap .search-box input{width:100%}@media(max-width:700px){.result-card{display:block}.result-actions{text-align:left}.passenger-row,.lookup-grid{grid-template-columns:1fr}.results-wrap,.lookup-wrap{width:92%}}
+
+
+#priceRange,
+#airline,
+#departureTime,
+#sortBy,
+#classType,
+#passengers,
+#from,
+#to {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   FIELD
+========================================================= */
+
+.field {
+  gap: 8px;
+}
+
+.field span {
+  color: #475467;
+}
+
+.field select,
+.field input {
+  min-height: 48px;
+  border-color: #d4dce6;
+  border-radius: 10px;
+  box-shadow: inset 0 1px 0 rgba(15, 34, 58, 0.02);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.field select:hover,
+.field input:hover {
+  border-color: #b8c8d9;
+}
+
+.field select:focus,
+.field input:focus {
+  border-color: #6ba7d7;
+  background: #fcfeff;
+  box-shadow: 0 0 0 4px #eaf4fc;
+}
+
+.field select:disabled,
+.field input:disabled {
+  cursor: not-allowed;
+  background: #f2f4f7;
+}
+
+/* =========================================================
+   SWAP
+========================================================= */
+
+.swap {
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.swap:hover {
+  transform: rotate(180deg);
+  border-color: #adc6dd;
+  background: var(--primary-soft);
+}
+
+/* =========================================================
+   BUTTON
+========================================================= */
+
+.primary-btn,
+button:not(.swap) {
+  color: #fff;
+  border: 0;
+  background: linear-gradient(135deg, var(--primary), #0a6dbd);
+}
+
+.primary-btn:hover,
+button:not(.swap):hover {
+  color: #fff;
+}
+
+.search-btn {
+  min-height: 48px;
+  margin-top: 22px;
+  border-radius: 10px;
+  box-shadow: 0 12px 24px rgba(7, 87, 160, 0.2);
+}
+
+.search-btn:active,
+.primary-btn:active,
+button:not(.swap):active {
+  transform: translateY(0);
+}
+
+/* =========================================================
+   GENERAL SECTIONS
+========================================================= */
+
+.section {
+  padding: 84px 0;
+}
+
+.section-heading {
+  margin-bottom: 38px;
+}
+
+.section-heading h2 {
+  text-wrap: balance;
+}
+
+.section-heading p {
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* =========================================================
+   SERVICE CARDS
+========================================================= */
+
+.service-grid {
+  gap: 20px;
+}
+
+.service-card {
+  min-height: 190px;
+  padding: 26px 24px;
+  border-color: rgba(7, 87, 160, 0.08);
+  box-shadow: var(--shadow-sm);
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+}
+
+.service-card > span {
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.service-card:hover > span {
+  transform: translateY(-2px) scale(1.03);
+  background: #e4f1fb;
+}
+
+/* =========================================================
+   PROMO
+========================================================= */
+
+.promo {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(7, 87, 160, 0.025),
+      transparent 28%
+    ),
+    var(--surface);
+}
+
+.promo-grid {
+  gap: 20px;
+}
+
+.promo-card {
+  height: 300px;
+  box-shadow: var(--shadow-md);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.promo-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+.promo-card h3 {
+  max-width: 300px;
+  text-wrap: balance;
+}
+
+/* =========================================================
+   BENEFITS
+========================================================= */
+
+.benefits {
+  background: #fff;
+}
+
+.benefit-grid {
+  gap: 18px;
+}
+
+.benefit-grid > div {
+  padding: 28px 22px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+.benefit-grid span {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary-soft);
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.footer {
+  margin-top: 0;
+}
+
+.footer-grid {
+  gap: 48px;
+}
+
+.footer-grid a,
+.footer-grid p {
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.footer-grid a:hover {
+  transform: translateX(2px);
+}
+
+/* =========================================================
+   RESULTS PAGE
+========================================================= */
+
+.section > .container > h2 {
+  margin-bottom: 24px;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 34px;
+  text-wrap: balance;
+}
+
+.section > .container > h2 + .flight-card,
+.section > .container > .flight-list .flight-card {
+  margin-top: 12px;
+}
+
+.flight-card {
+  min-height: 128px;
+  padding: 20px 22px;
+  border-color: rgba(7, 87, 160, 0.08);
+  box-shadow: var(--shadow-sm);
+  border-radius: 16px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.flight-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: #c6dcec;
+}
+
+.flight-card .airline {
+  font-weight: 800;
+  color: var(--primary);
+  font-size: 14px;
+}
+
+.flight-card .info {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: #475467;
+  font-size: 13px;
+}
+
+.flight-card .info:first-of-type span:first-child {
+  color: var(--ink);
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.flight-card .price {
+  display: block;
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.flight-card button {
+  width: 100%;
+  min-height: 42px;
+  margin-top: 6px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 800;
+  transition: 0.2s ease;
+}
+
+.flight-card button + button {
+  margin-top: 8px;
+}
+
+.flight-card button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(7, 87, 160, 0.16);
+}
+
+/* =========================================================
+   BOOKING LOOKUP + USER BOOKINGS
+========================================================= */
+
+#bookingLookupResult,
+.flight-list {
+  width: min(900px, 100%);
+  margin: 24px auto 0;
+}
+
+#bookingLookupResult .flight-card,
+.flight-list .flight-card {
+  display: block;
+}
+
+#bookingLookupResult .flight-card h3,
+.flight-list .flight-card h3 {
+  margin-bottom: 18px;
+  color: var(--primary-dark);
+  font-size: 20px;
+}
+
+#bookingLookupResult .flight-card p,
+.flight-list .flight-card p {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 11px 0;
+  margin: 0;
+  border-bottom: 1px solid #edf0f4;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+#bookingLookupResult .flight-card p:last-of-type,
+.flight-list .flight-card p:last-of-type {
+  border-bottom: 0;
+}
+
+#bookingLookupResult .flight-card p strong,
+.flight-list .flight-card p strong {
+  color: var(--ink);
+  text-align: right;
+}
+
+#bookingLookupResult .flight-card button {
+  margin-top: 20px;
+  min-width: 150px;
+}
+
+/* =========================================================
+   LOGIN / REGISTER
+========================================================= */
+
+main:not(#top) .search-box#loginForm,
+main:not(#top) .search-box#registerForm {
+  max-width: 560px;
+  padding: 30px;
+}
+
+#loginForm,
+#registerForm {
+  box-shadow: var(--shadow-md);
+}
+
+#loginForm .field,
+#registerForm .field {
+  margin-bottom: 16px;
+}
+
+#loginForm .search-btn,
+#registerForm .search-btn {
+  width: 100%;
+  margin-top: 8px;
+}
+
+#loginForm > p,
+#registerForm > p {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+#loginForm > p a,
+#registerForm > p a {
+  color: var(--primary);
+  font-weight: 800;
+}
+
+#loginEmailError,
+#loginPasswordError {
+  min-height: 18px;
+  margin-top: 2px;
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#loginMessage,
+#registerMessage {
+  min-height: 18px;
+  padding: 0 4px;
+  font-weight: 700;
+}
+
+/* =========================================================
+   GENERIC STATE FEEDBACK
+========================================================= */
+
+#loginMessage:not(:empty),
+#registerMessage:not(:empty) {
+  color: var(--success);
+}
+
+/* =========================================================
+   BACK LINKS
+========================================================= */
+
+main:not(#top) > .section > .container > a:first-child,
+.section > .container > a:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 28px;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 800;
+  transition: transform 0.2s ease;
+}
+
+main:not(#top) > .section > .container > a:first-child:hover,
+.section > .container > a:first-child:hover {
+  transform: translateX(-2px);
+}
+
+/* =========================================================
+   EMPTY STATES
+========================================================= */
+
+.section > .container > h2 + p,
+.section > .container > .section-heading + p {
+  color: var(--muted);
+}
+
+/* =========================================================
+   RESPONSIVE - TABLET
+========================================================= */
+
+@media (max-width: 1000px) {
+  .nav {
+    gap: 16px;
+  }
+
+  .nav nav {
+    gap: 2px;
+  }
+
+  .nav nav a {
+    padding: 9px 10px;
+  }
+
+  /*
+    Tablet:
+    bỏ bố cục 7 cột và đưa toàn bộ field
+    về grid 3 cột.
+  */
+
+  .search-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /*
+    Xóa vị trí cố định của các field ở desktop.
+  */
+
+  .search-grid .field:has(#classType),
+  .search-grid .field:has(#airline),
+  .search-grid .field:has(#departureTime),
+  .search-grid .field:has(#sortBy) {
+    grid-column: auto;
+  }
+
+  .flight-card {
+    grid-template-columns: 1fr 1.2fr;
+  }
+
+  .flight-card .info:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+/* =========================================================
+   RESPONSIVE - MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+  .header {
+    position: sticky;
+  }
+
+  .nav {
+    padding: 12px 0;
+  }
+
+  .nav nav {
+    order: 3;
+    width: 100%;
+    padding-bottom: 2px;
+  }
+
+  .nav nav a {
+    padding: 8px 11px;
+    background: transparent;
+  }
+
+  .nav nav a:hover {
+    background: var(--primary-soft);
+  }
+
+  .hero {
+    min-height: auto;
+  }
+
+  .hero-overlay {
+    padding: 52px 0 68px;
+  }
+
+  .hero h1 {
+    font-size: 38px;
+  }
+
+  .hero-content > p:not(.eyebrow) {
+    font-size: 15px;
+    margin-bottom: 28px;
+  }
+
+  .search-box {
+    padding: 20px;
+    border-radius: 15px;
+  }
+
+  .search-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /*
+    Mobile:
+    tất cả field trở về 1 cột.
+  */
+
+  .search-grid .field:has(#classType),
+  .search-grid .field:has(#airline),
+  .search-grid .field:has(#departureTime),
+  .search-grid .field:has(#sortBy) {
+    grid-column: auto;
+  }
+
+  .trip-type {
+    gap: 8px;
+  }
+
+  .trip-type label {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .service-grid,
+  .promo-grid,
+  .benefit-grid,
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section,
+  .promo {
+    padding: 58px 0;
+  }
+
+  .section-heading {
+    margin-bottom: 30px;
+  }
+
+  .section-heading h2,
+  .section > .container > h2 {
+    font-size: 30px;
+  }
+
+  .flight-card {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 18px;
+  }
+
+  .flight-card .info:last-child {
+    grid-column: auto;
+  }
+
+  .flight-card .price {
+    margin-top: 4px;
+  }
+
+  #bookingLookupResult .flight-card p,
+  .flight-list .flight-card p {
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+  }
+
+  #bookingLookupResult .flight-card p strong,
+  .flight-list .flight-card p strong {
+    text-align: left;
+  }
+
+  main:not(#top) .search-box#loginForm,
+  main:not(#top) .search-box#registerForm {
+    padding: 22px;
+  }
+}
+
+/* =========================================================
+   RESPONSIVE - SMALL MOBILE
+========================================================= */
+
+@media (max-width: 480px) {
+  .container {
+    width: min(94%, 1180px);
+  }
+
+  .logo {
+    font-size: 22px;
+  }
+
+  .login-btn {
+    min-height: 38px;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .hero h1 {
+    font-size: 32px;
+  }
+
+  .search-btn {
+    width: 100%;
+  }
+
+  .promo-card {
+    height: 250px;
+  }
+}
