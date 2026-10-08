@@ -1,0 +1,107 @@
+@media (max-width: 900px) {
+  .nav {
+    gap: 15px;
+  }
+
+  .nav nav {
+    gap: 13px;
+  }
+
+  .search-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .swap {
+    display: none;
+  }
+
+  .service-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .promo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hero h1 {
+    font-size: 42px;
+  }
+}
+
+@media (max-width: 600px) {
+  .header {
+    height: auto;
+  }
+
+  .nav {
+    padding: 14px 0;
+    flex-wrap: wrap;
+  }
+
+  .nav nav {
+    order: 3;
+    width: 100%;
+    overflow: auto;
+    padding-bottom: 4px;
+  }
+
+  .login-btn {
+    margin-left: auto;
+  }
+
+  .hero-overlay {
+    padding-top: 45px;
+  }
+
+  .hero h1 {
+    font-size: 34px;
+  }
+
+  .search-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .service-grid,
+  .benefit-grid,
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section,
+  .promo {
+    padding: 55px 0;
+  }
+
+  .section-heading h2 {
+    font-size: 28px;
+  }
+
+  .promo-card {
+    height: 270px;
+  }
+}
+
+@media (max-width:1000px){.flight-card-premium{grid-template-columns:1fr 1fr!important}.journey-grid{grid-template-columns:1fr 1fr}.journey-card:last-child{grid-column:1/-1}}
+@media (max-width:650px){.journey-stage{border-radius:20px}.journey-grid{grid-template-columns:1fr;padding:16px}.journey-card:last-child{grid-column:auto}.journey-card{min-height:270px}.results-toolbar{align-items:flex-start;flex-direction:column}.flight-card-premium{grid-template-columns:1fr!important}}
+
+@media (max-width: 900px){
+  .journey-stage-top { flex-wrap:wrap; }
+  .journey-stage-top i { width:100%; margin-left:0; }
+}
+@media (max-width: 600px){
+  .header { box-shadow:0 2px 15px rgba(15,34,58,.06); }
+  .hero { min-height:auto; }
+  .hero-overlay { min-height:auto; padding-bottom:70px; }
+  .search-box { padding:18px; border-radius:18px; }
+  .section-heading h2 { font-size:32px; }
+  .service-card-premium { min-height:205px; }
+  .journey-stage-top { padding:4px 20px 0; }
+  .journey-stage-top strong { font-size:14px; }
+  .journey-card { min-height:320px; }
+  .journey-content h3 { font-size:25px; }
+  .page-title h1 { font-size:34px; }
+}
