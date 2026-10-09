@@ -243,7 +243,10 @@
   }
   function header() {
     const titles = {
-      banned: ["Hành khách bị cấm bay", "Quản lý hồ sơ, lý do và thời hạn cấm bay trong bản demo."],
+      banned: [
+        "Hành khách bị cấm bay",
+        "Quản lý hồ sơ, lý do và thời hạn cấm bay trong bản demo.",
+      ],
       overview: ["Tổng quan", "Theo dõi dữ liệu đặt vé và chuyến bay."],
       flights: ["Quản lý chuyến bay", "Thêm, cập nhật và quản lý lịch bay."],
       bookings: ["Vé đã đặt", "Theo dõi danh sách vé và trạng thái đặt chỗ."],
@@ -285,7 +288,20 @@
       renderOverview();
       const quick = document.createElement("div");
       quick.className = "grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6";
-      quick.innerHTML = [["flights","✈","Chuyến bay"],["bookings","▤","Quản lý vé"],["services","▣","Dịch vụ"],["support","◉","Hỗ trợ khách hàng"],["banned","⊘","Hành khách cấm bay"],["customers","♙","Khách hàng"],["reports","◫","Báo cáo"]].map(([p,i,l]) => `<button data-go="${p}" class="card p-4 text-left hover:border-blue-400 transition"><span class="text-2xl text-blue-600">${i}</span><span class="block font-semibold mt-2 text-sm">${l}</span></button>`).join("");
+      quick.innerHTML = [
+        ["flights", "✈", "Chuyến bay"],
+        ["bookings", "▤", "Quản lý vé"],
+        ["services", "▣", "Dịch vụ"],
+        ["support", "◉", "Hỗ trợ khách hàng"],
+        ["banned", "⊘", "Hành khách cấm bay"],
+        ["customers", "♙", "Khách hàng"],
+        ["reports", "◫", "Báo cáo"],
+      ]
+        .map(
+          ([p, i, l]) =>
+            `<button data-go="${p}" class="card p-4 text-left hover:border-blue-400 transition"><span class="text-2xl text-blue-600">${i}</span><span class="block font-semibold mt-2 text-sm">${l}</span></button>`,
+        )
+        .join("");
       $("content").prepend(quick);
     }
     if (page === "flights") renderFlights();
@@ -513,8 +529,16 @@
   const BAN_KEY = "tripgo_banned_passengers";
   const uid = () => crypto.randomUUID();
   function persist(key, value) {
-    try { write(key, value); return true; }
-    catch { alertMessage("Không thể lưu dữ liệu. Kiểm tra dung lượng lưu trữ của trình duyệt.", true); return false; }
+    try {
+      write(key, value);
+      return true;
+    } catch {
+      alertMessage(
+        "Không thể lưu dữ liệu. Kiểm tra dung lượng lưu trữ của trình duyệt.",
+        true,
+      );
+      return false;
+    }
   }
   function renderSupport() {
     const tickets = read(SUPPORT_KEY, []);
@@ -527,47 +551,132 @@
         <label class="label">Nội dung<textarea name="issue" class="field" required maxlength="1000" rows="4"></textarea></label>
         <button class="primary" type="submit">Tạo yêu cầu</button>
       </form>
-      <div class="card p-6"><div class="flex justify-between flex-wrap gap-3"><h2 class="text-lg font-bold">Yêu cầu hỗ trợ (${tickets.length})</h2><button id="quickReply" class="primary" type="button" ${tickets.length ? "" : "disabled"}>Phản hồi nhanh</button><span class="badge off">${tickets.filter(t => t.status !== "resolved").length} chưa hoàn tất</span></div>
+      <div class="card p-6"><div class="flex justify-between flex-wrap gap-3"><h2 class="text-lg font-bold">Yêu cầu hỗ trợ (${tickets.length})</h2><button id="quickReply" class="primary" type="button" ${tickets.length ? "" : "disabled"}>Phản hồi nhanh</button><span class="badge off">${tickets.filter((t) => t.status !== "resolved").length} chưa hoàn tất</span></div>
       <div class="grid sm:grid-cols-2 gap-3 my-5"><input id="supportSearch" class="field" placeholder="Tìm tên, email, mã đặt chỗ" aria-label="Tìm yêu cầu"><select id="supportFilter" class="field" aria-label="Lọc yêu cầu"><option value="all">Tất cả</option><option value="open">Mới tiếp nhận</option><option value="processing">Đang xử lý</option><option value="resolved">Đã giải quyết</option></select></div>${tickets.length ? "" : '<p class="text-sm text-slate-500 mb-4">Tạo yêu cầu hỗ trợ trước để sử dụng phản hồi nhanh.</p>'}<div id="supportRows" class="space-y-4"></div></div></div>`;
     const fill = () => {
-      const q = $("supportSearch").value.trim().toLowerCase(), filter = $("supportFilter").value;
-      const rows = tickets.slice().reverse().filter(t => (filter === "all" || t.status === filter) && [t.name,t.email,t.code,t.issue].some(v => String(v||"").toLowerCase().includes(q)));
-      $("supportRows").innerHTML = rows.map(t => `<form data-ticket="${safe(t.id)}" class="rounded-xl border border-slate-200 p-4 space-y-3"><div class="flex justify-between gap-3"><b>${safe(t.name)}</b><span class="text-xs text-slate-500">${safe(new Date(t.createdAt).toLocaleString("vi-VN"))}</span></div><p class="text-sm text-slate-500">${safe(t.email)} · ${safe(t.code || "Không có mã vé")}</p><p class="whitespace-pre-wrap text-sm">${safe(t.issue)}</p><label class="label">Ghi chú phản hồi<textarea name="reply" class="field" maxlength="2000" rows="2">${safe(t.reply || "")}</textarea></label><div class="flex flex-wrap gap-3"><select name="status" class="field flex-1" aria-label="Trạng thái hỗ trợ">${[["open","Mới tiếp nhận"],["processing","Đang xử lý"],["resolved","Đã giải quyết"]].map(([v,l])=>`<option value="${v}" ${t.status===v?"selected":""}>${l}</option>`).join("")}</select><button class="primary">Lưu phản hồi</button><button type="button" class="secondary" data-quick-ticket="${safe(t.id)}">Phản hồi nhanh</button></div></form>`).join("") || '<p class="empty">Chưa có yêu cầu phù hợp.</p>';
+      const q = $("supportSearch").value.trim().toLowerCase(),
+        filter = $("supportFilter").value;
+      const rows = tickets
+        .slice()
+        .reverse()
+        .filter(
+          (t) =>
+            (filter === "all" || t.status === filter) &&
+            [t.name, t.email, t.code, t.issue].some((v) =>
+              String(v || "")
+                .toLowerCase()
+                .includes(q),
+            ),
+        );
+      $("supportRows").innerHTML =
+        rows
+          .map(
+            (t) =>
+              `<form data-ticket="${safe(t.id)}" class="rounded-xl border border-slate-200 p-4 space-y-3"><div class="flex justify-between gap-3"><b>${safe(t.name)}</b><span class="text-xs text-slate-500">${safe(new Date(t.createdAt).toLocaleString("vi-VN"))}</span></div><p class="text-sm text-slate-500">${safe(t.email)} · ${safe(t.code || "Không có mã vé")}</p><p class="whitespace-pre-wrap text-sm">${safe(t.issue)}</p><label class="label">Ghi chú phản hồi<textarea name="reply" class="field" maxlength="2000" rows="2">${safe(t.reply || "")}</textarea></label><div class="flex flex-wrap gap-3"><select name="status" class="field flex-1" aria-label="Trạng thái hỗ trợ">${[
+                ["open", "Mới tiếp nhận"],
+                ["processing", "Đang xử lý"],
+                ["resolved", "Đã giải quyết"],
+              ]
+                .map(
+                  ([v, l]) =>
+                    `<option value="${v}" ${t.status === v ? "selected" : ""}>${l}</option>`,
+                )
+                .join(
+                  "",
+                )}</select><button class="primary">Lưu phản hồi</button><button type="button" class="secondary" data-quick-ticket="${safe(t.id)}">Phản hồi nhanh</button></div></form>`,
+          )
+          .join("") || '<p class="empty">Chưa có yêu cầu phù hợp.</p>';
     };
     $("quickReply").addEventListener("click", () => openQuickReply());
-    $("supportRows").addEventListener("click", e => { const b=e.target.closest("[data-quick-ticket]"); if(b)openQuickReply(b.dataset.quickTicket); });
-    $("supportSearch").addEventListener("input",fill); $("supportFilter").addEventListener("change",fill); fill();
-    $("supportForm").addEventListener("submit", e => {
-      e.preventDefault(); const f=e.currentTarget.elements;
-      if (!f.name.value.trim() || !f.issue.value.trim()) return alertMessage("Vui lòng nhập họ tên và nội dung.",true);
-      const t={id:uid(),name:f.name.value.trim(),email:f.email.value.trim(),code:f.code.value.trim(),issue:f.issue.value.trim(),status:"open",reply:"",createdAt:new Date().toISOString()};
-      if(persist(SUPPORT_KEY,[...read(SUPPORT_KEY,[]),t])) { renderSupport(); alertMessage("Đã tiếp nhận yêu cầu."); }
+    $("supportRows").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-quick-ticket]");
+      if (b) openQuickReply(b.dataset.quickTicket);
     });
-    $("supportRows").addEventListener("submit", e => {
-      e.preventDefault(); const f=e.target, all=read(SUPPORT_KEY,[]), i=all.findIndex(t=>t.id===f.dataset.ticket); if(i<0)return;
-      all[i]={...all[i],reply:f.elements.reply.value.trim(),status:f.elements.status.value,updatedAt:new Date().toISOString()};
-      if(persist(SUPPORT_KEY,all)){renderSupport();alertMessage("Đã lưu ghi chú và trạng thái. Phản hồi được lưu trong demo, không gửi email.");}
+    $("supportSearch").addEventListener("input", fill);
+    $("supportFilter").addEventListener("change", fill);
+    fill();
+    $("supportForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const f = e.currentTarget.elements;
+      if (!f.name.value.trim() || !f.issue.value.trim())
+        return alertMessage("Vui lòng nhập họ tên và nội dung.", true);
+      const t = {
+        id: uid(),
+        name: f.name.value.trim(),
+        email: f.email.value.trim(),
+        code: f.code.value.trim(),
+        issue: f.issue.value.trim(),
+        status: "open",
+        reply: "",
+        createdAt: new Date().toISOString(),
+      };
+      if (persist(SUPPORT_KEY, [...read(SUPPORT_KEY, []), t])) {
+        renderSupport();
+        alertMessage("Đã tiếp nhận yêu cầu.");
+      }
+    });
+    $("supportRows").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const f = e.target,
+        all = read(SUPPORT_KEY, []),
+        i = all.findIndex((t) => t.id === f.dataset.ticket);
+      if (i < 0) return;
+      all[i] = {
+        ...all[i],
+        reply: f.elements.reply.value.trim(),
+        status: f.elements.status.value,
+        updatedAt: new Date().toISOString(),
+      };
+      if (persist(SUPPORT_KEY, all)) {
+        renderSupport();
+        alertMessage(
+          "Đã lưu ghi chú và trạng thái. Phản hồi được lưu trong demo, không gửi email.",
+        );
+      }
     });
   }
   function openQuickReply(ticketId) {
     if (!authenticated()) return;
     const tickets = read(SUPPORT_KEY, []);
-    if (!tickets.length) { alertMessage("Hãy tạo yêu cầu hỗ trợ trước.", true); return; }
+    if (!tickets.length) {
+      alertMessage("Hãy tạo yêu cầu hỗ trợ trước.", true);
+      return;
+    }
     $("quickReplyDialog")?.remove();
     const returnFocus = document.activeElement;
     const dialog = document.createElement("dialog");
     dialog.id = "quickReplyDialog";
     dialog.className = "quick-reply-dialog";
     dialog.setAttribute("aria-labelledby", "quickReplyTitle");
-    dialog.innerHTML = `<form id="quickReplyForm" class="space-y-4"><div class="flex justify-between items-start gap-4"><h2 id="quickReplyTitle" class="text-xl font-bold">Phản hồi nhanh</h2><button type="button" class="secondary" id="closeQuickReply" aria-label="Đóng phản hồi nhanh">×</button></div><label class="label">Yêu cầu cần phản hồi<select name="ticket" class="field">${tickets.slice().reverse().map(t=>`<option value="${safe(t.id)}">${safe(t.name)} · ${safe(t.code || t.email)}</option>`).join("")}</select></label><p id="quickReplyIssue" class="text-sm whitespace-pre-wrap text-slate-500"></p><label class="label">Mẫu trả lời<select name="template" class="field"><option value="">Tự nhập nội dung</option><option value="received">Xác nhận tiếp nhận</option><option value="details">Yêu cầu bổ sung thông tin</option><option value="done">Xác nhận đã xử lý</option></select></label><label class="label">Nội dung phản hồi<textarea name="reply" class="field" rows="5" required maxlength="2000"></textarea></label><label class="label">Trạng thái sau phản hồi<select name="status" class="field"><option value="open">Mới tiếp nhận</option><option value="processing">Đang xử lý</option><option value="resolved">Đã giải quyết</option></select></label><p class="text-xs text-slate-500">Phản hồi được lưu trong bản demo, không gửi email.</p><p id="quickReplyError" role="alert" class="text-sm text-red-600"></p><div class="flex justify-end gap-3"><button type="button" class="secondary" id="cancelQuickReply">Hủy</button><button type="submit" class="primary">Lưu phản hồi</button></div></form>`;
+    dialog.innerHTML = `<form id="quickReplyForm" class="space-y-4"><div class="flex justify-between items-start gap-4"><h2 id="quickReplyTitle" class="text-xl font-bold">Phản hồi nhanh</h2><button type="button" class="secondary" id="closeQuickReply" aria-label="Đóng phản hồi nhanh">×</button></div><label class="label">Yêu cầu cần phản hồi<select name="ticket" class="field">${tickets
+      .slice()
+      .reverse()
+      .map(
+        (t) =>
+          `<option value="${safe(t.id)}">${safe(t.name)} · ${safe(t.code || t.email)}</option>`,
+      )
+      .join(
+        "",
+      )}</select></label><p id="quickReplyIssue" class="text-sm whitespace-pre-wrap text-slate-500"></p><label class="label">Mẫu trả lời<select name="template" class="field"><option value="">Tự nhập nội dung</option><option value="received">Xác nhận tiếp nhận</option><option value="details">Yêu cầu bổ sung thông tin</option><option value="done">Xác nhận đã xử lý</option></select></label><label class="label">Nội dung phản hồi<textarea name="reply" class="field" rows="5" required maxlength="2000"></textarea></label><label class="label">Trạng thái sau phản hồi<select name="status" class="field"><option value="open">Mới tiếp nhận</option><option value="processing">Đang xử lý</option><option value="resolved">Đã giải quyết</option></select></label><p class="text-xs text-slate-500">Phản hồi được lưu trong bản demo, không gửi email.</p><p id="quickReplyError" role="alert" class="text-sm text-red-600"></p><div class="flex justify-end gap-3"><button type="button" class="secondary" id="cancelQuickReply">Hủy</button><button type="submit" class="primary">Lưu phản hồi</button></div></form>`;
     document.body.append(dialog);
-    const form = $("quickReplyForm"), fields = form.elements;
-    const close = () => { dialog.close(); dialog.remove(); if (returnFocus?.isConnected) returnFocus.focus(); else $("quickReply")?.focus(); };
+    const form = $("quickReplyForm"),
+      fields = form.elements;
+    const close = () => {
+      dialog.close();
+      dialog.remove();
+      if (returnFocus?.isConnected) returnFocus.focus();
+      else $("quickReply")?.focus();
+    };
     $("closeQuickReply").onclick = close;
     $("cancelQuickReply").onclick = close;
-    dialog.addEventListener("cancel", e => { e.preventDefault(); close(); });
+    dialog.addEventListener("cancel", (e) => {
+      e.preventDefault();
+      close();
+    });
     const loadTicket = () => {
-      const ticket = read(SUPPORT_KEY, []).find(t=>t.id===fields.ticket.value);
+      const ticket = read(SUPPORT_KEY, []).find(
+        (t) => t.id === fields.ticket.value,
+      );
       if (!ticket) return;
       $("quickReplyIssue").textContent = ticket.issue;
       fields.reply.value = ticket.reply || "";
@@ -575,51 +684,152 @@
       fields.template.value = "";
       $("quickReplyError").textContent = "";
     };
-    const selected = tickets.find(t=>t.id===ticketId) || tickets.find(t=>t.status!=="resolved") || tickets[tickets.length-1];
+    const selected =
+      tickets.find((t) => t.id === ticketId) ||
+      tickets.find((t) => t.status !== "resolved") ||
+      tickets[tickets.length - 1];
     fields.ticket.value = selected.id;
     loadTicket();
     fields.ticket.onchange = loadTicket;
     fields.template.onchange = () => {
       const templates = {
-        received: ["TripGo đã tiếp nhận yêu cầu của bạn. Chúng tôi đang kiểm tra và sẽ cập nhật kết quả xử lý.", "processing"],
-        details: ["Vui lòng bổ sung mã đặt chỗ và thông tin liên quan để TripGo hỗ trợ kiểm tra yêu cầu của bạn.", "processing"],
-        done: ["Yêu cầu của bạn đã được xử lý. Vui lòng kiểm tra thông tin cập nhật và liên hệ nếu cần hỗ trợ thêm.", "resolved"],
+        received: [
+          "TripGo đã tiếp nhận yêu cầu của bạn. Chúng tôi đang kiểm tra và sẽ cập nhật kết quả xử lý.",
+          "processing",
+        ],
+        details: [
+          "Vui lòng bổ sung mã đặt chỗ và thông tin liên quan để TripGo hỗ trợ kiểm tra yêu cầu của bạn.",
+          "processing",
+        ],
+        done: [
+          "Yêu cầu của bạn đã được xử lý. Vui lòng kiểm tra thông tin cập nhật và liên hệ nếu cần hỗ trợ thêm.",
+          "resolved",
+        ],
       };
       const template = templates[fields.template.value];
-      if (template) { fields.reply.value = template[0]; fields.status.value = template[1]; }
+      if (template) {
+        fields.reply.value = template[0];
+        fields.status.value = template[1];
+      }
     };
-    form.onsubmit = e => {
+    form.onsubmit = (e) => {
       e.preventDefault();
-      if (!authenticated()) { close(); showAuth(); return; }
+      if (!authenticated()) {
+        close();
+        showAuth();
+        return;
+      }
       const reply = fields.reply.value.trim();
-      if (!reply) { $("quickReplyError").textContent = "Vui lòng nhập nội dung phản hồi."; fields.reply.focus(); return; }
-      const all = read(SUPPORT_KEY, []), index = all.findIndex(t=>t.id===fields.ticket.value);
-      if (index<0) { $("quickReplyError").textContent="Yêu cầu không còn tồn tại. Hãy đóng và tải lại danh sách."; return; }
-      all[index] = { ...all[index], reply, status:fields.status.value, updatedAt:new Date().toISOString() };
-      if (persist(SUPPORT_KEY, all)) { close(); renderSupport(); $("quickReply")?.focus(); alertMessage("Đã lưu phản hồi và trạng thái xử lý."); }
-      else $("quickReplyError").textContent="Không thể lưu phản hồi. Vui lòng thử lại.";
+      if (!reply) {
+        $("quickReplyError").textContent = "Vui lòng nhập nội dung phản hồi.";
+        fields.reply.focus();
+        return;
+      }
+      const all = read(SUPPORT_KEY, []),
+        index = all.findIndex((t) => t.id === fields.ticket.value);
+      if (index < 0) {
+        $("quickReplyError").textContent =
+          "Yêu cầu không còn tồn tại. Hãy đóng và tải lại danh sách.";
+        return;
+      }
+      all[index] = {
+        ...all[index],
+        reply,
+        status: fields.status.value,
+        updatedAt: new Date().toISOString(),
+      };
+      if (persist(SUPPORT_KEY, all)) {
+        close();
+        renderSupport();
+        $("quickReply")?.focus();
+        alertMessage("Đã lưu phản hồi và trạng thái xử lý.");
+      } else
+        $("quickReplyError").textContent =
+          "Không thể lưu phản hồi. Vui lòng thử lại.";
     };
     dialog.showModal();
     fields.reply.focus();
   }
-  function banActive(r) { return r.status === "active" && (!r.until || r.until >= new Date().toLocaleDateString("sv-SE")); }
+  function banActive(r) {
+    return (
+      r.status === "active" &&
+      (!r.until || r.until >= new Date().toLocaleDateString("sv-SE"))
+    );
+  }
   function renderBanned() {
-    const records=read(BAN_KEY,[]);
-    $("content").innerHTML=`<div class="grid xl:grid-cols-[1fr_2fr] gap-6"><form id="banForm" class="card p-6 space-y-4 h-fit"><h2 class="font-bold text-lg" id="banFormTitle">Thêm hồ sơ cấm bay</h2><input name="id" type="hidden"><label class="label">Họ tên<input name="name" class="field" required maxlength="80"></label><label class="label">Số giấy tờ / hộ chiếu<input name="document" class="field" required maxlength="30"></label><label class="label">Lý do<textarea name="reason" class="field" required maxlength="1000" rows="3"></textarea></label><label class="label">Ngày kết thúc (bỏ trống nếu vô thời hạn)<input name="until" type="date" class="field"></label><label class="label">Trạng thái<select name="status" class="field"><option value="active">Đang cấm</option><option value="released">Đã gỡ cấm</option></select></label><div class="flex gap-3"><button class="primary">Lưu hồ sơ</button><button id="resetBan" type="button" class="secondary">Làm mới</button></div></form><div class="card p-6"><h2 class="font-bold text-lg">Danh sách cấm bay (${records.filter(banActive).length} đang hiệu lực)</h2><p class="text-sm text-slate-500 mt-2">Dữ liệu phục vụ quản trị demo. Không tự chặn đặt vé ở trang khách hàng.</p><input id="banSearch" class="field my-5" placeholder="Tìm họ tên hoặc giấy tờ" aria-label="Tìm hồ sơ cấm bay"><div id="banRows" class="space-y-4"></div></div></div>`;
-    const fill=()=> { const q=$("banSearch").value.trim().toLowerCase();
-      $("banRows").innerHTML=records.filter(r=>[r.name,r.document].some(v=>v.toLowerCase().includes(q))).map(r=>`<div class="rounded-xl border border-slate-200 p-4 space-y-2"><div class="flex justify-between gap-3"><b>${safe(r.name)}</b><span class="badge ${banActive(r)?"cancel":"off"}">${banActive(r)?"Đang cấm":r.status==="released"?"Đã gỡ cấm":"Hết hạn"}</span></div><p class="text-sm">Giấy tờ: ${safe(r.document)}</p><p class="whitespace-pre-wrap text-sm text-slate-500">${safe(r.reason)}</p><p class="text-xs text-slate-500">Đến: ${safe(r.until || "Vô thời hạn")}</p><button class="action" data-ban-edit="${safe(r.id)}">Chỉnh sửa</button>${r.status==="active"?`<button class="action danger" data-ban-release="${safe(r.id)}">Gỡ cấm</button>`:""}</div>`).join("") || '<p class="empty">Chưa có hồ sơ phù hợp.</p>'; };
-    fill(); $("banSearch").addEventListener("input",fill);
-    $("resetBan").onclick=()=>{ $("banForm").reset(); $("banFormTitle").textContent="Thêm hồ sơ cấm bay"; };
-    $("banRows").onclick=e=> { const edit=e.target.closest("[data-ban-edit]"), release=e.target.closest("[data-ban-release]");
-      if(edit){const r=records.find(r=>r.id===edit.dataset.banEdit);for(const k of ["id","name","document","reason","until","status"]) $("banForm").elements[k].value=r[k]||"";$("banFormTitle").textContent="Chỉnh sửa hồ sơ";$("banForm").scrollIntoView({behavior:"smooth",block:"start"});}
-      if(release && confirm("Gỡ cấm bay cho hành khách này?")){const all=read(BAN_KEY,[]).map(r=>r.id===release.dataset.banRelease?{...r,status:"released",updatedAt:new Date().toISOString()}:r);if(persist(BAN_KEY,all)){renderBanned();alertMessage("Đã gỡ cấm bay.");}}
+    const records = read(BAN_KEY, []);
+    $("content").innerHTML =
+      `<div class="grid xl:grid-cols-[1fr_2fr] gap-6"><form id="banForm" class="card p-6 space-y-4 h-fit"><h2 class="font-bold text-lg" id="banFormTitle">Thêm hồ sơ cấm bay</h2><input name="id" type="hidden"><label class="label">Họ tên<input name="name" class="field" required maxlength="80"></label><label class="label">Số giấy tờ / hộ chiếu<input name="document" class="field" required maxlength="30"></label><label class="label">Lý do<textarea name="reason" class="field" required maxlength="1000" rows="3"></textarea></label><label class="label">Ngày kết thúc (bỏ trống nếu vô thời hạn)<input name="until" type="date" class="field"></label><label class="label">Trạng thái<select name="status" class="field"><option value="active">Đang cấm</option><option value="released">Đã gỡ cấm</option></select></label><div class="flex gap-3"><button class="primary">Lưu hồ sơ</button><button id="resetBan" type="button" class="secondary">Làm mới</button></div></form><div class="card p-6"><h2 class="font-bold text-lg">Danh sách cấm bay (${records.filter(banActive).length} đang hiệu lực)</h2><p class="text-sm text-slate-500 mt-2">Dữ liệu phục vụ quản trị demo. Không tự chặn đặt vé ở trang khách hàng.</p><input id="banSearch" class="field my-5" placeholder="Tìm họ tên hoặc giấy tờ" aria-label="Tìm hồ sơ cấm bay"><div id="banRows" class="space-y-4"></div></div></div>`;
+    const fill = () => {
+      const q = $("banSearch").value.trim().toLowerCase();
+      $("banRows").innerHTML =
+        records
+          .filter((r) =>
+            [r.name, r.document].some((v) => v.toLowerCase().includes(q)),
+          )
+          .map(
+            (r) =>
+              `<div class="rounded-xl border border-slate-200 p-4 space-y-2"><div class="flex justify-between gap-3"><b>${safe(r.name)}</b><span class="badge ${banActive(r) ? "cancel" : "off"}">${banActive(r) ? "Đang cấm" : r.status === "released" ? "Đã gỡ cấm" : "Hết hạn"}</span></div><p class="text-sm">Giấy tờ: ${safe(r.document)}</p><p class="whitespace-pre-wrap text-sm text-slate-500">${safe(r.reason)}</p><p class="text-xs text-slate-500">Đến: ${safe(r.until || "Vô thời hạn")}</p><button class="action" data-ban-edit="${safe(r.id)}">Chỉnh sửa</button>${r.status === "active" ? `<button class="action danger" data-ban-release="${safe(r.id)}">Gỡ cấm</button>` : ""}</div>`,
+          )
+          .join("") || '<p class="empty">Chưa có hồ sơ phù hợp.</p>';
     };
-    $("banForm").onsubmit=e=>{e.preventDefault();const f=e.currentTarget.elements, all=read(BAN_KEY,[]), id=f.id.value||uid(), doc=f.document.value.trim().toUpperCase();
-      if(!f.name.value.trim()||!doc||!f.reason.value.trim())return alertMessage("Vui lòng nhập đủ thông tin.",true);
-      if(all.some(r=>r.id!==id && r.document.toUpperCase()===doc))return alertMessage("Giấy tờ đã có trong danh sách. Hãy chỉnh sửa hồ sơ hiện có.",true);
-      const item={id,name:f.name.value.trim(),document:doc,reason:f.reason.value.trim(),until:f.until.value,status:f.status.value,updatedAt:new Date().toISOString()};
-      const i=all.findIndex(r=>r.id===id); if(i<0)all.push(item);else all[i]={...all[i],...item};
-      if(persist(BAN_KEY,all)){renderBanned();alertMessage("Đã lưu hồ sơ cấm bay.");}
+    fill();
+    $("banSearch").addEventListener("input", fill);
+    $("resetBan").onclick = () => {
+      $("banForm").reset();
+      $("banFormTitle").textContent = "Thêm hồ sơ cấm bay";
+    };
+    $("banRows").onclick = (e) => {
+      const edit = e.target.closest("[data-ban-edit]"),
+        release = e.target.closest("[data-ban-release]");
+      if (edit) {
+        const r = records.find((r) => r.id === edit.dataset.banEdit);
+        for (const k of ["id", "name", "document", "reason", "until", "status"])
+          $("banForm").elements[k].value = r[k] || "";
+        $("banFormTitle").textContent = "Chỉnh sửa hồ sơ";
+        $("banForm").scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      if (release && confirm("Gỡ cấm bay cho hành khách này?")) {
+        const all = read(BAN_KEY, []).map((r) =>
+          r.id === release.dataset.banRelease
+            ? { ...r, status: "released", updatedAt: new Date().toISOString() }
+            : r,
+        );
+        if (persist(BAN_KEY, all)) {
+          renderBanned();
+          alertMessage("Đã gỡ cấm bay.");
+        }
+      }
+    };
+    $("banForm").onsubmit = (e) => {
+      e.preventDefault();
+      const f = e.currentTarget.elements,
+        all = read(BAN_KEY, []),
+        id = f.id.value || uid(),
+        doc = f.document.value.trim().toUpperCase();
+      if (!f.name.value.trim() || !doc || !f.reason.value.trim())
+        return alertMessage("Vui lòng nhập đủ thông tin.", true);
+      if (all.some((r) => r.id !== id && r.document.toUpperCase() === doc))
+        return alertMessage(
+          "Giấy tờ đã có trong danh sách. Hãy chỉnh sửa hồ sơ hiện có.",
+          true,
+        );
+      const item = {
+        id,
+        name: f.name.value.trim(),
+        document: doc,
+        reason: f.reason.value.trim(),
+        until: f.until.value,
+        status: f.status.value,
+        updatedAt: new Date().toISOString(),
+      };
+      const i = all.findIndex((r) => r.id === id);
+      if (i < 0) all.push(item);
+      else all[i] = { ...all[i], ...item };
+      if (persist(BAN_KEY, all)) {
+        renderBanned();
+        alertMessage("Đã lưu hồ sơ cấm bay.");
+      }
     };
   }
   function getMonthKey(dateValue) {
@@ -934,9 +1144,18 @@
     const rows = bookings.slice().reverse();
     $("content").innerHTML =
       `<div class="card"><div class="booking-tools"><h2 class="font-bold">Danh sách vé đã đặt <span id="bookingCount" class="text-slate-400 font-normal">(${rows.length})</span></h2><div class="booking-filters"><input id="bookingSearch" class="field" aria-label="Tìm vé đã đặt" placeholder="Tìm mã vé, hành khách, chuyến bay"><select id="bookingStatus" class="field" aria-label="Lọc theo trạng thái"><option value="all">Tất cả trạng thái</option><option value="confirmed">Đã xác nhận</option><option value="pending">Chờ thanh toán</option><option value="cancelled">Đã hủy</option></select><button id="exportBookingsCsv" class="secondary">Xuất CSV</button></div></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Mã vé</th><th>Hành khách</th><th>Chuyến bay</th><th>Ngày đi</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody id="bookingRows"></tbody></table></div><div class="p-4 flex items-center justify-between gap-3"><span id="bookingProgress" class="text-sm text-slate-500"></span><button id="moreBookings" class="secondary hidden">Xem thêm 10 vé</button></div></div>`;
-    $("bookingSearch").addEventListener("input", () => { bookingLimit = 10; fillBookings(); });
-    $("bookingStatus").addEventListener("change", () => { bookingLimit = 10; fillBookings(); });
-    $("moreBookings").addEventListener("click", () => { bookingLimit += 10; fillBookings(); });
+    $("bookingSearch").addEventListener("input", () => {
+      bookingLimit = 10;
+      fillBookings();
+    });
+    $("bookingStatus").addEventListener("change", () => {
+      bookingLimit = 10;
+      fillBookings();
+    });
+    $("moreBookings").addEventListener("click", () => {
+      bookingLimit += 10;
+      fillBookings();
+    });
     $("exportBookingsCsv").addEventListener("click", exportBookingsCsv);
     fillBookings();
   }
@@ -973,10 +1192,15 @@
         );
       });
     $("bookingCount").textContent = `(${matches.length}/${bookings.length})`;
-    $("bookingProgress").textContent = `Hiển thị ${Math.min(bookingLimit, matches.length)} / ${matches.length} vé`;
-    $("moreBookings").classList.toggle("hidden", matches.length <= bookingLimit);
+    $("bookingProgress").textContent =
+      `Hiển thị ${Math.min(bookingLimit, matches.length)} / ${matches.length} vé`;
+    $("moreBookings").classList.toggle(
+      "hidden",
+      matches.length <= bookingLimit,
+    );
     $("bookingRows").innerHTML = matches.length
-      ? matches.slice(0, bookingLimit)
+      ? matches
+          .slice(0, bookingLimit)
           .map((booking) => {
             const bookingStatus = bookingState(booking);
             const code = booking.bookingCode || booking.code;
@@ -1261,12 +1485,19 @@
     if (event.target === $("serviceModal")) closeServiceModal();
   });
   $("content").addEventListener("click", handleAction);
-  $("content").addEventListener("click", e => { const b=e.target.closest("[data-go]"); if(b){page=b.dataset.go;render();} });
+  $("content").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-go]");
+    if (b) {
+      page = b.dataset.go;
+      render();
+    }
+  });
   window.addEventListener("storage", (event) => {
     if (event.key === SERVICE_KEY && page === "services") renderServices();
     if (event.key === SUPPORT_KEY && page === "support") render();
     if (event.key === BAN_KEY && page === "banned") render();
-    if (event.key === THEME_KEY) setTheme(localStorage.getItem(THEME_KEY) || "light");
+    if (event.key === THEME_KEY)
+      setTheme(localStorage.getItem(THEME_KEY) || "light");
     if (Object.values(KEYS).includes(event.key)) showAuth();
   });
   ensureAdmin();
