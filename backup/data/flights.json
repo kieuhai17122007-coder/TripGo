@@ -1,8 +1,0 @@
-[
-  {"id":"TG001","from":"HAN","to":"DAD","departure":"06:30","arrival":"07:55","price":1250000,"aircraft":"Airbus A321"},
-  {"id":"TG002","from":"HAN","to":"DAD","departure":"09:15","arrival":"10:40","price":1390000,"aircraft":"Airbus A320"},
-  {"id":"TG003","from":"HAN","to":"SGN","departure":"07:00","arrival":"09:10","price":1850000,"aircraft":"Airbus A321"},
-  {"id":"TG004","from":"HAN","to":"SGN","departure":"13:30","arrival":"15:40","price":1990000,"aircraft":"Airbus A321"},
-  {"id":"TG005","from":"SGN","to":"PQC","departure":"08:10","arrival":"09:10","price":990000,"aircraft":"Airbus A320"},
-  {"id":"TG006","from":"SGN","to":"DAD","departure":"15:20","arrival":"16:40","price":1150000,"aircraft":"Airbus A320"}
-]
