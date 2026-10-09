@@ -32,7 +32,9 @@
 <div class="price-panel"><div><span>Giá vé</span><b id="price">0 VNĐ</b></div><div><span>Phụ thu</span><b>0 VNĐ</b></div><div class="grand"><span>Tổng thanh toán</span><strong id="total">0 VNĐ</strong></div></div>
 <div class="booking-actions"><button class="secondary-btn" onclick="location.href='/src/pages/seat.html'">← Quay lại</button><button class="primary-btn" onclick="location.href='/src/pages/payment.html'">Tiếp tục thanh toán →</button></div>
 </section></div></main>
-<script>
-const p=JSON.parse(localStorage.getItem('tripgo_passenger')||'null'),f=JSON.parse(localStorage.getItem('tripgo_selected_flight')||'null'),seats=JSON.parse(localStorage.getItem('tripgo_selected_seats')||'[]'); const s=seats.length?seats.join(', '):(localStorage.getItem('tripgo_selected_seat')||'---'); const count=Math.max(1,Number(f?.search?.passengers||1)),total=Number(f?.price||0)*count;
-if(p){for(const [id,key] of [['name','name'],['email','email'],['phone','phone'],['document','document']])document.getElementById(id).textContent=p[key]||'---'} if(f){from.textContent=f.from||'---';to.textContent=f.to||'---';date.textContent=f.search?.departure||'---';flight.textContent=f.id||'---';seat.textContent=s;classType.textContent=f.search?.classType||'Phổ thông';document.getElementById('count').textContent=count;price.textContent=Number(f.price||0).toLocaleString('vi-VN')+' VNĐ × '+count;totalEl= document.getElementById('total');totalEl.textContent=total.toLocaleString('vi-VN')+' VNĐ'}
+<script type="module">
+import {read,normalizeFlight} from '../js/seat-store.js';
+const p=read('tripgo_passenger',{}),f=normalizeFlight(read('tripgo_selected_flight',{})),seats=read('tripgo_selected_seats');
+const values={name:p.name,email:p.email,phone:p.phone,document:p.document,from:f.from,to:f.to,date:f.date,flight:f.id,seat:seats.join(', '),classType:f.classType,count:f.passengers,price:f.price.toLocaleString('vi-VN')+' VNĐ × '+f.passengers,total:(f.price*f.passengers).toLocaleString('vi-VN')+' VNĐ'};
+for(const [id,value] of Object.entries(values))document.getElementById(id).textContent=value || '---';
 </script><script type="module" src="/src/js/booking-guard.js"></script><script type="module" src="/src/js/auth-page.js"></script></body></html>

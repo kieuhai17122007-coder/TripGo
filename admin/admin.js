@@ -1,3 +1,4 @@
+import { renderSeatManagement } from "./admin-seats.js";
 import "../src/js/auth.js";
 import { createManagement, normalizeBooking, recordAudit } from "./admin-management.js";
 
@@ -232,6 +233,7 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
   }
   function header() {
     const titles = {
+      seats: ["Quản lý ghế", "Sơ đồ máy bay 2D, ghế đã đặt và khóa ghế theo ngày bay."],
       schedule: ["Lịch bay", "Theo dõi lịch theo ngày, trạng thái và số chỗ còn lại."],
       data: ["Sao lưu & khôi phục", "Chuyển dữ liệu quản lý giữa các máy bằng JSON."],
       audit: ["Nhật ký thao tác", "Tra cứu các lần cập nhật dữ liệu từ admin."],
@@ -282,6 +284,7 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
       quick.className = "grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6";
       quick.innerHTML = [
         ["flights", "✈", "Chuyến bay"],
+        ["seats", "▦", "Quản lý ghế 2D"],
         ["bookings", "▤", "Quản lý vé"],
         ["services", "▣", "Dịch vụ"],
         ["support", "◉", "Hỗ trợ khách hàng"],
@@ -299,6 +302,7 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
         .join("");
       $("content").prepend(quick);
     }
+    if (page === "seats") renderSeatManagement({safe, write, alertMessage});
     if (page === "flights") renderFlights();
     if (page === "bookings") renderBookings();
     if (page === "customers") renderCustomers();
@@ -1666,6 +1670,7 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
     }
   });
   window.addEventListener("storage", (event) => {
+    if (event.key === "tripgo_seat_maps" && page === "seats") render();
     if (event.key === SERVICE_KEY && page === "services") renderServices();
     if (event.key === SUPPORT_KEY && page === "support") render();
     if (event.key === BAN_KEY && page === "banned") render();
