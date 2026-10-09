@@ -185,6 +185,277 @@ body {
   letter-spacing: -0.035em;
   white-space: nowrap;
 }
+.report-charts {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.85fr);
+  gap: 16px;
+  margin-top: 24px;
+}
+.report-chart-card {
+  min-width: 0;
+  padding: 20px;
+}
+.report-chart-flow {
+  grid-row: span 2;
+}
+.report-chart-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.report-chart-heading h3 {
+  margin: 0;
+  color: #17243d;
+  font-size: 16px;
+  font-weight: 750;
+}
+.report-chart-heading p,
+.report-chart-footnote {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.report-chart-period {
+  flex: none;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 700;
+}
+.report-flow-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 18px 0 4px;
+  color: #64748b;
+  font-size: 11px;
+}
+.report-flow-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.report-flow-legend i {
+  width: 15px;
+  height: 8px;
+  border-radius: 3px;
+  background: #3b82f6;
+}
+.report-flow-legend span:last-child i {
+  height: 3px;
+  background: #f59e0b;
+}
+.report-chart-scroll {
+  overflow-x: auto;
+}
+.report-flow-svg {
+  display: block;
+  width: 100%;
+  min-width: 520px;
+  overflow: visible;
+}
+.report-chart-gridline {
+  stroke: #e8eef7;
+  stroke-width: 1;
+  stroke-dasharray: 4 6;
+}
+.report-chart-value,
+.report-chart-month {
+  fill: #64748b;
+  font-family: inherit;
+  font-size: 12px;
+}
+.report-chart-value {
+  fill: #334155;
+  font-size: 11px;
+  font-weight: 700;
+}
+.report-booking-flow {
+  fill: none;
+  stroke: #f59e0b;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 2px 3px #f59e0b40);
+}
+.report-booking-point {
+  fill: #fff;
+  stroke: #f59e0b;
+  stroke-width: 3;
+}
+.report-chart-column rect {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: report-column-rise 550ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.report-chart-column:nth-of-type(2) rect { animation-delay: 50ms; }
+.report-chart-column:nth-of-type(3) rect { animation-delay: 100ms; }
+.report-chart-column:nth-of-type(4) rect { animation-delay: 150ms; }
+.report-chart-column:nth-of-type(5) rect { animation-delay: 200ms; }
+.report-chart-column:nth-of-type(6) rect { animation-delay: 250ms; }
+@keyframes report-column-rise {
+  from { transform: scaleY(0.05); opacity: 0.4; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+.report-pie-layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  min-height: 215px;
+}
+.report-pie-wrap {
+  display: grid;
+  flex: none;
+  justify-items: center;
+  gap: 9px;
+}
+.report-pie {
+  width: 156px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: conic-gradient(var(--report-pie));
+  box-shadow: inset 0 0 0 1px #0f172a0d, 0 8px 22px #0f172a12;
+}
+.report-pie-wrap > strong {
+  color: #334155;
+  font-size: 13px;
+}
+.report-pie-legend {
+  display: grid;
+  gap: 13px;
+  min-width: 145px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.report-pie-legend li {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  color: #64748b;
+  font-size: 12px;
+}
+.report-legend-key {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  background: var(--legend-color);
+}
+.report-pie-legend strong {
+  color: #17243d;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.report-pie-legend small {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 500;
+}
+.report-ratio-card {
+  align-self: start;
+}
+.report-change-list {
+  display: grid;
+  gap: 19px;
+  margin-top: 22px;
+}
+.report-change-row {
+  display: grid;
+  gap: 8px;
+}
+.report-change-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #334155;
+  font-size: 13px;
+}
+.report-change-value {
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.report-change-value.is-positive { color: #15803d; }
+.report-change-value.is-negative { color: #dc2626; }
+.report-change-track {
+  position: relative;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: linear-gradient(to right, #fee2e2 0 50%, #dcfce7 50% 100%);
+}
+.report-change-track::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  background: #64748b;
+  content: "";
+}
+.report-change-track span {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  width: var(--change-width);
+  border-radius: 999px;
+}
+.report-change-track.is-positive span {
+  left: 50%;
+  background: #22c55e;
+}
+.report-change-track.is-negative span {
+  right: 50%;
+  background: #ef4444;
+}
+.report-change-row p {
+  margin: 0;
+  color: #64748b;
+  font-size: 11px;
+}
+.report-change-row p span {
+  padding: 0 4px;
+  color: #cbd5e1;
+}
+.admin-dark .report-chart-heading h3,
+.admin-dark .report-chart-value,
+.admin-dark .report-pie-wrap > strong,
+.admin-dark .report-pie-legend strong,
+.admin-dark .report-change-heading {
+  color: #e2e8f0;
+}
+.admin-dark .report-chart-heading p,
+.admin-dark .report-chart-footnote,
+.admin-dark .report-flow-legend,
+.admin-dark .report-chart-month,
+.admin-dark .report-pie-legend li,
+.admin-dark .report-pie-legend small,
+.admin-dark .report-change-row p {
+  color: #a8b6ca;
+}
+.admin-dark .report-chart-gridline {
+  stroke: #334155;
+}
+.admin-dark .report-booking-point {
+  fill: #152238;
+}
+.admin-dark .report-chart-period {
+  background: #1c3455;
+  color: #bfdbfe;
+}
+.admin-dark .report-pie {
+  box-shadow: inset 0 0 0 1px #ffffff12, 0 8px 22px #00000030;
+}
+.admin-dark .report-pie-legend small {
+  color: #a8b6ca;
+}
 .chip {
   display: inline-flex;
   align-items: center;
@@ -400,6 +671,15 @@ body {
   .admin-main {
     width: 100%;
   }
+  .report-charts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .report-chart-flow {
+    grid-row: auto;
+  }
+  .report-pie-layout {
+    justify-content: flex-start;
+  }
   .booking-tools {
     align-items: stretch;
     flex-direction: column;
@@ -593,6 +873,14 @@ a:focus-visible {
 .admin-dark .badge:not(.off):not(.cancel) {
   background: #174533;
   color: #bbf7d0;
+}
+@media (max-width: 1100px) {
+  .report-charts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .report-chart-flow {
+    grid-row: auto;
+  }
 }
 @media (max-width: 1023px) {
   .booking-tools {
