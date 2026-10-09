@@ -28,16 +28,7 @@
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" media="print" onload="this.media='all'" onerror="this.media='all'" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="style.css" media="print" onload="this.media='all'" onerror="this.media='all'" />
-    <style type="text/tailwindcss">
-@layer components {
-.card { @apply rounded-2xl border border-slate-200 bg-white shadow-sm; }
-.primary { @apply rounded-xl bg-blue-700 px-4 py-2.5 font-semibold text-white hover:bg-blue-800 focus-visible:ring-4 focus-visible:ring-blue-200; }
-.secondary { @apply rounded-xl border border-slate-200 bg-white px-4 py-2.5 font-semibold text-slate-700 hover:bg-slate-50; }
-.field { @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500; }
-.nav { @apply flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold hover:bg-blue-50; }
-.action { @apply cursor-pointer text-blue-700 hover:underline; }
-}
-    </style>
+
   <link rel="stylesheet" href="./admin-effects.css" media="print" onload="this.media='all'" onerror="this.media='all'">
   <style>
     body > :not(#adminLoader) {
@@ -202,6 +193,9 @@
           ><button data-page="support" class="nav">
             <i class="fa-solid fa-headset"></i> <span>Hỗ trợ</span>
           </button>
+          <button data-page="schedule" class="nav">▦ <span>Lịch bay</span></button>
+          <button data-page="data" class="nav">⇅ <span>Sao lưu & khôi phục</span></button>
+          <button data-page="audit" class="nav">◷ <span>Nhật ký thao tác</span></button>
           <button data-page="banned" class="nav">⊘ <span>Cấm bay</span></button>
         </nav>
         <main class="admin-main flex-1 min-w-0 p-4 sm:p-6 md:py-8">
