@@ -610,10 +610,13 @@ function selectFlight(
 
     localStorage.setItem(
         "tripgo_selected_flight",
-        JSON.stringify(selectedFlight)
+        JSON.stringify({...selectedFlight, id: flight.id, date: departure, departure: flight.departure, arrival: flight.arrival, price: totalPrice / passengers, search: {passengers, departure, classType: ticketClass === "business" ? "Thương gia" : "Phổ thông"}})
     );
 
 
+    localStorage.removeItem("tripgo_selected_seats");
+    localStorage.removeItem("tripgo_selected_seat");
+    localStorage.removeItem("tripgo_selected_seat_flight");
     window.location.href =
         "/src/pages/passenger.html";
 }

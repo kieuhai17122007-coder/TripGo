@@ -10,7 +10,7 @@ export function normalizeBooking(b, flights) {
 }
 export function recordAudit(read, key, count) {
   if (key === AUDIT_KEY) return;
-  const labels = {tripgo_flights:'Chuyến bay',tripgo_bookings:'Vé đặt',tripgo_services:'Dịch vụ',tripgo_admin_support:'Hỗ trợ',tripgo_banned_passengers:'Cấm bay'};
+  const labels = {tripgo_seat_maps:'Sơ đồ ghế',tripgo_flights:'Chuyến bay',tripgo_bookings:'Vé đặt',tripgo_services:'Dịch vụ',tripgo_admin_support:'Hỗ trợ',tripgo_banned_passengers:'Cấm bay'};
   if (!labels[key]) return;
   try {
     const entries = read(AUDIT_KEY, []);
@@ -18,19 +18,20 @@ export function recordAudit(read, key, count) {
     localStorage.setItem(AUDIT_KEY, JSON.stringify(entries.slice(-500)));
   } catch { /* Business writes remain successful when the optional log is full. */ }
 }
-const BACKUP_LABELS = {tripgo_flights:'Chuyến bay',tripgo_bookings:'Vé đã đặt',tripgo_services:'Dịch vụ',tripgo_admin_support:'Hỗ trợ',tripgo_banned_passengers:'Cấm bay'};
-const BACKUP_KEYS = ['tripgo_flights','tripgo_bookings','tripgo_services','tripgo_admin_support','tripgo_banned_passengers'];
+const BACKUP_LABELS = {tripgo_seat_maps:'Sơ đồ ghế',tripgo_flights:'Chuyến bay',tripgo_bookings:'Vé đã đặt',tripgo_services:'Dịch vụ',tripgo_admin_support:'Hỗ trợ',tripgo_banned_passengers:'Cấm bay'};
+const BACKUP_KEYS = ['tripgo_seat_maps','tripgo_flights','tripgo_bookings','tripgo_services','tripgo_admin_support','tripgo_banned_passengers'];
 export function validateBackup(value) {
   if (!value || value.app !== 'TripGo' || value.version !== 1 || !value.data) throw Error('Đây không phải bản sao lưu TripGo phiên bản 1.');
   const result = {};
   for (const key of BACKUP_KEYS) {
-    const rows = value.data[key];
+    const rows = key==='tripgo_seat_maps' ? (value.data[key] ?? []) : value.data[key];
     if (!Array.isArray(rows) || rows.length > 20000 || rows.some(r => !r || typeof r !== 'object' || Array.isArray(r))) throw Error(`Dữ liệu ${key} không hợp lệ.`);
     const ids = new Set();
     for (const r of rows) {
       const id = key === 'tripgo_bookings' ? r.bookingCode || r.code : r.id;
       if (typeof id !== 'string' || !id.trim() || ids.has(id)) throw Error(`Mã rỗng hoặc trùng trong ${key}.`);
       ids.add(id);
+      if (key === 'tripgo_seat_maps' && (!Array.isArray(r.blocked) || !Array.isArray(r.demoBooked) || [...r.blocked,...r.demoBooked].some(s=>typeof s!=='string' || !/^([1-9]|1[0-9]|20)[A-F]$/.test(s)) || new Set([...r.blocked,...r.demoBooked]).size!==r.blocked.length+r.demoBooked.length)) throw Error('Sơ đồ ghế không hợp lệ.');
       if (key === 'tripgo_flights' && (!/^[A-Z0-9-]{2,20}$/.test(r.id) || typeof r.from !== 'string' || typeof r.to !== 'string' || r.from === r.to || !/^\d{4}-\d{2}-\d{2}$/.test(r.date || '') || !Number.isFinite(r.price) || r.price < 0 || !Number.isInteger(r.seats) || r.seats < 0 || !['active','flying','cancelled','deleted'].includes(r.status))) throw Error('Thông tin chuyến bay không hợp lệ.');
       if (key === 'tripgo_flights' && (new Date(r.date + 'T12:00:00Z').toISOString().slice(0,10) !== r.date || !/^([01]\d|2[0-3]):[0-5]\d$/.test(r.departure || '') || !/^([01]\d|2[0-3]):[0-5]\d$/.test(r.arrival || ''))) throw Error('Ngày hoặc giờ bay không hợp lệ.');
       if (key === 'tripgo_banned_passengers' && (typeof r.name !== 'string' || typeof r.document !== 'string' || typeof r.reason !== 'string' || !['active','released'].includes(r.status))) throw Error('Hồ sơ cấm bay không hợp lệ.');
@@ -86,7 +87,7 @@ export function createManagement(ctx) {
   function renderData() {
     let pending=null;
     const data=snapshot();
-    $('content').innerHTML=`<div class="grid lg:grid-cols-2 gap-6"><section class="card p-6 space-y-4"><h2 class="text-xl font-bold">Sao lưu dữ liệu quản lý</h2><p class="text-sm text-slate-500">Xuất chuyến bay, vé, dịch vụ, hỗ trợ và danh sách cấm bay. Tài khoản, mật khẩu và phiên đăng nhập không được xuất.</p><ul>${BACKUP_KEYS.map(k=>`<li>${safe(BACKUP_LABELS[k])}: <b>${data[k].length}</b> bản ghi</li>`).join('')}</ul><button id="backupExport" class="primary">Tải bản sao lưu JSON</button><p class="text-sm text-slate-500">Chuyển tệp sang máy khác rồi nhập tại đây. Git pull không tự mang dữ liệu localStorage sang máy khác.</p></section><section class="card p-6 space-y-4"><h2 class="text-xl font-bold">Khôi phục dữ liệu</h2><p class="text-sm text-slate-500">Chọn bản sao lưu TripGo (tối đa 10 MB). Kiểm tra số lượng trước khi áp dụng; thao tác thay thế 5 nhóm dữ liệu quản lý hiện có.</p><input id="backupFile" class="field" type="file" accept=".json,application/json" aria-label="Chọn bản sao lưu JSON"><div id="backupPreview" class="text-sm whitespace-pre-wrap" role="status"></div><label class="flex gap-3 items-center"><input id="backupAccept" type="checkbox">Tôi đồng ý thay thế dữ liệu quản lý hiện có</label><button id="backupRestore" class="primary" disabled>Khôi phục dữ liệu</button></section></div>`;
+    $('content').innerHTML=`<div class="grid lg:grid-cols-2 gap-6"><section class="card p-6 space-y-4"><h2 class="text-xl font-bold">Sao lưu dữ liệu quản lý</h2><p class="text-sm text-slate-500">Xuất chuyến bay, vé, dịch vụ, hỗ trợ và danh sách cấm bay. Tài khoản, mật khẩu và phiên đăng nhập không được xuất.</p><ul>${BACKUP_KEYS.map(k=>`<li>${safe(BACKUP_LABELS[k])}: <b>${data[k].length}</b> bản ghi</li>`).join('')}</ul><button id="backupExport" class="primary">Tải bản sao lưu JSON</button><p class="text-sm text-slate-500">Chuyển tệp sang máy khác rồi nhập tại đây. Git pull không tự mang dữ liệu localStorage sang máy khác.</p></section><section class="card p-6 space-y-4"><h2 class="text-xl font-bold">Khôi phục dữ liệu</h2><p class="text-sm text-slate-500">Chọn bản sao lưu TripGo (tối đa 10 MB). Kiểm tra số lượng trước khi áp dụng; thao tác thay thế 6 nhóm dữ liệu quản lý hiện có.</p><input id="backupFile" class="field" type="file" accept=".json,application/json" aria-label="Chọn bản sao lưu JSON"><div id="backupPreview" class="text-sm whitespace-pre-wrap" role="status"></div><label class="flex gap-3 items-center"><input id="backupAccept" type="checkbox">Tôi đồng ý thay thế dữ liệu quản lý hiện có</label><button id="backupRestore" class="primary" disabled>Khôi phục dữ liệu</button></section></div>`;
     $('backupExport').onclick=()=>download(`tripgo-backup-${ctx.localToday()}.json`,{app:'TripGo',version:1,createdAt:new Date().toISOString(),data:snapshot()});
     const update=()=>{$('backupRestore').disabled=!pending || !$('backupAccept').checked;};
     $('backupAccept').onchange=update;
