@@ -8,7 +8,7 @@ const params = new URLSearchParams(location.search);
 const returnUrl = params.get('returnUrl') || '/';
 
 if (window.TripGoAuth?.isLoggedIn()) {
-  location.replace(window.TripGoAuth.isAdmin() ? '/src/pages/admin.html' : '/');
+  location.replace(window.TripGoAuth.isAdmin() ? '/admin/' : '/');
 }
 
 form?.addEventListener('submit', event => {
@@ -37,7 +37,7 @@ form?.addEventListener('submit', event => {
   result.textContent = 'Đăng nhập thành công.';
 
   const destination = user.role === 'admin'
-    ? '/src/pages/admin.html'
+    ? '/admin/'
     : (returnUrl.startsWith('/') ? returnUrl : '/');
 
   setTimeout(() => location.replace(destination), 250);

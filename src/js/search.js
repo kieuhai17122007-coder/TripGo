@@ -1,5 +1,5 @@
 
-const flights = [
+const defaultFlights = [
     {
         id: "TG101",
         airline: "Vietnam Airlines",
@@ -88,6 +88,26 @@ const flights = [
         price: 1350000
     }
 ];
+let flights = defaultFlights;
+
+function readFlights() {
+    try {
+        const savedFlights = localStorage.getItem("tripgo_flights");
+        if (savedFlights === null) {
+            flights = defaultFlights;
+            return;
+        }
+
+        const parsedFlights = JSON.parse(savedFlights);
+        if (!Array.isArray(parsedFlights)) {
+            throw new TypeError("The flight catalog must be an array.");
+        }
+        flights = parsedFlights;
+    } catch (error) {
+        console.error("Could not read the TripGo flight catalog", error);
+        flights = defaultFlights;
+    }
+}
 
 
 const fromInput = document.getElementById("from");
@@ -123,6 +143,15 @@ const flightResults =
 
 
 returnGroup.style.display = "none";
+readFlights();
+
+const searchParams = new URLSearchParams(window.location.search);
+if (searchParams.has("from")) {
+    fromInput.value = searchParams.get("from");
+}
+if (searchParams.has("to")) {
+    toInput.value = searchParams.get("to");
+}
 
 
 const today =
@@ -161,6 +190,27 @@ tripTypeInputs.forEach(function (radio) {
 
 });
 
+if (searchParams.has("departure")) {
+    departureInput.value = searchParams.get("departure");
+}
+if (searchParams.has("returnDate")) {
+    returnInput.value = searchParams.get("returnDate");
+}
+if (searchParams.has("passengers")) {
+    passengersInput.value = searchParams.get("passengers");
+}
+if (searchParams.has("ticketClass")) {
+    ticketClassInput.value = searchParams.get("ticketClass");
+}
+if (searchParams.has("tripType")) {
+    const tripType = Array.from(tripTypeInputs).find(
+        radio => radio.value === searchParams.get("tripType")
+    );
+    if (tripType) {
+        tripType.checked = true;
+        tripType.dispatchEvent(new Event("change"));
+    }
+}
 
 departureInput.addEventListener(
     "change",
@@ -177,6 +227,10 @@ searchButton.addEventListener(
     "click",
     searchFlights
 );
+
+if (searchParams.has("departure")) {
+    searchFlights();
+}
 
 
 function searchFlights() {
@@ -280,9 +334,11 @@ function searchFlights() {
 
             return (
                 flight.from === from &&
-                flight.to === to
+                flight.to === to &&
+                (flight.status === undefined || flight.status === "active") &&
+                (!flight.date || flight.date === departure) &&
+                (flight.seats === undefined || Number(flight.seats) >= passengers)
             );
-
         });
 
 
@@ -373,6 +429,7 @@ function displayFlights(
             "flight-card";
 
 
+        const duration = flight.duration || getFlightDuration(flight.departure, flight.arrival);
         card.innerHTML = `
 
             <div class="flight-top">
@@ -380,11 +437,11 @@ function displayFlights(
                 <div>
 
                     <div class="airline">
-                        ${flight.airline}
+                        ${escapeHtml(flight.airline)}
                     </div>
 
                     <div class="flight-number">
-                        Chuyến bay ${flight.id}
+                        Chuyến bay ${escapeHtml(flight.id)}
                     </div>
 
                 </div>
@@ -398,11 +455,11 @@ function displayFlights(
                 <div>
 
                     <div class="flight-time">
-                        ${flight.departure}
+                        ${escapeHtml(flight.departure)}
                     </div>
 
                     <div class="airport">
-                        ${flight.from}
+                        ${escapeHtml(getAirportName(flight.from))}
                     </div>
 
                 </div>
@@ -411,7 +468,7 @@ function displayFlights(
                 <div class="route">
 
                     <div class="duration">
-                        ${flight.duration}
+                        ${escapeHtml(duration)}
                     </div>
 
                     <div class="route-line"></div>
@@ -426,11 +483,11 @@ function displayFlights(
                 <div>
 
                     <div class="flight-time">
-                        ${flight.arrival}
+                        ${escapeHtml(flight.arrival)}
                     </div>
 
                     <div class="airport">
-                        ${flight.to}
+                        ${escapeHtml(getAirportName(flight.to))}
                     </div>
 
                 </div>
@@ -534,7 +591,7 @@ function selectFlight(
             flight.arrival,
 
         duration:
-            flight.duration,
+            flight.duration || getFlightDuration(flight.departure, flight.arrival),
 
         passengers:
             passengers,
@@ -558,8 +615,50 @@ function selectFlight(
 
 
     window.location.href =
-        "passenger.html";
+        "/src/pages/passenger.html";
 }
+
+function getFlightDuration(departure, arrival) {
+    if (!departure || !arrival) return "Thời gian chưa cập nhật";
+    const [departureHour, departureMinute] = departure.split(":").map(Number);
+    const [arrivalHour, arrivalMinute] = arrival.split(":").map(Number);
+    let minutes = arrivalHour * 60 + arrivalMinute - (departureHour * 60 + departureMinute);
+    if (minutes < 0) minutes += 24 * 60;
+    return `${Math.floor(minutes / 60)} giờ ${minutes % 60} phút`;
+}
+
+function getAirportName(code) {
+    const airports = {
+        HAN: "Hà Nội",
+        SGN: "TP. Hồ Chí Minh",
+        DAD: "Đà Nẵng",
+        PQC: "Phú Quốc",
+        CXR: "Nha Trang",
+        HPH: "Hải Phòng",
+        HUI: "Huế",
+        VCA: "Cần Thơ",
+        UIH: "Quy Nhơn",
+        VDO: "Vân Đồn"
+    };
+    return airports[code] || code;
+}
+
+function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[character]);
+}
+
+window.addEventListener("storage", event => {
+    if (event.key === "tripgo_flights") {
+        readFlights();
+        if (departureInput.value) searchFlights();
+    }
+});
 
 
 function formatPrice(price) {
@@ -585,4 +684,3 @@ function clearError() {
         "";
 
 }
-

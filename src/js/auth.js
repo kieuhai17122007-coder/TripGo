@@ -74,7 +74,7 @@ function requireLogin(returnUrl = location.pathname + location.search) {
 function requireAdmin() {
   if (isAdmin()) return true;
   if (!isLoggedIn()) {
-    location.replace('/src/pages/login.html?returnUrl=/src/pages/admin.html');
+    location.replace('/src/pages/login.html?returnUrl=/admin/');
     return false;
   }
   location.replace('/');
@@ -83,6 +83,7 @@ function requireAdmin() {
 
 function logout() {
   localStorage.removeItem(CURRENT_USER_KEY);
+  localStorage.removeItem('tripgo_session');
   location.replace('/');
 }
 
@@ -119,7 +120,7 @@ function updateAuthUI() {
       </button>
       <div class="account-dropdown">
         ${user.role === 'admin'
-          ? '<a href="/src/pages/admin.html">⚙ Quản trị</a>'
+          ? '<a href="/admin/">⚙ Quản trị</a>'
           : '<a href="/src/pages/history.html">✈ Lịch sử đặt vé</a>'}
         <a href="/src/pages/booking.html">⌕ Tra cứu đặt chỗ</a>
         <button type="button" data-logout>↪ Đăng xuất</button>

@@ -1,3 +1,5 @@
+import "../src/js/auth.js";
+
 (() => {
   "use strict";
   const SERVICE_KEY = "tripgo_services";
@@ -37,12 +39,9 @@
   ];
   const KEYS = {
     users: "tripgo_users",
-    session: "tripgo_session",
     flights: "tripgo_flights",
     bookings: "tripgo_bookings",
   };
-  const ADMIN_EMAIL = "admin@tripgo.com",
-    ADMIN_PASSWORD = "Admin@123";
   const AIRPORTS = {
     HAN: "Hà Nội",
     SGN: "TP. Hồ Chí Minh",
@@ -137,41 +136,24 @@
     flights = [],
     bookings = [],
     selectedCustomerEmail = null;
-  function ensureAdmin() {
-    const users = read(KEYS.users, []);
-    const existing = users.find(
-      (u) => String(u.email).toLowerCase() === ADMIN_EMAIL,
-    );
-    if (!existing) {
-      users.push({
-        id: "USR-TRIPGO-ADMIN",
-        name: "TripGo Admin",
-        email: ADMIN_EMAIL,
-        password: ADMIN_PASSWORD,
-        role: "admin",
-        createdAt: new Date().toISOString(),
-      });
-      write(KEYS.users, users);
-    }
-  }
   function authenticated() {
-    const session = read(KEYS.session, null);
-    const user = read(KEYS.users, []).find((u) => u.id === session?.userId);
-    return !!(
-      user &&
-      String(user.email).toLowerCase() === ADMIN_EMAIL &&
-      user.password === ADMIN_PASSWORD &&
-      user.role === "admin"
-    );
+    return window.TripGoAuth.isAdmin();
   }
   function showAuth() {
-    const logged = authenticated();
-    $("loginView").classList.toggle("hidden", logged);
-    $("appView").classList.toggle("hidden", !logged);
-    if (logged) {
-      render();
-      load().then(render);
+    if (!authenticated()) {
+      if (window.TripGoAuth.isLoggedIn()) {
+        window.location.replace("/");
+      } else {
+        window.location.replace(
+          "/src/pages/login.html?returnUrl=%2Fadmin%2F",
+        );
+      }
+      return;
     }
+    $("adminEmail").textContent =
+      window.TripGoAuth.getCurrentUser()?.email || "";
+    $("appView").classList.remove("hidden");
+    render();
   }
   function setTheme(theme) {
     const isDark = theme === "dark";
@@ -376,8 +358,11 @@
     $("content").innerHTML = `
       <div class="stats-grid">${stats
         .map(
-          ([label, value, icon]) =>
-            `<div class="card stat-card"><div class="stat-icon">${icon}</div><p class="stat-label">${label}</p><p class="stat-value">${value}</p></div>`,
+          ([label, value, icon]) => {
+            const valueClass =
+              label === "Doanh thu" ? "stat-value stat-value-money" : "stat-value";
+            return `<div class="card stat-card"><div class="stat-icon">${icon}</div><p class="stat-label">${label}</p><p class="${valueClass}">${value}</p></div>`;
+          },
         )
         .join("")}</div>
       <div class="grid xl:grid-cols-[1.25fr_0.75fr] gap-6 mt-6">
@@ -975,8 +960,8 @@
         </div>
         <div class="stats-grid mt-5">
           <div class="card stat-card"><div class="stat-icon">▤</div><p class="stat-label">Tổng vé</p><p class="stat-value">${totalBookings}</p></div>
-          <div class="card stat-card"><div class="stat-icon">₫</div><p class="stat-label">Doanh thu</p><p class="stat-value">${money(totalRevenue)}</p></div>
-          <div class="card stat-card"><div class="stat-icon">↩</div><p class="stat-label">Giá trị trung bình / vé</p><p class="stat-value">${money(avgOrder)}</p></div>
+          <div class="card stat-card"><div class="stat-icon">₫</div><p class="stat-label">Doanh thu</p><p class="stat-value stat-value-money">${money(totalRevenue)}</p></div>
+          <div class="card stat-card"><div class="stat-icon">↩</div><p class="stat-label">Giá trị trung bình / vé</p><p class="stat-value stat-value-money">${money(avgOrder)}</p></div>
         </div>
         <div class="table-scroll mt-6">
           <table class="data-table">
@@ -1421,33 +1406,7 @@
       renderCustomers();
     }
   }
-  $("loginForm").addEventListener("submit", (event) => {
-    event.preventDefault();
-    const form = event.currentTarget.elements;
-    const email = form.email.value.trim().toLowerCase(),
-      password = form.password.value;
-    if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
-      $("loginError").textContent = "Email hoặc mật khẩu không chính xác.";
-      return;
-    }
-    ensureAdmin();
-    const user = read(KEYS.users, []).find((u) => u.email === ADMIN_EMAIL);
-    if (!user || user.role !== "admin" || user.password !== ADMIN_PASSWORD) {
-      $("loginError").textContent = "Tài khoản admin không hợp lệ.";
-      return;
-    }
-    write(KEYS.session, {
-      userId: user.id,
-      loggedAt: new Date().toISOString(),
-    });
-    $("loginError").textContent = "";
-    event.currentTarget.reset();
-    showAuth();
-  });
-  $("logout").addEventListener("click", () => {
-    localStorage.removeItem(KEYS.session);
-    showAuth();
-  });
+  $("logout").addEventListener("click", () => window.TripGoAuth.logout());
   setTheme(localStorage.getItem(THEME_KEY) || "light");
   $("themeToggle").addEventListener("click", () => {
     const theme = document.body.classList.contains("admin-dark")
@@ -1498,8 +1457,13 @@
     if (event.key === BAN_KEY && page === "banned") render();
     if (event.key === THEME_KEY)
       setTheme(localStorage.getItem(THEME_KEY) || "light");
-    if (Object.values(KEYS).includes(event.key)) showAuth();
+    if (Object.values(KEYS).includes(event.key)) render();
+    if (event.key === window.TripGoAuth.CURRENT_USER_KEY) showAuth();
   });
-  ensureAdmin();
+  if (!authenticated()) {
+    showAuth();
+    return;
+  }
   showAuth();
+  load().then(render);
 })();

@@ -153,54 +153,7 @@
         <span>Đang tải trang quản trị...</span>
       </div>
     </div>
-  <div
-    id="loginView"
-      class="min-h-screen flex items-center justify-center p-4"
-    >
-      <div
-        class="w-full max-w-md rounded-3xl bg-white p-7 sm:p-9 shadow-xl border border-slate-100"
-      >
-        <div class="text-3xl font-black text-blue-900">
-          ✈ TripGo<span class="text-amber-500">.</span>
-        </div>
-        <p
-          class="mt-2 text-sm font-bold tracking-widest text-amber-600 uppercase"
-        >
-          Admin Dashboard
-        </p>
-        <h1 class="text-2xl font-bold mt-7">Đăng nhập quản trị</h1>
-        <p class="text-sm text-slate-500 mt-2">
-          Quản lý chuyến bay và vé đặt trong dự án TripGo.
-        </p>
-        <form id="loginForm" class="space-y-4 mt-7">
-          <label class="block text-sm font-semibold"
-            >Email<input
-              name="email"
-              type="email"
-              autocomplete="username"
-              required
-              class="field mt-2"
-              placeholder="admin@tripgo.com" /></label
-          ><label class="block text-sm font-semibold"
-            >Mật khẩu<input
-              name="password"
-              type="password"
-              autocomplete="current-password"
-              required
-              class="field mt-2"
-              placeholder="Nhập mật khẩu"
-          /></label>
-          <p id="loginError" role="alert" class="text-sm text-red-600"></p>
-          <button class="primary w-full">Đăng nhập</button>
-        </form>
-        <a
-          href="../index.html"
-          class="block text-center text-sm text-blue-700 mt-6 hover:underline"
-          >← Về trang chủ</a
-        >
-      </div>
-    </div>
-    <div id="appView" class="admin-app hidden min-h-screen">
+    <div id="appView" class="admin-app min-h-screen">
       <header
         class="admin-header bg-white border-b border-slate-200 sticky top-0 z-20"
       >
@@ -220,7 +173,7 @@
             </button>
             <div class="hidden sm:flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5">
               <span class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-white"><i class="fa-solid fa-user-shield"></i></span>
-              <span class="text-slate-600">admin@tripgo.com</span>
+              <span id="adminEmail" class="text-slate-600"></span>
             </div>
             <button id="logout" class="secondary"><i class="fa-solid fa-right-from-bracket mr-2"></i>Đăng xuất</button>
           </div>

@@ -171,12 +171,19 @@ body {
 }
 .stat-value {
   margin-top: 8px;
-  font-size: 30px;
+  font-size: clamp(18px, 2vw, 30px);
   line-height: 1.15;
   font-weight: 800;
   color: #0f172a;
   position: relative;
   z-index: 1;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+.stat-value-money {
+  font-size: clamp(12px, 1vw, 18px);
+  letter-spacing: -0.035em;
+  white-space: nowrap;
 }
 .chip {
   display: inline-flex;
@@ -427,8 +434,7 @@ body {
   color: #e2e8f0;
 }
 .admin-dark .card,
-.admin-dark .modal-backdrop > div,
-.admin-dark #loginView > div {
+.admin-dark .modal-backdrop > div {
   color: #e2e8f0;
   background: #152238;
   border-color: #2b3a52;
@@ -523,9 +529,6 @@ body {
 }
 .admin-dark .modal-backdrop {
   background: rgba(2, 6, 23, 0.78);
-}
-.admin-dark #loginView {
-  color: #e2e8f0;
 }
 .theme-toggle {
   gap: 8px;
