@@ -1,4 +1,5 @@
 import "../src/js/auth.js";
+import { createManagement, normalizeBooking, recordAudit } from "./admin-management.js";
 
 (() => {
   "use strict";
@@ -82,8 +83,10 @@ import "../src/js/auth.js";
       return fallback;
     }
   };
-  const write = (key, value) =>
+  const write = (key, value) => {
     localStorage.setItem(key, JSON.stringify(value));
+    recordAudit(read, key, Array.isArray(value) ? value.length : 0);
+  };
   function getServiceCatalog() {
     try {
       const value = localStorage.getItem(SERVICE_KEY);
@@ -136,6 +139,10 @@ import "../src/js/auth.js";
     flights = [],
     bookings = [],
     selectedCustomerEmail = null;
+  const management = createManagement({read, write, safe, money, date, bookingState,
+    alertMessage, getFlights: () => read(KEYS.flights, flights),
+    getBookings: () => read(KEYS.bookings, []).map(b => normalizeBooking(b, read(KEYS.flights, flights))),
+    render, openModal, getServiceCatalog, flightStatusLabel, localToday});
   function authenticated() {
     return window.TripGoAuth.isAdmin();
   }
@@ -179,7 +186,7 @@ import "../src/js/auth.js";
   }
   async function load() {
     flights = read(KEYS.flights, []);
-    bookings = read(KEYS.bookings, []);
+    bookings = read(KEYS.bookings, []).map(b => normalizeBooking(b, flights));
     if (localStorage.getItem(KEYS.flights) !== null) return;
     try {
       const response = await fetch("flights.json");
@@ -225,6 +232,9 @@ import "../src/js/auth.js";
   }
   function header() {
     const titles = {
+      schedule: ["Lịch bay", "Theo dõi lịch theo ngày, trạng thái và số chỗ còn lại."],
+      data: ["Sao lưu & khôi phục", "Chuyển dữ liệu quản lý giữa các máy bằng JSON."],
+      audit: ["Nhật ký thao tác", "Tra cứu các lần cập nhật dữ liệu từ admin."],
       banned: [
         "Hành khách bị cấm bay",
         "Quản lý hồ sơ, lý do và thời hạn cấm bay trong bản demo.",
@@ -264,7 +274,7 @@ import "../src/js/auth.js";
       return;
     }
     flights = read(KEYS.flights, flights);
-    bookings = read(KEYS.bookings, []);
+    bookings = read(KEYS.bookings, []).map(b => normalizeBooking(b, flights));
     header();
     if (page === "overview") {
       renderOverview();
@@ -278,6 +288,9 @@ import "../src/js/auth.js";
         ["banned", "⊘", "Hành khách cấm bay"],
         ["customers", "♙", "Khách hàng"],
         ["reports", "◫", "Báo cáo"],
+        ["schedule", "▦", "Lịch bay"],
+        ["data", "⇅", "Sao lưu & khôi phục"],
+        ["audit", "◷", "Nhật ký thao tác"],
       ]
         .map(
           ([p, i, l]) =>
@@ -293,6 +306,9 @@ import "../src/js/auth.js";
     if (page === "services") renderServices();
     if (page === "support") renderSupport();
     if (page === "banned") renderBanned();
+    if (page === "schedule") management.renderSchedule();
+    if (page === "data") management.renderData();
+    if (page === "audit") management.renderAudit();
   }
   function renderOverview() {
     const active = flights.filter((f) => f.status === "active");
@@ -830,7 +846,8 @@ import "../src/js/auth.js";
     return `${String(month).padStart(2, "0")}/${year}`;
   }
   function csvEscape(value) {
-    return `"${String(value ?? "").replace(/"/g, '""')}"`;
+    const text = String(value ?? "");
+    return `"${(/^[=+@-]/.test(text) ? "'" + text : text).replace(/"/g, '""')}"`;
   }
   function downloadCsv(filename, rows) {
     if (!rows.length) return;
@@ -1288,6 +1305,13 @@ import "../src/js/auth.js";
       fillFlights($("flightSearch").value),
     );
     fillFlights(query);
+    const archived = flights.filter(f => f.status === "deleted");
+    if (archived.length) {
+      const section = document.createElement("details");
+      section.className = "card p-5 mt-5";
+      section.innerHTML = `<summary class="font-bold cursor-pointer">Chuyến đã lưu trữ (${archived.length})</summary><div class="space-y-3 mt-4">${archived.map(f => `<div class="flex justify-between gap-3"><span>${safe(f.id)} · ${date(f.date)} · ${safe(f.from)} → ${safe(f.to)}</span><button class="action" data-action="restore-flight" data-id="${safe(f.id)}">Khôi phục</button></div>`).join("")}</div>`;
+      $("content").append(section);
+    }
   }
   function fillFlights(query) {
     const matches = flights.filter(
@@ -1304,10 +1328,10 @@ import "../src/js/auth.js";
       ? matches
           .map(
             (f) =>
-              `<tr><td><b>${safe(f.id)}</b><br><span class="text-slate-500">${safe(f.airline)}</span></td><td>${safe(AIRPORTS[f.from] || f.from)} → ${safe(AIRPORTS[f.to] || f.to)}</td><td>${date(f.date)}<br><span class="text-slate-500">${safe(f.departure)} – ${safe(f.arrival)}</span></td><td>${money(f.price)}</td><td><span class="badge ${flightStatusClass(f.status)}">${flightStatusLabel(f.status)}</span></td><td><button class="action" data-action="edit" data-id="${safe(f.id)}">Sửa</button></td></tr>`,
+              `<tr><td><b>${safe(f.id)}</b><br><span class="text-slate-500">${safe(f.airline)}</span></td><td>${safe(AIRPORTS[f.from] || f.from)} → ${safe(AIRPORTS[f.to] || f.to)}</td><td>${date(f.date)}<br><span class="text-slate-500">${safe(f.departure)} – ${safe(f.arrival)}</span></td><td>${money(f.price)}</td><td><span class="badge ${flightStatusClass(f.status)}">${flightStatusLabel(f.status)}</span></td><td><button class="action" data-action="edit" data-id="${safe(f.id)}">Sửa</button> · <button class="action" data-action="archive-flight" data-id="${safe(f.id)}">Lưu trữ</button></td></tr>`,
           )
           .join("")
-      : '<tr><td colspan="5" class="empty">Không tìm thấy chuyến bay nào.</td></tr>';
+      : '<tr><td colspan="6" class="empty">Không tìm thấy chuyến bay nào.</td></tr>';
   }
   function renderBookings() {
     bookingLimit = 10;
@@ -1381,7 +1405,7 @@ import "../src/js/auth.js";
                 .join(", ") ||
               booking.passenger?.name ||
               "-";
-            return `<tr><td><b>${safe(code || "-")}</b></td><td>${safe(passenger)}</td><td>${safe(booking.from || booking.flight?.from || "-")} → ${safe(booking.to || booking.flight?.to || "-")}</td><td>${date(booking.date || booking.departureDate)}</td><td>${money(booking.totalPrice ?? booking.total)}</td><td><span class="badge ${bookingStatus === "cancelled" ? "cancel" : bookingStatus === "pending" ? "off" : ""}">${status(booking.status)}</span></td><td>${bookingStatus === "cancelled" ? "-" : `<button class="action danger" data-action="cancel" data-id="${safe(code)}">Hủy vé</button>`}</td></tr>`;
+            return `<tr><td><b>${safe(code || "-")}</b></td><td>${safe(passenger)}</td><td>${safe(booking.from || booking.flight?.from || "-")} → ${safe(booking.to || booking.flight?.to || "-")}</td><td>${date(booking.date || booking.departureDate)}</td><td>${money(booking.totalPrice ?? booking.total)}</td><td><span class="badge ${bookingStatus === "cancelled" ? "cancel" : bookingStatus === "pending" ? "off" : ""}">${status(booking.status)}</span></td><td><button class="action" data-action="booking-detail" data-id="${safe(code)}">Chi tiết</button>${bookingStatus === "pending" ? ` · <button class="action" data-action="confirm-booking" data-id="${safe(code)}">Xác nhận</button>` : ""}${bookingStatus === "cancelled" ? "" : ` · <button class="action danger" data-action="cancel" data-id="${safe(code)}">Hủy vé</button>`}</td></tr>`;
           })
           .join("")
       : '<tr><td colspan="7" class="empty">Không tìm thấy vé phù hợp.</td></tr>';
@@ -1436,7 +1460,7 @@ import "../src/js/auth.js";
           status: "active",
         }[key] ??
         "";
-    form.elements.date.min = localToday();
+    form.elements.date.min = f?.date && f.date < localToday() ? f.date : localToday();
     form.elements.id.disabled = !!editing;
     $("modalTitle").textContent = editing
       ? "Sửa chuyến bay"
@@ -1477,7 +1501,7 @@ import "../src/js/auth.js";
       error = "Điểm đi và điểm đến phải khác nhau.";
     else if (!validDate(data.date) || !data.departure || !data.arrival)
       error = "Vui lòng nhập đủ ngày và giờ bay.";
-    else if (data.date < localToday())
+    else if (data.date < localToday() && (!editing || data.date !== flights.find(x => x.id === editing)?.date))
       error = "Ngày bay không được ở trong quá khứ.";
     else if (data.departure === data.arrival)
       error = "Giờ đi và giờ đến không được trùng nhau.";
@@ -1501,6 +1525,8 @@ import "../src/js/auth.js";
       data.baggage > 100
     )
       error = "Hành lý phải là số nguyên từ 0 đến 100 kg.";
+    if (!error && editing && data.status === "cancelled" && bookings.some(b => b.flightId === editing && bookingState(b) !== "cancelled"))
+      error = "Chuyến bay còn vé chưa hủy. Hãy xử lý các vé liên quan trước khi hủy chuyến.";
     if (error) {
       $("formError").textContent = error;
       return;
@@ -1522,6 +1548,8 @@ import "../src/js/auth.js";
     const button = event.target.closest("button[data-action]");
     if (!button) return;
     const { action, id } = button.dataset;
+    if (!authenticated()) return;
+    if (management.handleAction(action, id)) return;
     if (action === "edit-service" || action === "toggle-service") {
       const services = getServiceCatalog();
       const service = services.find((item) => item.id === id);
@@ -1558,7 +1586,7 @@ import "../src/js/auth.js";
     if (action === "cancel") {
       if (!confirm(`Hủy vé ${id}?`)) return;
       const index = bookings.findIndex((x) => (x.bookingCode || x.code) === id);
-      if (index < 0) return;
+      if (index < 0 || bookingState(bookings[index]) === "cancelled") return;
       bookings[index] = {
         ...bookings[index],
         status: "cancelled",
@@ -1570,6 +1598,7 @@ import "../src/js/auth.js";
       );
       if (
         flightIndex >= 0 &&
+        (bookings[index].inventoryReserved === true || (bookings[index].flightId && !bookings[index].flight)) &&
         Number.isFinite(Number(flights[flightIndex].seats))
       ) {
         flights[flightIndex].seats =

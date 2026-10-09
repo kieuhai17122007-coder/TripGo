@@ -26,69 +26,53 @@
         },
       };
     </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="style.css" />
-    <style type="text/tailwindcss">
-@layer components {
-.card { @apply rounded-2xl border border-slate-200 bg-white shadow-sm; }
-.primary { @apply rounded-xl bg-blue-700 px-4 py-2.5 font-semibold text-white hover:bg-blue-800 focus-visible:ring-4 focus-visible:ring-blue-200; }
-.secondary { @apply rounded-xl border border-slate-200 bg-white px-4 py-2.5 font-semibold text-slate-700 hover:bg-slate-50; }
-.field { @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500; }
-.nav { @apply flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold hover:bg-blue-50; }
-.action { @apply cursor-pointer text-blue-700 hover:underline; }
-}
-    </style>
-  <link rel="stylesheet" href="./admin-effects.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" media="print" onload="this.media='all'" onerror="this.media='all'" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="/assets/style-BMczx6Lk.css" media="print" onload="this.media='all'" onerror="this.media='all'" />
+
+  <link rel="stylesheet" href="/assets/admin-effects-D9poZPFY.css" media="print" onload="this.media='all'" onerror="this.media='all'">
+  <style>body>:not(#adminLoader){opacity:1;transition:opacity .45s ease-out}body.admin-loading>:not(#adminLoader){opacity:0;visibility:hidden}#adminLoader{z-index:1000;color:#17243d;background:#f8fbff;place-items:center;font-family:Inter,ui-sans-serif,system-ui,sans-serif;transition:transform .45s cubic-bezier(.7,0,.3,1);display:grid;position:fixed;inset:0;transform:translateY(0)}#adminLoader.is-leaving{transform:translateY(-100%)}#adminLoader[hidden]{display:none}.admin-loader-content{justify-items:center;gap:16px;font-size:14px;font-weight:600;display:grid}.admin-loader-brand{color:#1e40af;font-size:28px;font-weight:800}.admin-loader-track{background:#dbeafe;border-radius:999px;width:min(260px,70vw);height:8px;overflow:hidden}.admin-loader-bar{border-radius:inherit;background:linear-gradient(90deg,#2563eb,#60a5fa);width:0;height:100%;animation:2s cubic-bezier(.2,.7,.2,1) forwards admin-loader-progress}#adminLoader.is-complete .admin-loader-bar{width:100%;animation:none}@keyframes admin-loader-progress{to{width:100%}}@media (prefers-reduced-motion:reduce){#adminLoader,body>:not(#adminLoader){transition-duration:1ms}.admin-loader-bar{transition-duration:1ms;animation-duration:1ms}}</style>
+  <script>
+    const adminLoaderStartedAt = performance.now();
+    window.addEventListener(
+        "load",
+        () => {
+          const loader = document.getElementById("adminLoader");
+          const minimumDuration = 2000;
+          const elapsed = performance.now() - adminLoaderStartedAt;
+          window.setTimeout(() => {
+            loader.classList.add("is-complete");
+            document.body.classList.remove("admin-loading");
+            loader.classList.add("is-leaving");
+            loader.addEventListener(
+              "transitionend",
+              () => {
+                loader.hidden = true;
+              },
+              { once: true },
+            );
+          }, Math.max(0, minimumDuration - elapsed));
+        },
+        { once: true },
+      );
+  </script>
+  <script type="module" crossorigin src="/assets/admin-LJ-Vyfor.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/auth-BEs63xOb.js">
 </head>
-  <body class="admin-body bg-slate-50 text-slate-800">
-    <div
-      id="loginView"
-      class="min-h-screen flex items-center justify-center p-4"
-    >
-      <div
-        class="w-full max-w-md rounded-3xl bg-white p-7 sm:p-9 shadow-xl border border-slate-100"
-      >
-        <div class="text-3xl font-black text-blue-900">
-          ✈ TripGo<span class="text-amber-500">.</span>
+  <body class="admin-body admin-loading bg-slate-50 text-slate-800">
+    <div id="adminLoader" role="status" aria-live="polite">
+      <div class="admin-loader-content">
+        <div class="admin-loader-brand">✈ TripGo<span>.</span></div>
+        <div
+          class="admin-loader-track"
+          role="progressbar"
+          aria-label="Đang tải trang quản trị"
+        >
+          <div class="admin-loader-bar"></div>
         </div>
-        <p
-          class="mt-2 text-sm font-bold tracking-widest text-amber-600 uppercase"
-        >
-          Admin Dashboard
-        </p>
-        <h1 class="text-2xl font-bold mt-7">Đăng nhập quản trị</h1>
-        <p class="text-sm text-slate-500 mt-2">
-          Quản lý chuyến bay và vé đặt trong dự án TripGo.
-        </p>
-        <form id="loginForm" class="space-y-4 mt-7">
-          <label class="block text-sm font-semibold"
-            >Email<input
-              name="email"
-              type="email"
-              autocomplete="username"
-              required
-              class="field mt-2"
-              placeholder="admin@tripgo.com" /></label
-          ><label class="block text-sm font-semibold"
-            >Mật khẩu<input
-              name="password"
-              type="password"
-              autocomplete="current-password"
-              required
-              class="field mt-2"
-              placeholder="Nhập mật khẩu"
-          /></label>
-          <p id="loginError" role="alert" class="text-sm text-red-600"></p>
-          <button class="primary w-full">Đăng nhập</button>
-        </form>
-        <a
-          href="../index.html"
-          class="block text-center text-sm text-blue-700 mt-6 hover:underline"
-          >← Về trang chủ</a
-        >
+        <span>Đang tải trang quản trị...</span>
       </div>
     </div>
-    <div id="appView" class="admin-app hidden min-h-screen">
+    <div id="appView" class="admin-app min-h-screen">
       <header
         class="admin-header bg-white border-b border-slate-200 sticky top-0 z-20"
       >
@@ -108,7 +92,7 @@
             </button>
             <div class="hidden sm:flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5">
               <span class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-white"><i class="fa-solid fa-user-shield"></i></span>
-              <span class="text-slate-600">admin@tripgo.com</span>
+              <span id="adminEmail" class="text-slate-600"></span>
             </div>
             <button id="logout" class="secondary"><i class="fa-solid fa-right-from-bracket mr-2"></i>Đăng xuất</button>
           </div>
@@ -137,6 +121,9 @@
           ><button data-page="support" class="nav">
             <i class="fa-solid fa-headset"></i> <span>Hỗ trợ</span>
           </button>
+          <button data-page="schedule" class="nav">▦ <span>Lịch bay</span></button>
+          <button data-page="data" class="nav">⇅ <span>Sao lưu & khôi phục</span></button>
+          <button data-page="audit" class="nav">◷ <span>Nhật ký thao tác</span></button>
           <button data-page="banned" class="nav">⊘ <span>Cấm bay</span></button>
         </nav>
         <main class="admin-main flex-1 min-w-0 p-4 sm:p-6 md:py-8">
@@ -328,7 +315,5 @@
         </form>
       </div>
     </div>
-    <script type="module" src="./admin.js"></script>
-  <script type="module" src="./admin-enhancements.js"></script>
 </body>
 </html>

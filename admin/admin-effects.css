@@ -34,3 +34,9 @@
 .admin-dark .quick-reply-dialog { background:#152238; color:#e2e8f0; border-color:#334155; }
 button:disabled { opacity:.5; cursor:not-allowed; }
 @media(prefers-reduced-motion:reduce) { .quick-reply-dialog[open] { animation:none; } }
+
+/* Accessible native detail dialog, aligned with the existing theme. */
+dialog::backdrop { background: rgb(15 23 42 / .65); }
+dialog[open] { margin: auto; max-height: 85vh; overflow: auto; width: min(42rem, 94vw); }
+.admin-dark dialog { background: #162238; color: #e2e8f0; border-color: #334155; }
+button:disabled { opacity: .5; cursor: not-allowed; }
