@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import {ALL_SEATS,planGroup,adjacentGroupError,suggestSeats,validateSelection} from '../src/js/seat-store.js';
+const data=new Map();globalThis.localStorage={getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,v)};
+assert.notEqual(adjacentGroupError(['1B','1E'],2),'');
+assert.notEqual(adjacentGroupError(['1A','2A'],2),'');
+assert.equal(adjacentGroupError(['1B','1C'],2),'');
+assert.equal(adjacentGroupError(['1B'],2),'');
+assert.equal(adjacentGroupError(['1A','1B','1C'],3),'');
+assert.notEqual(adjacentGroupError(['1A','1B','2A'],3),'');
+assert.equal(adjacentGroupError(['1B','1C','1D','1E'],4),'');
+assert.notEqual(adjacentGroupError(['1A','1B','1E','1F'],4),'');
+assert.notEqual(adjacentGroupError(['1A','1B','5A','5B'],4),'');
+assert.equal(adjacentGroupError(['1A','1B','1C','1D','1E','1F'],6),'');
+// A row with one seat on either side does not excuse splitting if another row has a pair.
+const occupied=new Set(['1A','1C','1D','1F']);
+assert.notEqual(adjacentGroupError(['1B','1E'],2,occupied),'');
+// Only single seats remain: a split is allowed, nearest seats still required.
+const singleOnly=new Set(ALL_SEATS.filter(s=>!['1B','1E','8B'].includes(s)));
+assert.equal(adjacentGroupError(['1B','1E'],2,singleOnly),'');
+assert.notEqual(adjacentGroupError(['1B','8B'],2,singleOnly),'');
+assert.deepEqual(suggestSeats(2,singleOnly),['1B','1E']);
+const onlyRemote=new Set(ALL_SEATS.filter(s=>!['1B','8E'].includes(s)));
+assert.equal(adjacentGroupError(['1B','8E'],2,onlyRemote),'');
+assert.equal(adjacentGroupError(['1B'],1),'');
+assert.equal(planGroup(2,new Set(ALL_SEATS)),null);
+assert.notEqual(adjacentGroupError(['1B'],2,new Set(['1A','1C'])),'');
+assert.equal(planGroup(9)?.blocks,3);
+const f={id:'TG101',date:'2026-10-10',passengers:2};
+assert.notEqual(validateSelection(f,['1B','1E']),'');
+assert.equal(validateSelection(f,['1B','1C']),'');
+console.log('Passed: adjacent groups, partial choices, aisle, large groups, occupied exceptions, distant seats, single passenger, payment validation.');

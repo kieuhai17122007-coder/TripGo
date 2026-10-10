@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TripGo - Đặt vé máy bay</title>
+  <link rel="stylesheet" href="/src/css/main.css">
+  <link rel="stylesheet" href="/src/css/responsive.css">
+</head>
+<body>
+<header class="header">
+  <div class="container nav">
+    <a class="logo" href="/" aria-label="TripGo - Trang chủ">
+      <span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 24 24" role="img"><path d="M21.7 10.9c.4.2.4.8 0 1l-7.2 3.3-1.5 5.1c-.1.4-.5.7-.9.7h-1c-.3 0-.5-.3-.4-.6l.8-4.2-3.2 1.4-1.8 2.2c-.2.2-.5.3-.8.2l-.8-.3c-.3-.1-.4-.5-.2-.8l1.2-2.8-3.1-1.4c-.4-.2-.4-.7 0-.9l.8-.4c.2-.1.4-.1.6 0l4 1.1 3.1-1.5-.9-4.2c-.1-.3.1-.6.4-.7l.9-.2c.4-.1.8.1 1 .4l2 3.4 7.2-2.7c.7-.2 1.3.1 1.6.7l.2.4z"/></svg></span><span class="logo-text">TripGo</span></a>
+    <nav class="main-nav" aria-label="Điều hướng chính">
+      <a data-nav="home" href="/">Đặt vé</a>
+      <a data-nav="flights" href="/src/pages/search.html">Chuyến bay</a>
+      <a data-nav="services" href="/#services">Dịch vụ</a>
+      <a data-nav="booking" href="/src/pages/booking.html">Tra cứu</a>
+      <a data-nav="checkin" href="/src/pages/checkin.html">Check-in</a>
+    </nav>
+    <div class="nav-account">
+      <a class="login-btn" data-auth-link href="/src/pages/login.html">Đăng nhập</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-overlay">
+    <div class="container hero-content">
+      <p class="eyebrow">KHÁM PHÁ VIỆT NAM CÙNG TRIPGO</p>
+      <h1>Hành trình của bạn,<br>khởi đầu từ đây</h1>
+      <p>Đặt vé máy bay nội địa nhanh chóng và thuận tiện.</p>
+
+      <div class="search-box">
+        <div class="trip-type">
+          <label><input type="radio" name="tripType" value="roundtrip" checked> Khứ hồi</label>
+          <label><input type="radio" name="tripType" value="oneway"> Một chiều</label>
+        </div>
+        <div class="search-grid">
+          <label class="field">
+            <span>Điểm đi</span>
+            <select id="from"><option value="HAN">Hà Nội (HAN)</option><option value="SGN">TP. Hồ Chí Minh (SGN)</option><option value="DAD">Đà Nẵng (DAD)</option><option value="PQC">Phú Quốc (PQC)</option><option value="CXR">Nha Trang (CXR)</option><option value="HPH">Hải Phòng (HPH)</option><option value="HUI">Huế (HUI)</option><option value="VCA">Cần Thơ (VCA)</option><option value="UIH">Quy Nhơn (UIH)</option><option value="VDO">Vân Đồn (VDO)</option></select>
+          </label>
+          <button class="swap" id="swapBtn" title="Đổi điểm đi/đến">⇄</button>
+          <label class="field">
+            <span>Điểm đến</span>
+            <select id="to"><option value="HAN">Hà Nội (HAN)</option><option value="SGN">TP. Hồ Chí Minh (SGN)</option><option value="DAD">Đà Nẵng (DAD)</option><option value="PQC">Phú Quốc (PQC)</option><option value="CXR">Nha Trang (CXR)</option><option value="HPH">Hải Phòng (HPH)</option><option value="HUI">Huế (HUI)</option><option value="VCA">Cần Thơ (VCA)</option><option value="UIH">Quy Nhơn (UIH)</option><option value="VDO">Vân Đồn (VDO)</option></select>
+          </label>
+          <label class="field">
+            <span>Ngày đi</span>
+            <input type="date" id="departure">
+          </label>
+          <label class="field return-field">
+            <span>Ngày về</span>
+            <input type="date" id="returnDate">
+          </label>
+          <label class="field">
+            <span>Hành khách</span>
+            <select id="passengers">
+              <option value="1">1 hành khách</option>
+              <option value="2">2 hành khách</option>
+              <option value="3">3 hành khách</option>
+              <option value="4">4 hành khách</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Hạng vé</span>
+            <select id="classType">
+              <option>Phổ thông</option>
+              <option>Thương gia</option>
+            </select>
+          </label>
+        </div>
+        <button class="primary-btn search-btn" id="searchBtn">TÌM CHUYẾN BAY</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="services">
+  <div class="container">
+    <div class="section-heading">
+      <span class="eyebrow dark">TRIPGO SERVICES</span>
+      <h2>Dịch vụ hàng không</h2>
+      <p>Mọi tiện ích cần thiết cho chuyến bay của bạn.</p>
+    </div>
+    <div class="service-grid">
+      <a class="service-card" href="/src/pages/search.html"><span>✈️</span><h3>Đặt vé máy bay</h3><p>Tìm và chọn chuyến bay phù hợp.</p></a>
+      <a class="service-card" href="/src/pages/booking.html"><span>📋</span><h3>Tra cứu đặt chỗ</h3><p>Kiểm tra thông tin hành trình.</p></a>
+      <a class="service-card" href="/src/pages/checkin.html"><span>✓</span><h3>Check-in trực tuyến</h3><p>Làm thủ tục nhanh chóng.</p></a>
+      <a class="service-card" href="/src/pages/booking.html"><span>💺</span><h3>Chọn ghế</h3><p>Chọn vị trí yêu thích trên máy bay.</p></a>
+    </div>
+  </div>
+</section>
+
+<section class="promo">
+  <div class="container">
+    <div class="section-heading">
+      <span class="eyebrow dark">ƯU ĐÃI</span>
+      <h2>Khám phá những hành trình mới</h2>
+    </div>
+    <div class="journey-stage">
+      <div class="journey-orb orb-one"></div><div class="journey-orb orb-two"></div>
+      <div class="flight-path"><span></span><i>✈</i><span></span></div>
+      <div class="promo-grid journey-grid">
+        <article class="promo-card journey-card" data-route="HAN,DAD">
+  <img class="journey-image" src="https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1200&q=85" alt="Đà Nẵng">
+  <div class="journey-shade"></div><div class="journey-badge">01 · MIỀN TRUNG</div>
+  <div class="journey-content"><small>HÀ NỘI → ĐÀ NẴNG</small><h3>Đà Nẵng <b>→</b> biển xanh</h3><p>Biển Mỹ Khê, Sơn Trà và nhịp sống trẻ bên sông Hàn.</p><a href="/src/pages/search.html?from=HAN&to=DAD">Khám phá chuyến bay <span>↗</span></a></div>
+</article>
+        <article class="promo-card journey-card" data-route="SGN,PQC">
+  <img class="journey-image" src="https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=1200&q=85" alt="Phú Quốc">
+  <div class="journey-shade"></div><div class="journey-badge">02 · ĐẢO NGỌC</div>
+  <div class="journey-content"><small>TP. HỒ CHÍ MINH → PHÚ QUỐC</small><h3>Phú Quốc <b>→</b> kỳ nghỉ</h3><p>Biển trong, hoàng hôn đẹp và những ngày nghỉ thư giãn.</p><a href="/src/pages/search.html?from=SGN&to=PQC">Khám phá chuyến bay <span>↗</span></a></div>
+</article>
+        <article class="promo-card journey-card" data-route="HAN,SGN">
+  <img class="journey-image" src="https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=1200&q=85" alt="TP Hồ Chí Minh">
+  <div class="journey-shade"></div><div class="journey-badge">03 · KẾT NỐI HAI MIỀN</div>
+  <div class="journey-content"><small>HÀ NỘI → TP. HỒ CHÍ MINH</small><h3>Sài Gòn <b>→</b> nhịp sống</h3><p>Ẩm thực, kiến trúc và năng lượng không ngừng của thành phố.</p><a href="/src/pages/search.html?from=HAN&to=SGN">Khám phá chuyến bay <span>↗</span></a></div>
+</article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section benefits">
+  <div class="container benefit-grid">
+    <div><span>01</span><h3>Đơn giản</h3><p>Quy trình đặt vé rõ ràng, dễ sử dụng.</p></div>
+    <div><span>02</span><h3>Nhanh chóng</h3><p>Tìm kiếm và lựa chọn chuyến bay trong vài bước.</p></div>
+    <div><span>03</span><h3>Thuận tiện</h3><p>Lưu thông tin đặt vé ngay trên trình duyệt.</p></div>
+  </div>
+</section>
+
+<section class="section account-highlight">
+  <div class="container account-highlight-card">
+    <div><span class="eyebrow dark">MY TRIPGO</span><h2>Quản lý hành trình ở một nơi</h2><p>Đăng nhập để xem lịch sử đặt vé, mã đặt chỗ và trạng thái check-in.</p></div>
+    <a class="secondary-btn" href="/src/pages/history.html">Xem lịch sử đặt vé →</a>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer-grid">
+    <div><a class="logo footer-logo" href="/"><span>✈</span> TripGo</a><p>Website mô phỏng đặt vé máy bay nội địa.</p></div>
+    <div><h4>TripGo</h4><a href="#">Về chúng tôi</a><a href="#">Điều khoản</a><a href="#">Chính sách</a></div>
+    <div><h4>Hỗ trợ</h4><a href="/src/pages/booking.html">Tra cứu đặt vé</a><a href="/src/pages/checkin.html">Check-in</a><a href="#">Câu hỏi thường gặp</a></div>
+    <div><h4>Liên hệ</h4><p>support@tripgo.vn</p><p>1900 0000</p></div>
+  </div>
+  <div class="copyright">© 2026 TripGo. Front-end project.</div>
+</footer>
+<script type="module" src="/src/js/main.js"></script>
+<script type="module" src="/src/js/auth-page.js"></script>
+</body>
+</html>

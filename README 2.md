@@ -21,7 +21,7 @@ npm run preview
 1. Đăng ký/đăng nhập tài khoản thường. Tìm chuyến bay và chọn 2–6 hành khách.
 2. Nhập thông tin hành khách, tiếp tục đến **Chọn ghế**.
 3. Chọn **1A → 1C**: hệ thống chặn vì bỏ trống 1B. Chọn **1A → 1B** thì hợp lệ.
-4. Dùng **Tự xếp ghế liền nhau** để xếp nhóm. Ghế trong từng cụm ABC hoặc DEF phải liền nhau. Nhóm đông có thể chọn các cụm liền nhau ở những hàng khác nhau, không bắt buộc sát hàng. Tự xếp ghế vẫn ưu tiên các hàng gần nhau.
+4. Dùng **Tự xếp ghế liền nhau** để xếp nhóm. Ghế trong từng cụm ABC hoặc DEF phải liền nhau. Nhóm trên 3 người dùng các cụm gần nhau. Nếu còn cụm đủ ghế liền nhau thì không được chọn rải sang cụm khác. Khi không còn cụm đủ chỗ mới được tách nhóm; vẫn ưu tiên các ghế gần nhau nhất.
 5. Xác nhận và thanh toán demo. Đặt lần tiếp theo trên cùng chuyến/ngày sẽ thấy ghế vừa đặt màu xám.
 6. Hủy vé trong lịch sử hoặc admin: ghế được giải phóng. Tải lại trang vẫn giữ vé/ghế đã đặt.
 
@@ -50,18 +50,16 @@ Dữ liệu lưu trong localStorage theo mã chuyến + ngày bay, dùng chung g
 node tests/seat-rules.mjs
 node tests/group-adjacency.mjs
 node tests/seat-interaction.mjs
-node tests/large-group-interaction.mjs
 ```
 
 Các tệp giao diện khác được giữ lại. Build được cập nhật để bao gồm cả các trang tìm chuyến, hành khách, ghế, xác nhận và thanh toán.
 
-## Quy tắc nhóm đã điều chỉnh
+## Cập nhật: nhóm khách ngồi cạnh nhau
 
-- Hai hoặc ba khách phải chọn một cụm ghế liền nhau nếu khoang còn cụm đủ chỗ.
-- Nhóm đông được chọn nhiều cụm ở các hàng khác nhau; không bắt buộc các hàng sát nhau.
-- Ví dụ 9 khách: 1A–1F + 3A–3C hoặc 1A–1C + 2A–2C + 5D–5F đều hợp lệ khi ghế trống.
-- Ví dụ 15 khách: 1A–1F + 2A–2F + 5A–5C hợp lệ.
-- Giữ số cụm ít nhất có thể để tránh chọn rải thành ghế đơn khi vẫn đủ cụm liền nhau. Không bỏ trống ghế giữa.
-- Nếu khoang chỉ còn ghế đơn, cho phép tách nhóm theo chỗ còn trống.
-- Tự xếp ghế vẫn ưu tiên các hàng gần nhau; đây là gợi ý, không phải giới hạn cho chọn thủ công.
-- Cùng quy tắc được kiểm tra khi bấm ghế, xác nhận và thanh toán demo.
+- Hai khách chọn 1B + 1E hoặc 1A + 2A sẽ bị chặn nếu vẫn còn cặp ghế liền nhau trong một cụm ABC/DEF.
+- Nếu cả hai cụm trong hàng đang xem đều chỉ còn một ghế, nhưng hàng khác vẫn còn cặp ghế, hãy chuyển cả nhóm tới cặp ghế đó.
+- Khi toàn khoang không còn cặp ghế liền nhau, cho phép tách nhóm sang các cụm gần nhau nhất còn chỗ.
+- Nhóm 4–6 khách được chia qua lối đi khi cần, ưu tiên cùng hàng. Nhóm lớn hơn dùng các hàng gần nhau.
+- Hệ thống ưu tiên ít cụm nhất, rồi khoảng cách hàng nhỏ nhất, rồi ít ghế cách nhau trong cùng hàng nhất. Ghế đã đặt/khóa được tính là không còn chỗ.
+- Khi chọn từng ghế, chỉ chấp nhận nếu còn có thể hoàn thành một nhóm ghế phù hợp. Có thể bỏ chọn hoặc dùng Tự xếp ghế để đổi nhóm. Ghế ở vị trí giữa vẫn được chọn nếu có thể xếp đủ nhóm ngồi cạnh nhau.
+- Kiểm tra lại cùng quy tắc tại bước xác nhận ghế và thanh toán demo.

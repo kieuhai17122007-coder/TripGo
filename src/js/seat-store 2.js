@@ -47,9 +47,9 @@ export function validateSelection(f,seats) {
   return groupError(seats,unavailable,true) || adjacentGroupError(seats,n.passengers,unavailable);
 }
 // Find compact layouts. Prefer the fewest 3-seat clusters, then the shortest
-// row span, then gaps for automatic suggestions. Manual selections only need
-// the fewest clusters: different rows may be chosen freely for a large group.
-export function planGroup(count, unavailable=new Set(), fixed=[], compact=true) {
+// row span, then the smallest gaps within a row. Fixed selections must be
+// extendable to an equally compact layout; occupied/locked seats are exceptions.
+export function planGroup(count, unavailable=new Set(), fixed=[]) {
   if(!Number.isInteger(count) || count<1 || count>ALL_SEATS.length || fixed.length>count || new Set(fixed).size!==fixed.length || fixed.some(s=>!ALL_SEATS.includes(s)||unavailable.has(s)))return null;
   const required=new Set(fixed), options=[];
   for(let row=1;row<=ROWS;row++) {
@@ -84,7 +84,6 @@ export function planGroup(count, unavailable=new Set(), fixed=[], compact=true) 
     return dp.get(count)||null;
   }
   const full=solve(0,ROWS-1);if(!full)return null;
-  if(!compact)return full;
   for(let span=1;span<=ROWS;span++) {
     let best=null;
     for(let first=0;first+span<=ROWS;first++) {
@@ -97,10 +96,10 @@ export function planGroup(count, unavailable=new Set(), fixed=[], compact=true) 
 }
 export function adjacentGroupError(seats,count,unavailable=new Set()) {
   if(count<=1)return '';
-  const optimal=planGroup(count,unavailable,[],false), constrained=planGroup(count,unavailable,seats,false);
+  const optimal=planGroup(count,unavailable), constrained=planGroup(count,unavailable,seats);
   if(!optimal)return 'Không còn đủ ghế phù hợp cho nhóm khách. Hãy đổi chuyến bay hoặc giảm số khách.';
-  if(!constrained || constrained.blocks!==optimal.blocks)
-    return 'Nhóm khách phải ngồi cạnh nhau trong từng cụm khi còn đủ chỗ. Nhóm đông có thể chọn các cụm ở hàng khác, không bắt buộc sát hàng. Hãy chọn thêm ghế cạnh nhau hoặc dùng Tự xếp ghế.';
+  if(!constrained || constrained.blocks!==optimal.blocks || constrained.span!==optimal.span || constrained.gap!==optimal.gap)
+    return 'Nhóm khách phải ngồi cạnh nhau khi còn đủ chỗ. Chỉ được tách sang cụm hoặc hàng khác khi các cụm gần nhau không còn đủ ghế. Hãy chọn ghế sát nhau hoặc dùng Tự xếp ghế.';
   return '';
 }
 export function suggestSeats(count,unavailable) { return planGroup(count,unavailable)?.seats || []; }

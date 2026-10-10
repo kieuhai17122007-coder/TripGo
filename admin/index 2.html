@@ -27,10 +27,84 @@
       };
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" media="print" onload="this.media='all'" onerror="this.media='all'" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="/assets/style-BMczx6Lk.css" media="print" onload="this.media='all'" onerror="this.media='all'" />
+    <link rel="stylesheet" href="style.css" media="print" onload="this.media='all'" onerror="this.media='all'" />
 
-  <link rel="stylesheet" href="/assets/admin-effects-D9poZPFY.css" media="print" onload="this.media='all'" onerror="this.media='all'">
-  <style>body>:not(#adminLoader){opacity:1;transition:opacity .45s ease-out}body.admin-loading>:not(#adminLoader){opacity:0;visibility:hidden}#adminLoader{z-index:1000;color:#17243d;background:#f8fbff;place-items:center;font-family:Inter,ui-sans-serif,system-ui,sans-serif;transition:transform .45s cubic-bezier(.7,0,.3,1);display:grid;position:fixed;inset:0;transform:translateY(0)}#adminLoader.is-leaving{transform:translateY(-100%)}#adminLoader[hidden]{display:none}.admin-loader-content{justify-items:center;gap:16px;font-size:14px;font-weight:600;display:grid}.admin-loader-brand{color:#1e40af;font-size:28px;font-weight:800}.admin-loader-track{background:#dbeafe;border-radius:999px;width:min(260px,70vw);height:8px;overflow:hidden}.admin-loader-bar{border-radius:inherit;background:linear-gradient(90deg,#2563eb,#60a5fa);width:0;height:100%;animation:2s cubic-bezier(.2,.7,.2,1) forwards admin-loader-progress}#adminLoader.is-complete .admin-loader-bar{width:100%;animation:none}@keyframes admin-loader-progress{to{width:100%}}@media (prefers-reduced-motion:reduce){#adminLoader,body>:not(#adminLoader){transition-duration:1ms}.admin-loader-bar{transition-duration:1ms;animation-duration:1ms}}</style>
+  <link rel="stylesheet" href="./admin-effects.css" media="print" onload="this.media='all'" onerror="this.media='all'">
+  <style>
+    body > :not(#adminLoader) {
+      opacity: 1;
+      transition: opacity 450ms ease-out;
+    }
+    body.admin-loading > :not(#adminLoader) {
+      opacity: 0;
+      visibility: hidden;
+    }
+    #adminLoader {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: grid;
+      place-items: center;
+      background: #f8fbff;
+      color: #17243d;
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      transform: translateY(0);
+      transition: transform 450ms cubic-bezier(0.7, 0, 0.3, 1);
+    }
+    #adminLoader.is-leaving {
+      transform: translateY(-100%);
+    }
+    #adminLoader[hidden] {
+      display: none;
+    }
+    .admin-loader-content {
+      display: grid;
+      justify-items: center;
+      gap: 16px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .admin-loader-brand {
+      color: #1e40af;
+      font-size: 28px;
+      font-weight: 800;
+    }
+    .admin-loader-track {
+      width: min(260px, 70vw);
+      height: 8px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #dbeafe;
+    }
+    .admin-loader-bar {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #2563eb, #60a5fa);
+      animation: admin-loader-progress 2s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    }
+    #adminLoader.is-complete .admin-loader-bar {
+      animation: none;
+      width: 100%;
+    }
+    @keyframes admin-loader-progress {
+      to {
+        width: 100%;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #adminLoader {
+        transition-duration: 1ms;
+      }
+      body > :not(#adminLoader) {
+        transition-duration: 1ms;
+      }
+      .admin-loader-bar {
+        animation-duration: 1ms;
+        transition-duration: 1ms;
+      }
+    }
+  </style>
   <script>
     const adminLoaderStartedAt = performance.now();
     window.addEventListener(
@@ -55,11 +129,7 @@
         { once: true },
       );
   </script>
-  <script type="module" crossorigin src="/assets/admin-_EANMZKg.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-P2Xu9kJm.js">
-  <link rel="modulepreload" crossorigin href="/assets/auth-DT5i0A2m.js">
-  <link rel="modulepreload" crossorigin href="/assets/seat-store-DFhIyWBB.js">
-  <link rel="stylesheet" crossorigin href="/assets/seat-map-CRfFlI5H.css">
+<link rel="stylesheet" href="/src/css/seat-map.css">
 </head>
   <body class="admin-body admin-loading bg-slate-50 text-slate-800">
     <div id="adminLoader" role="status" aria-live="polite">
@@ -319,5 +389,7 @@
         </form>
       </div>
     </div>
+    <script type="module" src="./admin.js"></script>
+  <script type="module" src="./admin-enhancements.js"></script>
 </body>
 </html>
