@@ -1,0 +1,39 @@
+<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>TripGo - Thanh toán</title>
+<link rel="stylesheet" href="/src/css/main.css"><link rel="stylesheet" href="/src/css/pages.css"></head><body><header class="header">
+  <div class="container nav">
+    <a class="logo" href="/" aria-label="TripGo - Trang chủ">
+      <span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 24 24" role="img"><path d="M21.7 10.9c.4.2.4.8 0 1l-7.2 3.3-1.5 5.1c-.1.4-.5.7-.9.7h-1c-.3 0-.5-.3-.4-.6l.8-4.2-3.2 1.4-1.8 2.2c-.2.2-.5.3-.8.2l-.8-.3c-.3-.1-.4-.5-.2-.8l1.2-2.8-3.1-1.4c-.4-.2-.4-.7 0-.9l.8-.4c.2-.1.4-.1.6 0l4 1.1 3.1-1.5-.9-4.2c-.1-.3.1-.6.4-.7l.9-.2c.4-.1.8.1 1 .4l2 3.4 7.2-2.7c.7-.2 1.3.1 1.6.7l.2.4z"/></svg></span><span class="logo-text">TripGo</span></a>
+    <nav class="main-nav" aria-label="Điều hướng chính">
+      <a data-nav="home" href="/">Đặt vé</a>
+      <a data-nav="flights" href="/src/pages/search.html">Chuyến bay</a>
+      <a data-nav="services" href="/#services">Dịch vụ</a>
+      <a data-nav="booking" href="/src/pages/booking.html">Tra cứu</a>
+      <a data-nav="checkin" href="/src/pages/checkin.html">Check-in</a>
+    </nav>
+    <div class="nav-account">
+      <a class="login-btn" data-auth-link href="/src/pages/login.html">Đăng nhập</a>
+    </div>
+  </div>
+</header><div class="booking-progress">
+  <div class="container progress-track">
+    <div data-step="1"><span>01</span>Chọn chuyến</div>
+    <div data-step="2"><span>02</span>Hành khách</div>
+    <div data-step="3"><span>03</span>Chọn ghế</div>
+    <div data-step="4"><span>04</span>Xác nhận</div>
+    <div data-step="5"><span>05</span>Thanh toán</div>
+  </div>
+</div>
+<main class="booking-page"><div class="container booking-shell">
+<aside class="booking-aside"><div class="booking-photo payment-photo"><div><span>TRIPGO PAY</span><strong>Hoàn tất hành trình với trải nghiệm thanh toán đơn giản.</strong></div></div><div class="aside-tip"><span>🔒</span><div><b>Thanh toán mô phỏng</b><p>Đây là giao diện demo frontend, không phát sinh giao dịch thật.</p></div></div></aside>
+<section class="booking-card"><p class="eyebrow dark">05 / THANH TOÁN</p><h1>Hoàn tất đặt vé</h1><p class="lead">Chọn phương thức thanh toán và xác nhận đặt chỗ.</p>
+<div id="summary" class="payment-summary"></div>
+<div class="payment-methods"><label class="payment-option active"><input type="radio" name="method" value="Thẻ nội địa" checked><span class="payment-icon">▣</span><span><b>Thẻ nội địa</b><small>ATM / Napas</small></span></label><label class="payment-option"><input type="radio" name="method" value="Thẻ quốc tế"><span class="payment-icon">◉</span><span><b>Thẻ quốc tế</b><small>Visa / Mastercard</small></span></label><label class="payment-option"><input type="radio" name="method" value="Ví điện tử"><span class="payment-icon">◈</span><span><b>Ví điện tử</b><small>Thanh toán nhanh</small></span></label></div>
+<button class="primary-btn wide" id="payBtn">XÁC NHẬN THANH TOÁN</button><div id="result"></div></section></div></main>
+<script type="module">
+import {normalizeFlight,validateSelection,flightKey} from '../js/seat-store.js';
+import '../js/auth.js'; window.TripGoAuth.updateAuthUI();
+const f=normalizeFlight(JSON.parse(localStorage.getItem('tripgo_selected_flight')||'{}')), seats=JSON.parse(localStorage.getItem('tripgo_selected_seats')||'[]'), passenger=JSON.parse(localStorage.getItem('tripgo_passenger')||'null'); const s=seats.length?seats.join(', '):(localStorage.getItem('tripgo_selected_seat')||'-'); const count=Math.max(1,Number(f?.passengers||1)),unit=Number(f?.price||0),total=unit*count; const summary=document.getElementById('summary');
+summary.innerHTML=f?`<div class="payment-route"><div><small>${f.from}</small><strong>${f.departure}</strong></div><span>→</span><div><small>${f.to}</small><strong>${f.arrival}</strong></div></div><div class="payment-lines"><p><span>Chuyến bay</span><b>${f.id}</b></p><p><span>Ghế</span><b>${s}</b></p><p><span>Đơn giá</span><b>${unit.toLocaleString('vi-VN')} ₫</b></p><p><span>Hành khách</span><b>${count}</b></p><p class="total-line"><span>Tổng tiền</span><strong>${total.toLocaleString('vi-VN')} ₫</strong></p></div>`:'Chưa có chuyến bay';
+document.querySelectorAll('.payment-option').forEach(x=>x.addEventListener('click',()=>{document.querySelectorAll('.payment-option').forEach(y=>y.classList.remove('active'));x.classList.add('active');x.querySelector('input').checked=true}));
+document.getElementById('payBtn').addEventListener('click',()=>{if(!f.id||!passenger||!window.TripGoAuth.isLoggedIn()){document.getElementById('result').innerHTML='<div class="error">Thiếu thông tin đặt vé.</div>';return} const issue=localStorage.getItem('tripgo_selected_seat_flight')!==flightKey(f)?'Vui lòng quay lại chọn ghế cho chuyến bay này.':validateSelection(f,seats);if(issue){document.getElementById('result').textContent=issue;return;} const code='TG'+Math.floor(100000+Math.random()*900000), bookings=window.TripGoAuth.getBookings(), booking={bookingCode:code,userEmail:window.TripGoAuth.getCurrentUser()?.email||passenger.email,passenger:{fullName:passenger.name,email:passenger.email,phone:passenger.phone,document:passenger.document},flightId:f.id,date:f.date,departureDate:f.date,flight:{date:f.date,flightNumber:f.id,id:f.id,from:f.from,to:f.to,departure:f.departure,arrival:f.arrival},seat:s,seats,passengerCount:count,ticketType:f.classType||'Phổ thông',baggage:'Không có',price:unit,fee:0,totalPrice:total,status:'Đã đặt vé',paymentMethod:document.querySelector('input[name="method"]:checked').value,createdAt:new Date().toISOString()}; bookings.push(booking);try{window.TripGoAuth.saveBookings(bookings);}catch{document.getElementById('result').textContent='Không thể lưu vé. Vui lòng kiểm tra bộ nhớ trình duyệt.';return;}document.getElementById('payBtn').disabled=true;document.getElementById('payBtn').textContent='ĐÃ ĐẶT VÉ';localStorage.removeItem('tripgo_selected_seats');localStorage.removeItem('tripgo_selected_seat');localStorage.removeItem('tripgo_selected_seat_flight');document.getElementById('result').innerHTML=`<div class="success-booking"><span>✓</span><div><b>Đặt vé thành công</b><p>Mã đặt chỗ <strong>${code}</strong> đã được tạo.</p><a href="/src/pages/history.html">Xem lịch sử đặt vé →</a></div></div>`});
+</script><script type="module" src="/src/js/booking-guard.js"></script></body></html>

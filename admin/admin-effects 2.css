@@ -1,0 +1,42 @@
+/* Shared admin interactions and motion, without changing customer pages. */
+[hidden] { display: none !important; }
+.admin-pagination { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; padding:18px 20px; border-top:1px solid #e2e8f0; }
+.admin-pagination > span { color:#64748b; font-size:14px; }
+.admin-more-button { border:1px solid #bfdbfe; border-radius:12px; padding:10px 18px; background:#eff6ff; color:#1d4ed8; font-weight:700; cursor:pointer; transition:background .2s, transform .2s, box-shadow .2s; }
+.admin-more-button:hover { background:#dbeafe; transform:translateY(-2px); box-shadow:0 5px 16px #2563eb20; }
+.admin-back-to-top { position:fixed; right:max(20px,env(safe-area-inset-right)); bottom:max(24px,env(safe-area-inset-bottom)); z-index:60; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; min-width:58px; min-height:58px; padding:8px 12px; border:1px solid #ffffff40; border-radius:18px; background:linear-gradient(135deg,#2563eb,#1e40af); color:white; box-shadow:0 8px 24px #1d4ed850; cursor:pointer; animation:admin-pop .25s ease-out; transition:transform .2s, box-shadow .2s; }
+.admin-back-to-top > span:first-child { font-size:25px; line-height:1; }
+.admin-top-label { font-size:10px; font-weight:700; }
+.admin-back-to-top:hover { transform:translateY(-4px); box-shadow:0 12px 30px #1d4ed86b; }
+.admin-back-to-top:focus-visible, .admin-more-button:focus-visible { outline:3px solid #60a5fa; outline-offset:4px; }
+.admin-main .card, .admin-page .admin-section, .admin-page .stat { animation:admin-enter .4s ease-out both; }
+.stats-grid .card:nth-child(2), .stats .stat:nth-child(2) { animation-delay:.05s; }
+.stats-grid .card:nth-child(3), .stats .stat:nth-child(3) { animation-delay:.1s; }
+.stats-grid .card:nth-child(4), .stats .stat:nth-child(4) { animation-delay:.15s; }
+.stat-card, .stat { transition:transform .2s, box-shadow .2s; }
+.stat-card:hover, .stat:hover { transform:translateY(-4px); box-shadow:0 12px 30px #2563eb16; }
+.admin-main .nav, .admin-page button, .admin-main button { cursor:pointer; }
+.data-table tbody tr, .admin-table tbody tr { animation:admin-row .25s ease-out; }
+.admin-table tbody tr:hover { background:#eff6ff; }
+.admin-dark .admin-pagination { border-color:#334155; }
+.admin-dark .admin-pagination > span { color:#a8b6ca; }
+.admin-dark .admin-more-button { background:#1c3455; border-color:#31547e; color:#bfdbfe; }
+.admin-dark .admin-more-button:hover { background:#263f61; }
+@keyframes admin-enter { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+@keyframes admin-row { from { opacity:.3; } to { opacity:1; } }
+@keyframes admin-pop { from { opacity:0; transform:translateY(8px) scale(.9); } to { opacity:1; transform:translateY(0) scale(1); } }
+@media (max-width:640px) { .admin-back-to-top { right:14px; bottom:18px; min-width:50px; min-height:50px; border-radius:14px; } .admin-pagination { padding:14px; } .admin-section { overflow-x:auto; } }
+@media (prefers-reduced-motion:reduce) { .admin-main .card, .admin-page .admin-section, .admin-page .stat, .data-table tbody tr, .admin-table tbody tr, .admin-back-to-top { animation:none!important; } .admin-back-to-top, .admin-more-button, .stat-card, .stat { transition:none!important; } .admin-back-to-top:hover, .admin-more-button:hover, .stat-card:hover, .stat:hover { transform:none; } }
+
+.quick-reply-dialog { width:min(560px,calc(100% - 32px)); max-height:calc(100vh - 48px); overflow-y:auto; margin:auto; padding:28px; border:1px solid #e2e8f0; border-radius:24px; background:#fff; color:#17243d; box-shadow:0 24px 80px #0f172a40; }
+.quick-reply-dialog[open] { animation:admin-enter .2s ease-out; }
+.quick-reply-dialog::backdrop { background:rgba(2,6,23,.65); backdrop-filter:blur(4px); }
+.admin-dark .quick-reply-dialog { background:#152238; color:#e2e8f0; border-color:#334155; }
+button:disabled { opacity:.5; cursor:not-allowed; }
+@media(prefers-reduced-motion:reduce) { .quick-reply-dialog[open] { animation:none; } }
+
+/* Accessible native detail dialog, aligned with the existing theme. */
+dialog::backdrop { background: rgb(15 23 42 / .65); }
+dialog[open] { margin: auto; max-height: 85vh; overflow: auto; width: min(42rem, 94vw); }
+.admin-dark dialog { background: #162238; color: #e2e8f0; border-color: #334155; }
+button:disabled { opacity: .5; cursor: not-allowed; }
