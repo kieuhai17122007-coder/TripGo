@@ -26,10 +26,10 @@
         },
       };
     </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" media="print" onload="this.media='all'" onerror="this.media='all'" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="style.css" media="print" onload="this.media='all'" onerror="this.media='all'" />
+    
+    <link rel="stylesheet" href="style.css" />
 
-  <link rel="stylesheet" href="./admin-effects.css" media="print" onload="this.media='all'" onerror="this.media='all'">
+  <link rel="stylesheet" href="./admin-effects.css">
   <style>
     body > :not(#adminLoader) {
       opacity: 1;
@@ -111,7 +111,7 @@
         "load",
         () => {
           const loader = document.getElementById("adminLoader");
-          const minimumDuration = 2000;
+          const minimumDuration = 450;
           const elapsed = performance.now() - adminLoaderStartedAt;
           window.setTimeout(() => {
             loader.classList.add("is-complete");
@@ -146,67 +146,51 @@
       </div>
     </div>
     <div id="appView" class="admin-app min-h-screen">
-      <header
-        class="admin-header bg-white border-b border-slate-200 sticky top-0 z-20"
-      >
-        <div
-          class="w-full px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center"
-        >
-          <a href="../index.html" class="text-2xl font-black text-blue-900"
-            >✈ TripGo<span class="text-amber-500">.</span
-            ><span class="text-xs ml-2 uppercase tracking-widest text-slate-500"
-              >Admin</span
-            ></a
-          >
-          <div class="flex gap-3 items-center text-sm">
-            <button id="themeToggle" class="secondary theme-toggle" type="button" aria-label="Chuyển sang giao diện tối" title="Chuyển giao diện">
-              <i id="themeIcon" class="fa-solid fa-moon"></i>
-              <span class="hidden sm:inline">Giao diện tối</span>
-            </button>
-            <div class="hidden sm:flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5">
-              <span class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-white"><i class="fa-solid fa-user-shield"></i></span>
-              <span id="adminEmail" class="text-slate-600"></span>
-            </div>
-            <button id="logout" class="secondary"><i class="fa-solid fa-right-from-bracket mr-2"></i>Đăng xuất</button>
+      <header class="admin-header">
+        <div class="admin-topbar">
+          <div class="flex items-center gap-3 min-w-0"><button id="sidebarToggle" class="sidebar-toggle" type="button" aria-controls="adminSidebar" aria-expanded="false" aria-label="Mở menu quản trị"><i class="fa-solid fa-bars"></i></button><a href="../index.html" class="topbar-brand"><i class="fa-solid fa-plane"></i>TripGo<span>ADMIN</span></a><span id="headerPageName" class="hidden" aria-hidden="true">Tổng quan</span></div>
+          <div class="admin-header-actions">
+            <div class="admin-search-wrap"><label class="admin-search"><i class="fa-solid fa-magnifying-glass"></i><input id="adminNavSearch" type="search" placeholder="Tìm mục quản lý…" autocomplete="off" aria-label="Tìm mục quản lý" aria-controls="adminSearchResults"></label><div id="adminSearchResults" class="admin-search-results" hidden></div></div>
+            <span class="demo-status"><span></span>Demo hoạt động</span>
+            <button id="themeToggle" class="secondary theme-toggle" type="button" aria-label="Chuyển sang giao diện tối" title="Chuyển giao diện"><i id="themeIcon" class="fa-solid fa-moon"></i><span class="hidden sm:inline">Giao diện tối</span></button>
+            <div class="admin-profile"><span class="admin-avatar">A</span><div><b>Quản trị viên</b><span id="adminEmail"></span></div></div>
+            <button id="logout" class="secondary logout-button" aria-label="Đăng xuất"><i class="fa-solid fa-right-from-bracket"></i><span>Đăng xuất</span></button>
           </div>
         </div>
       </header>
       <div
         class="admin-layout w-full md:flex min-h-[calc(100vh-128px)]"
       >
-        <nav
-          class="admin-sidebar p-4 md:pt-8 md:w-60 flex md:flex-col gap-2 overflow-x-auto shrink-0"
-          aria-label="Menu quản trị"
-        >
-          <div class="hidden md:block px-4 mb-4 text-xs font-bold uppercase tracking-widest text-slate-400">Dashboard</div>
-          <button data-page="overview" class="nav active">
-            ◫ <span>Tổng quan</span></button
-          ><button data-page="flights" class="nav">
-            ✈ <span>Chuyến bay</span></button
-          ><button data-page="bookings" class="nav">
-            ▤ <span>Vé đã đặt</span></button
-          ><button data-page="customers" class="nav">
-            <i class="fa-solid fa-users"></i> <span>Khách hàng</span></button
-          ><button data-page="reports" class="nav">
-            <i class="fa-solid fa-chart-column"></i> <span>Báo cáo</span></button
-          ><button data-page="services" class="nav">
-            <i class="fa-solid fa-bag-shopping"></i> <span>Dịch vụ</span></button
-          ><button data-page="support" class="nav">
-            <i class="fa-solid fa-headset"></i> <span>Hỗ trợ</span>
-          </button>
-          <button data-page="seats" class="nav">▦ <span>Quản lý ghế 2D</span></button>
-          <button data-page="schedule" class="nav">▦ <span>Lịch bay</span></button>
-          <button data-page="data" class="nav">⇅ <span>Sao lưu & khôi phục</span></button>
-          <button data-page="audit" class="nav">◷ <span>Nhật ký thao tác</span></button>
-          <button data-page="banned" class="nav">⊘ <span>Cấm bay</span></button>
+        <button id="sidebarBackdrop" class="sidebar-backdrop" aria-label="Đóng menu quản trị" hidden></button>
+        <nav id="adminSidebar" class="admin-sidebar" aria-label="Menu quản trị">
+          <a href="../index.html" class="sidebar-brand"><span class="sidebar-brand-mark"><i class="fa-solid fa-plane"></i></span><span>TripGo<span class="brand-dot">.</span><small>ADMIN WORKSPACE</small></span></a>
+          <div class="sidebar-menu">
+            <p class="sidebar-label">TỔNG QUAN</p>
+            <button data-page="overview" class="nav active"><i class="fa-solid fa-house"></i><span>Dashboard</span></button>
+            <button data-page="reports" class="nav"><i class="fa-solid fa-chart-column"></i><span>Báo cáo</span></button>
+            <p class="sidebar-label">VẬN HÀNH</p>
+            <button data-page="flights" class="nav"><i class="fa-solid fa-plane"></i><span>Chuyến bay</span></button>
+            <button data-page="bookings" class="nav"><i class="fa-solid fa-ticket"></i><span>Vé đã đặt</span></button>
+            <button data-page="seats" class="nav"><i class="fa-solid fa-chair"></i><span>Quản lý ghế 2D</span></button>
+            <button data-page="schedule" class="nav"><i class="fa-solid fa-calendar-days"></i><span>Lịch bay</span></button>
+            <p class="sidebar-label">KHÁCH HÀNG & DỊCH VỤ</p>
+            <button data-page="customers" class="nav"><i class="fa-solid fa-users"></i><span>Khách hàng</span></button>
+            <button data-page="services" class="nav"><i class="fa-solid fa-bag-shopping"></i><span>Dịch vụ</span></button>
+            <button data-page="support" class="nav"><i class="fa-solid fa-headset"></i><span>Hỗ trợ</span></button>
+            <button data-page="banned" class="nav"><i class="fa-solid fa-ban"></i><span>Cấm bay</span></button>
+            <p class="sidebar-label">HỆ THỐNG</p>
+            <button data-page="data" class="nav"><i class="fa-solid fa-database"></i><span>Sao lưu & khôi phục</span></button>
+            <button data-page="audit" class="nav"><i class="fa-solid fa-clock-rotate-left"></i><span>Nhật ký thao tác</span></button>
+          </div>
+          <div class="sidebar-bottom"><span class="sidebar-demo"><i class="fa-solid fa-circle-check"></i> Môi trường mô phỏng</span><a href="../index.html"><i class="fa-solid fa-arrow-left"></i> Về trang khách hàng</a></div>
         </nav>
         <main class="admin-main flex-1 min-w-0 p-4 sm:p-6 md:py-8">
-          <div class="flex items-start justify-between gap-3 flex-wrap mb-6">
+          <div class="admin-page-heading flex items-start justify-between gap-3 flex-wrap mb-6">
             <div>
               <p
                 class="text-xs font-bold tracking-widest uppercase text-amber-600"
               >
-                TripGo / Quản trị
+                TripGo <span class="breadcrumb-sep">/</span> Quản trị
               </p>
               <h1 id="pageTitle" class="text-3xl font-bold mt-1">Tổng quan</h1>
               <p id="pageDescription" class="text-sm text-slate-500 mt-2"></p>
