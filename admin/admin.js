@@ -266,9 +266,12 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
     $("newFlight").classList.toggle("hidden", page !== "flights");
     document
       .querySelectorAll(".nav")
-      .forEach((item) =>
-        item.classList.toggle("active", item.dataset.page === page),
-      );
+      .forEach((item) => {
+        const isActive = item.dataset.page === page;
+        item.classList.toggle("active", isActive);
+        if (isActive) item.setAttribute("aria-current", "page");
+        else item.removeAttribute("aria-current");
+      });
   }
   function render() {
     if (!authenticated()) {
@@ -281,25 +284,29 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
     if (page === "overview") {
       renderOverview();
       const quick = document.createElement("div");
-      quick.className = "grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6";
+      quick.className = "card p-5 sm:p-6 mb-6 overview-quick-section";
       quick.innerHTML = [
-        ["flights", "✈", "Chuyến bay"],
-        ["seats", "▦", "Quản lý ghế 2D"],
-        ["bookings", "▤", "Quản lý vé"],
-        ["services", "▣", "Dịch vụ"],
-        ["support", "◉", "Hỗ trợ khách hàng"],
-        ["banned", "⊘", "Hành khách cấm bay"],
-        ["customers", "♙", "Khách hàng"],
-        ["reports", "◫", "Báo cáo"],
-        ["schedule", "▦", "Lịch bay"],
-        ["data", "⇅", "Sao lưu & khôi phục"],
-        ["audit", "◷", "Nhật ký thao tác"],
+        ["flights", "fa-plane", "Chuyến bay"],
+        ["seats", "fa-chair", "Quản lý ghế 2D"],
+        ["bookings", "fa-ticket", "Quản lý vé"],
+        ["services", "fa-bag-shopping", "Dịch vụ"],
+        ["support", "fa-headset", "Hỗ trợ khách hàng"],
+        ["banned", "fa-ban", "Hành khách cấm bay"],
+        ["customers", "fa-users", "Khách hàng"],
+        ["reports", "fa-chart-column", "Báo cáo"],
+        ["schedule", "fa-calendar-days", "Lịch bay"],
+        ["data", "fa-database", "Sao lưu & khôi phục"],
+        ["audit", "fa-clock-rotate-left", "Nhật ký thao tác"],
       ]
-        .map(
-          ([p, i, l]) =>
-            `<button data-go="${p}" class="card p-4 text-left hover:border-blue-400 transition"><span class="text-2xl text-blue-600">${i}</span><span class="block font-semibold mt-2 text-sm">${l}</span></button>`,
+        .map(([p, icon, label]) =>
+          `<button data-go="${p}" class="overview-quick-link"><i class="fa-solid ${icon}" aria-hidden="true"></i><span>${label}</span></button>`,
         )
         .join("");
+      quick.innerHTML = `
+        <div class="overview-section-heading">
+          <div><h2><i class="fa-solid fa-bolt" aria-hidden="true"></i> Truy cập nhanh</h2><p>Mở nhanh các khu vực quản lý thường dùng.</p></div>
+        </div>
+        <div class="overview-quick-grid">${quick.innerHTML}</div>`;
       $("content").prepend(quick);
     }
     if (page === "seats") renderSeatManagement({safe, write, alertMessage});
@@ -376,7 +383,11 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
       ["Khách hàng", customerEmails.size, '<i class="fa-solid fa-users"></i>'],
     ];
     $("content").innerHTML = `
-      <div class="stats-grid">${stats
+      <section class="card p-5 sm:p-6 overview-metrics-section" aria-labelledby="overviewMetricsTitle">
+        <div class="overview-section-heading">
+          <div><h2 id="overviewMetricsTitle"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i> Chỉ số tổng quan</h2><p>Tình hình chuyến bay, đặt vé và khách hàng.</p></div>
+        </div>
+        <div class="stats-grid">${stats
         .map(
           ([label, value, icon]) => {
             const valueClass =
@@ -385,7 +396,12 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
           },
         )
         .join("")}</div>
-      <div class="grid xl:grid-cols-[1.25fr_0.75fr] gap-6 mt-6">
+      </section>
+      <section class="overview-activity-section" aria-labelledby="overviewActivityTitle">
+        <div class="overview-section-heading">
+          <div><h2 id="overviewActivityTitle"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Phân tích & hoạt động</h2><p>Tuyến bay phổ biến và các đặt chỗ gần đây.</p></div>
+        </div>
+      <div class="grid xl:grid-cols-[1.25fr_0.75fr] gap-6">
         <div class="card p-6">
           <div class="flex items-center justify-between mb-4">
             <h2 class="font-bold text-lg">Top tuyến phổ biến</h2>
@@ -423,6 +439,7 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
           }
         </div>
       </div>
+      </section>
     `;
   }
   function renderServices() {
@@ -1022,9 +1039,9 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
       })
       .join(", ");
     const chartWidth = 720;
-    const chartHeight = 270;
+    const chartHeight = 520;
     const chartTop = 24;
-    const chartBottom = 212;
+    const chartBottom = 452;
     const chartStep = chartWidth / reportRows.length;
     const chartMaxRevenue = Math.max(
       1,
@@ -1063,7 +1080,7 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
                 ? `${(month.revenue / 1_000_000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })}tr`
                 : "0",
             )}</text>
-            <text class="report-chart-month" x="${point.x}" y="244" text-anchor="middle">${safe(month.label)}</text>
+            <text class="report-chart-month" x="${point.x}" y="490" text-anchor="middle">${safe(month.label)}</text>
           </g>`;
       })
       .join("");
@@ -1332,7 +1349,7 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
       ? matches
           .map(
             (f) =>
-              `<tr><td><b>${safe(f.id)}</b><br><span class="text-slate-500">${safe(f.airline)}</span></td><td>${safe(AIRPORTS[f.from] || f.from)} → ${safe(AIRPORTS[f.to] || f.to)}</td><td>${date(f.date)}<br><span class="text-slate-500">${safe(f.departure)} – ${safe(f.arrival)}</span></td><td>${money(f.price)}</td><td><span class="badge ${flightStatusClass(f.status)}">${flightStatusLabel(f.status)}</span></td><td><button class="action" data-action="edit" data-id="${safe(f.id)}">Sửa</button> · <button class="action" data-action="archive-flight" data-id="${safe(f.id)}">Lưu trữ</button></td></tr>`,
+              `<tr><td><b>${safe(f.id)}</b><br><span class="text-slate-500">${safe(f.airline)}</span></td><td>${safe(AIRPORTS[f.from] || f.from)} → ${safe(AIRPORTS[f.to] || f.to)}</td><td>${date(f.date)}<br><span class="text-slate-500">${safe(f.departure)} – ${safe(f.arrival)}</span></td><td>${money(f.price)}</td><td><span class="badge ${flightStatusClass(f.status)}">${flightStatusLabel(f.status)}</span></td><td class="flight-actions"><button class="action action-icon" data-action="edit" data-id="${safe(f.id)}" aria-label="Sửa chuyến bay ${safe(f.id)}" title="Sửa chuyến bay"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></button><button class="action action-icon archive-action" data-action="archive-flight" data-id="${safe(f.id)}" aria-label="Lưu trữ chuyến bay ${safe(f.id)}" title="Lưu trữ chuyến bay"><i class="fa-solid fa-box-archive" aria-hidden="true"></i></button></td></tr>`,
           )
           .join("")
       : '<tr><td colspan="6" class="empty">Không tìm thấy chuyến bay nào.</td></tr>';
@@ -1625,6 +1642,34 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
     }
   }
   $("logout").addEventListener("click", () => window.TripGoAuth.logout());
+  const mobileMenuToggle = $("mobileMenuToggle");
+  const adminSidebar = $("adminSidebar");
+  const setMobileMenuOpen = (isOpen) => {
+    adminSidebar.classList.toggle("is-open", isOpen);
+    mobileMenuToggle.setAttribute("aria-expanded", String(isOpen));
+    mobileMenuToggle.setAttribute(
+      "aria-label",
+      isOpen ? "Đóng menu điều hướng" : "Mở menu điều hướng",
+    );
+    mobileMenuToggle.title = isOpen ? "Đóng menu" : "Mở menu";
+    mobileMenuToggle.querySelector("i").className =
+      `fa-solid ${isOpen ? "fa-xmark" : "fa-bars"}`;
+  };
+  mobileMenuToggle.addEventListener("click", () => {
+    setMobileMenuOpen(!adminSidebar.classList.contains("is-open"));
+  });
+  adminSidebar.addEventListener("click", (event) => {
+    if (event.target.closest(".nav")) setMobileMenuOpen(false);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (
+      event.key === "Escape" &&
+      adminSidebar.classList.contains("is-open")
+    ) {
+      setMobileMenuOpen(false);
+      mobileMenuToggle.focus();
+    }
+  });
   setTheme(localStorage.getItem(THEME_KEY) || "light");
   $("themeToggle").addEventListener("click", () => {
     const theme = document.body.classList.contains("admin-dark")
