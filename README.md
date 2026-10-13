@@ -65,3 +65,7 @@ Các tệp giao diện khác được giữ lại. Build được cập nhật �
 - Nếu khoang chỉ còn ghế đơn, cho phép tách nhóm theo chỗ còn trống.
 - Tự xếp ghế vẫn ưu tiên các hàng gần nhau; đây là gợi ý, không phải giới hạn cho chọn thủ công.
 - Cùng quy tắc được kiểm tra khi bấm ghế, xác nhận và thanh toán demo.
+
+## Giao diện Admin Workspace
+
+Admin giữ màu xanh–trắng, cỡ chữ và bố cục gần bản gốc TripGo. Sidebar trắng, bảng/thẻ được chỉnh nhẹ và menu điện thoại có thể đóng/mở. Các chức năng cũ và quy tắc chọn ghế cho nhóm được giữ lại. Xem `ADMIN-REVIEW.md` để biết kết quả kiểm tra và các chức năng còn thiếu hoặc chưa liên thông.

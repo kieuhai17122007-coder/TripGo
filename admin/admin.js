@@ -1,3 +1,4 @@
+import { adminIcon } from "./admin-enhancements.js";
 import { renderSeatManagement } from "./admin-seats.js";
 import "../src/js/auth.js";
 import { createManagement, normalizeBooking, recordAudit } from "./admin-management.js";
@@ -262,6 +263,7 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
       ],
     };
     $("pageTitle").textContent = titles[page][0];
+    $("headerPageName").textContent = titles[page][0];
     $("pageDescription").textContent = titles[page][1];
     $("newFlight").classList.toggle("hidden", page !== "flights");
     document
@@ -281,26 +283,26 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
     if (page === "overview") {
       renderOverview();
       const quick = document.createElement("div");
-      quick.className = "grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6";
-      quick.innerHTML = [
-        ["flights", "✈", "Chuyến bay"],
-        ["seats", "▦", "Quản lý ghế 2D"],
-        ["bookings", "▤", "Quản lý vé"],
-        ["services", "▣", "Dịch vụ"],
-        ["support", "◉", "Hỗ trợ khách hàng"],
-        ["banned", "⊘", "Hành khách cấm bay"],
-        ["customers", "♙", "Khách hàng"],
-        ["reports", "◫", "Báo cáo"],
-        ["schedule", "▦", "Lịch bay"],
-        ["data", "⇅", "Sao lưu & khôi phục"],
-        ["audit", "◷", "Nhật ký thao tác"],
+      quick.className = "workspace-shortcuts";
+      quick.innerHTML = `<h2>Truy cập nhanh</h2><div class="shortcut-grid">` + [
+        ["flights", "plane", "Chuyến bay"],
+        ["seats", "chair", "Quản lý ghế 2D"],
+        ["bookings", "ticket", "Quản lý vé"],
+        ["services", "bag-shopping", "Dịch vụ"],
+        ["support", "headset", "Hỗ trợ khách hàng"],
+        ["banned", "ban", "Hành khách cấm bay"],
+        ["customers", "users", "Khách hàng"],
+        ["reports", "chart-column", "Báo cáo"],
+        ["schedule", "calendar-days", "Lịch bay"],
+        ["data", "database", "Sao lưu & khôi phục"],
+        ["audit", "clock-rotate-left", "Nhật ký thao tác"],
       ]
         .map(
           ([p, i, l]) =>
-            `<button data-go="${p}" class="card p-4 text-left hover:border-blue-400 transition"><span class="text-2xl text-blue-600">${i}</span><span class="block font-semibold mt-2 text-sm">${l}</span></button>`,
+            `<button data-go="${p}" class="card shortcut-card"><span>${adminIcon(i)}</span><span>${l}</span></button>`,
         )
-        .join("");
-      $("content").prepend(quick);
+        .join("") + `</div>`;
+      $("content").append(quick);
     }
     if (page === "seats") renderSeatManagement({safe, write, alertMessage});
     if (page === "flights") renderFlights();
@@ -376,15 +378,17 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
       ["Khách hàng", customerEmails.size, '<i class="fa-solid fa-users"></i>'],
     ];
     $("content").innerHTML = `
+      <section class="overview-hero"><div><small>TRIPGO CONTROL CENTER</small><h2>Tổng quan hoạt động</h2><p>Theo dõi chuyến bay, vé đặt và hoạt động của khách hàng.</p><div class="hero-actions"><button class="primary" data-go="flights">${adminIcon('plane')}<span class="ml-2">Quản lý chuyến bay</span></button><button class="secondary" data-go="reports">Xem báo cáo</button></div><div class="hero-date">${safe(new Intl.DateTimeFormat('vi-VN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date()))}</div></div><div class="hero-art" aria-hidden="true"><span class="hero-orbit"></span><span class="hero-plane">${adminIcon('plane')}</span></div></section>
       <div class="stats-grid">${stats
         .map(
           ([label, value, icon]) => {
             const valueClass =
               label === "Doanh thu" ? "stat-value stat-value-money" : "stat-value";
-            return `<div class="card stat-card"><div class="stat-icon">${icon}</div><p class="stat-label">${label}</p><p class="${valueClass}">${value}</p></div>`;
+            return `<div class="card stat-card"><div class="stat-icon">${icon}</div><p class="stat-label">${label}</p><p class="${valueClass}">${value}</p><span class="stat-footnote">${label === "Doanh thu" ? "Từ vé đã xác nhận · mô phỏng" : "Theo dữ liệu hiện có"}</span></div>`;
           },
         )
         .join("")}</div>
+      <section class="overview-operations"><article class="card p-6"><div class="panel-heading"><div><p class="panel-kicker">LỊCH KHAI THÁC</p><h2 id="overviewFlightTitle">Chuyến bay sắp khởi hành</h2></div><button id="overviewExpandFlights" class="secondary">Xem tất cả</button></div><div id="overviewFlightList"></div><button id="overviewMoreFlights" class="secondary mt-4" hidden>Xem thêm 10 chuyến</button></article><article class="card p-6"><div class="panel-heading"><div><p class="panel-kicker">DỮ LIỆU VẬN HÀNH</p><h2>Phân bố hãng hàng không</h2></div><span class="badge off">${flights.filter(f=>f.status!=='deleted').length} chuyến</span></div><div id="overviewCarriers"></div><p class="text-xs text-slate-400 mt-5">Tỷ trọng theo danh mục chuyến bay hiện tại.</p></article></section>
       <div class="grid xl:grid-cols-[1.25fr_0.75fr] gap-6 mt-6">
         <div class="card p-6">
           <div class="flex items-center justify-between mb-4">
@@ -424,6 +428,21 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
         </div>
       </div>
     `;
+    let expanded=false,overviewLimit=10;
+    const flightList=()=>{
+      const catalog=flights.filter(f=>f.status!=='deleted').sort((a,b)=>`${a.date} ${a.departure}`.localeCompare(`${b.date} ${b.departure}`));
+      const upcoming=catalog.filter(f=>f.status==='active'&&(!f.date||f.date>=localToday()));
+      const rows=expanded?catalog:upcoming,limit=expanded?overviewLimit:4;
+      $('overviewFlightTitle').textContent=expanded?'Tất cả chuyến bay':'Chuyến bay sắp khởi hành';
+      $('overviewExpandFlights').textContent=expanded?'Thu gọn':'Xem tất cả';$('overviewExpandFlights').setAttribute('aria-expanded',String(expanded));
+      $('overviewFlightList').innerHTML=rows.slice(0,limit).map(f=>`<div class="overview-flight"><span class="overview-flight-icon">${adminIcon('plane')}</span><div class="overview-flight-info"><b>${safe(f.id)} · ${safe(f.from)} → ${safe(f.to)}</b><p>${safe(f.airline)} · ${date(f.date)}</p></div><div class="overview-flight-time"><strong>${safe(f.departure)}</strong><p><span class="badge ${flightStatusClass(f.status)}">${flightStatusLabel(f.status)}</span></p></div></div>`).join('') || '<p class="empty">Chưa có chuyến bay phù hợp.</p>';
+      $('overviewMoreFlights').hidden=!expanded||rows.length<=limit;
+    };
+    $('overviewExpandFlights').onclick=()=>{expanded=!expanded;overviewLimit=10;flightList();};
+    $('overviewMoreFlights').onclick=()=>{overviewLimit+=10;flightList();};flightList();
+    const carriers=Object.entries(flights.filter(f=>f.status!=='deleted').reduce((groups,f)=>{groups[f.airline||'Khác']=(groups[f.airline||'Khác']||0)+1;return groups;},{})).sort((a,b)=>b[1]-a[1]);
+    const total=carriers.reduce((sum,[,count])=>sum+count,0);
+    $('overviewCarriers').innerHTML=carriers.slice(0,6).map(([name,count])=>`<div class="carrier-line"><div><span>${safe(name)}</span><b>${count} chuyến</b></div><div class="carrier-track"><span style="width:${total?count/total*100:0}%"></span></div></div>`).join('') || '<p class="empty">Chưa có dữ liệu hãng bay.</p>';
   }
   function renderServices() {
     const serviceCards = getServiceCatalog();
@@ -1667,6 +1686,7 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
     if (b) {
       page = b.dataset.go;
       render();
+      window.scrollTo({top:0,behavior:'instant'});
     }
   });
   window.addEventListener("storage", (event) => {
