@@ -70,7 +70,7 @@ export function createManagement(ctx) {
     const fill=()=>{
       const rows=getFlights().filter(f=>f.status!=='deleted' && (!$('scheduleDate').value || f.date===$('scheduleDate').value) && ($('scheduleStatus').value==='all' || f.status===$('scheduleStatus').value)).sort((a,b)=>`${a.date} ${a.departure}`.localeCompare(`${b.date} ${b.departure}`));
       $('scheduleSummary').textContent=`Hiển thị ${Math.min(limit,rows.length)} / ${rows.length} chuyến bay · ${rows.reduce((s,f)=>s+Number(f.seats||0),0)} chỗ còn lại`;
-      $('scheduleRows').innerHTML=rows.slice(0,limit).map(f=>`<tr><td>${date(f.date)} · ${safe(f.departure)}</td><td>${safe(f.id)}<br>${safe(f.airline)}</td><td>${safe(f.from)} → ${safe(f.to)}</td><td>${safe(f.seats)}</td><td>${safe(ctx.flightStatusLabel(f.status))}</td><td><button class="action" data-action="edit" data-id="${safe(f.id)}">Sửa</button></td></tr>`).join('') || '<tr><td colspan="6" class="empty">Không có chuyến bay phù hợp.</td></tr>';
+      $('scheduleRows').innerHTML=rows.slice(0,limit).map(f=>`<tr><td>${date(f.date)} · ${safe(f.departure)}</td><td>${safe(f.id)}<br>${safe(f.airline)}</td><td>${safe(f.from)} → ${safe(f.to)}</td><td>${safe(f.seats)}</td><td>${safe(ctx.flightStatusLabel(f.status))}</td><td class="flight-actions"><button class="action action-icon" data-action="edit" data-id="${safe(f.id)}" aria-label="Sửa chuyến bay ${safe(f.id)}" title="Sửa chuyến bay"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></button></td></tr>`).join('') || '<tr><td colspan="6" class="empty">Không có chuyến bay phù hợp.</td></tr>';
       $('scheduleMore').hidden=rows.length<=limit;
     };
     $('scheduleDate').value=ctx.localToday();

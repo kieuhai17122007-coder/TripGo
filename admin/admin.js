@@ -1,4 +1,3 @@
-import { adminIcon } from "./admin-enhancements.js";
 import { renderSeatManagement } from "./admin-seats.js";
 import "../src/js/auth.js";
 import { createManagement, normalizeBooking, recordAudit } from "./admin-management.js";
@@ -263,14 +262,16 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
       ],
     };
     $("pageTitle").textContent = titles[page][0];
-    $("headerPageName").textContent = titles[page][0];
     $("pageDescription").textContent = titles[page][1];
     $("newFlight").classList.toggle("hidden", page !== "flights");
     document
       .querySelectorAll(".nav")
-      .forEach((item) =>
-        item.classList.toggle("active", item.dataset.page === page),
-      );
+      .forEach((item) => {
+        const isActive = item.dataset.page === page;
+        item.classList.toggle("active", isActive);
+        if (isActive) item.setAttribute("aria-current", "page");
+        else item.removeAttribute("aria-current");
+      });
   }
   function render() {
     if (!authenticated()) {
@@ -283,26 +284,30 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
     if (page === "overview") {
       renderOverview();
       const quick = document.createElement("div");
-      quick.className = "workspace-shortcuts";
-      quick.innerHTML = `<h2>Truy cập nhanh</h2><div class="shortcut-grid">` + [
-        ["flights", "plane", "Chuyến bay"],
-        ["seats", "chair", "Quản lý ghế 2D"],
-        ["bookings", "ticket", "Quản lý vé"],
-        ["services", "bag-shopping", "Dịch vụ"],
-        ["support", "headset", "Hỗ trợ khách hàng"],
-        ["banned", "ban", "Hành khách cấm bay"],
-        ["customers", "users", "Khách hàng"],
-        ["reports", "chart-column", "Báo cáo"],
-        ["schedule", "calendar-days", "Lịch bay"],
-        ["data", "database", "Sao lưu & khôi phục"],
-        ["audit", "clock-rotate-left", "Nhật ký thao tác"],
+      quick.className = "card p-5 sm:p-6 mb-6 overview-quick-section";
+      quick.innerHTML = [
+        ["flights", "fa-plane", "Chuyến bay"],
+        ["seats", "fa-chair", "Quản lý ghế 2D"],
+        ["bookings", "fa-ticket", "Quản lý vé"],
+        ["services", "fa-bag-shopping", "Dịch vụ"],
+        ["support", "fa-headset", "Hỗ trợ khách hàng"],
+        ["banned", "fa-ban", "Hành khách cấm bay"],
+        ["customers", "fa-users", "Khách hàng"],
+        ["reports", "fa-chart-column", "Báo cáo"],
+        ["schedule", "fa-calendar-days", "Lịch bay"],
+        ["data", "fa-database", "Sao lưu & khôi phục"],
+        ["audit", "fa-clock-rotate-left", "Nhật ký thao tác"],
       ]
-        .map(
-          ([p, i, l]) =>
-            `<button data-go="${p}" class="card shortcut-card"><span>${adminIcon(i)}</span><span>${l}</span></button>`,
+        .map(([p, icon, label]) =>
+          `<button data-go="${p}" class="overview-quick-link"><i class="fa-solid ${icon}" aria-hidden="true"></i><span>${label}</span></button>`,
         )
-        .join("") + `</div>`;
-      $("content").append(quick);
+        .join("");
+      quick.innerHTML = `
+        <div class="overview-section-heading">
+          <div><h2><i class="fa-solid fa-bolt" aria-hidden="true"></i> Truy cập nhanh</h2><p>Mở nhanh các khu vực quản lý thường dùng.</p></div>
+        </div>
+        <div class="overview-quick-grid">${quick.innerHTML}</div>`;
+      $("content").prepend(quick);
     }
     if (page === "seats") renderSeatManagement({safe, write, alertMessage});
     if (page === "flights") renderFlights();
@@ -378,18 +383,25 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
       ["Khách hàng", customerEmails.size, '<i class="fa-solid fa-users"></i>'],
     ];
     $("content").innerHTML = `
-      <section class="overview-hero"><div><small>TRIPGO CONTROL CENTER</small><h2>Tổng quan hoạt động</h2><p>Theo dõi chuyến bay, vé đặt và hoạt động của khách hàng.</p><div class="hero-actions"><button class="primary" data-go="flights">${adminIcon('plane')}<span class="ml-2">Quản lý chuyến bay</span></button><button class="secondary" data-go="reports">Xem báo cáo</button></div><div class="hero-date">${safe(new Intl.DateTimeFormat('vi-VN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date()))}</div></div><div class="hero-art" aria-hidden="true"><span class="hero-orbit"></span><span class="hero-plane">${adminIcon('plane')}</span></div></section>
-      <div class="stats-grid">${stats
+      <section class="card p-5 sm:p-6 overview-metrics-section" aria-labelledby="overviewMetricsTitle">
+        <div class="overview-section-heading">
+          <div><h2 id="overviewMetricsTitle"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i> Chỉ số tổng quan</h2><p>Tình hình chuyến bay, đặt vé và khách hàng.</p></div>
+        </div>
+        <div class="stats-grid">${stats
         .map(
           ([label, value, icon]) => {
             const valueClass =
               label === "Doanh thu" ? "stat-value stat-value-money" : "stat-value";
-            return `<div class="card stat-card"><div class="stat-icon">${icon}</div><p class="stat-label">${label}</p><p class="${valueClass}">${value}</p><span class="stat-footnote">${label === "Doanh thu" ? "Từ vé đã xác nhận · mô phỏng" : "Theo dữ liệu hiện có"}</span></div>`;
+            return `<div class="card stat-card"><div class="stat-icon">${icon}</div><p class="stat-label">${label}</p><p class="${valueClass}">${value}</p></div>`;
           },
         )
         .join("")}</div>
-      <section class="overview-operations"><article class="card p-6"><div class="panel-heading"><div><p class="panel-kicker">LỊCH KHAI THÁC</p><h2 id="overviewFlightTitle">Chuyến bay sắp khởi hành</h2></div><button id="overviewExpandFlights" class="secondary">Xem tất cả</button></div><div id="overviewFlightList"></div><button id="overviewMoreFlights" class="secondary mt-4" hidden>Xem thêm 10 chuyến</button></article><article class="card p-6"><div class="panel-heading"><div><p class="panel-kicker">DỮ LIỆU VẬN HÀNH</p><h2>Phân bố hãng hàng không</h2></div><span class="badge off">${flights.filter(f=>f.status!=='deleted').length} chuyến</span></div><div id="overviewCarriers"></div><p class="text-xs text-slate-400 mt-5">Tỷ trọng theo danh mục chuyến bay hiện tại.</p></article></section>
-      <div class="grid xl:grid-cols-[1.25fr_0.75fr] gap-6 mt-6">
+      </section>
+      <section class="overview-activity-section" aria-labelledby="overviewActivityTitle">
+        <div class="overview-section-heading">
+          <div><h2 id="overviewActivityTitle"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Phân tích & hoạt động</h2><p>Tuyến bay phổ biến và các đặt chỗ gần đây.</p></div>
+        </div>
+      <div class="grid xl:grid-cols-[1.25fr_0.75fr] gap-6">
         <div class="card p-6">
           <div class="flex items-center justify-between mb-4">
             <h2 class="font-bold text-lg">Top tuyến phổ biến</h2>
@@ -427,22 +439,8 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
           }
         </div>
       </div>
+      </section>
     `;
-    let expanded=false,overviewLimit=10;
-    const flightList=()=>{
-      const catalog=flights.filter(f=>f.status!=='deleted').sort((a,b)=>`${a.date} ${a.departure}`.localeCompare(`${b.date} ${b.departure}`));
-      const upcoming=catalog.filter(f=>f.status==='active'&&(!f.date||f.date>=localToday()));
-      const rows=expanded?catalog:upcoming,limit=expanded?overviewLimit:4;
-      $('overviewFlightTitle').textContent=expanded?'Tất cả chuyến bay':'Chuyến bay sắp khởi hành';
-      $('overviewExpandFlights').textContent=expanded?'Thu gọn':'Xem tất cả';$('overviewExpandFlights').setAttribute('aria-expanded',String(expanded));
-      $('overviewFlightList').innerHTML=rows.slice(0,limit).map(f=>`<div class="overview-flight"><span class="overview-flight-icon">${adminIcon('plane')}</span><div class="overview-flight-info"><b>${safe(f.id)} · ${safe(f.from)} → ${safe(f.to)}</b><p>${safe(f.airline)} · ${date(f.date)}</p></div><div class="overview-flight-time"><strong>${safe(f.departure)}</strong><p><span class="badge ${flightStatusClass(f.status)}">${flightStatusLabel(f.status)}</span></p></div></div>`).join('') || '<p class="empty">Chưa có chuyến bay phù hợp.</p>';
-      $('overviewMoreFlights').hidden=!expanded||rows.length<=limit;
-    };
-    $('overviewExpandFlights').onclick=()=>{expanded=!expanded;overviewLimit=10;flightList();};
-    $('overviewMoreFlights').onclick=()=>{overviewLimit+=10;flightList();};flightList();
-    const carriers=Object.entries(flights.filter(f=>f.status!=='deleted').reduce((groups,f)=>{groups[f.airline||'Khác']=(groups[f.airline||'Khác']||0)+1;return groups;},{})).sort((a,b)=>b[1]-a[1]);
-    const total=carriers.reduce((sum,[,count])=>sum+count,0);
-    $('overviewCarriers').innerHTML=carriers.slice(0,6).map(([name,count])=>`<div class="carrier-line"><div><span>${safe(name)}</span><b>${count} chuyến</b></div><div class="carrier-track"><span style="width:${total?count/total*100:0}%"></span></div></div>`).join('') || '<p class="empty">Chưa có dữ liệu hãng bay.</p>';
   }
   function renderServices() {
     const serviceCards = getServiceCatalog();
@@ -1041,9 +1039,9 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
       })
       .join(", ");
     const chartWidth = 720;
-    const chartHeight = 270;
+    const chartHeight = 520;
     const chartTop = 24;
-    const chartBottom = 212;
+    const chartBottom = 452;
     const chartStep = chartWidth / reportRows.length;
     const chartMaxRevenue = Math.max(
       1,
@@ -1082,7 +1080,7 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
                 ? `${(month.revenue / 1_000_000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })}tr`
                 : "0",
             )}</text>
-            <text class="report-chart-month" x="${point.x}" y="244" text-anchor="middle">${safe(month.label)}</text>
+            <text class="report-chart-month" x="${point.x}" y="490" text-anchor="middle">${safe(month.label)}</text>
           </g>`;
       })
       .join("");
@@ -1351,7 +1349,7 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
       ? matches
           .map(
             (f) =>
-              `<tr><td><b>${safe(f.id)}</b><br><span class="text-slate-500">${safe(f.airline)}</span></td><td>${safe(AIRPORTS[f.from] || f.from)} → ${safe(AIRPORTS[f.to] || f.to)}</td><td>${date(f.date)}<br><span class="text-slate-500">${safe(f.departure)} – ${safe(f.arrival)}</span></td><td>${money(f.price)}</td><td><span class="badge ${flightStatusClass(f.status)}">${flightStatusLabel(f.status)}</span></td><td><button class="action" data-action="edit" data-id="${safe(f.id)}">Sửa</button> · <button class="action" data-action="archive-flight" data-id="${safe(f.id)}">Lưu trữ</button></td></tr>`,
+              `<tr><td><b>${safe(f.id)}</b><br><span class="text-slate-500">${safe(f.airline)}</span></td><td>${safe(AIRPORTS[f.from] || f.from)} → ${safe(AIRPORTS[f.to] || f.to)}</td><td>${date(f.date)}<br><span class="text-slate-500">${safe(f.departure)} – ${safe(f.arrival)}</span></td><td>${money(f.price)}</td><td><span class="badge ${flightStatusClass(f.status)}">${flightStatusLabel(f.status)}</span></td><td class="flight-actions"><button class="action action-icon" data-action="edit" data-id="${safe(f.id)}" aria-label="Sửa chuyến bay ${safe(f.id)}" title="Sửa chuyến bay"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></button><button class="action action-icon archive-action" data-action="archive-flight" data-id="${safe(f.id)}" aria-label="Lưu trữ chuyến bay ${safe(f.id)}" title="Lưu trữ chuyến bay"><i class="fa-solid fa-box-archive" aria-hidden="true"></i></button></td></tr>`,
           )
           .join("")
       : '<tr><td colspan="6" class="empty">Không tìm thấy chuyến bay nào.</td></tr>';
@@ -1644,6 +1642,34 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
     }
   }
   $("logout").addEventListener("click", () => window.TripGoAuth.logout());
+  const mobileMenuToggle = $("mobileMenuToggle");
+  const adminSidebar = $("adminSidebar");
+  const setMobileMenuOpen = (isOpen) => {
+    adminSidebar.classList.toggle("is-open", isOpen);
+    mobileMenuToggle.setAttribute("aria-expanded", String(isOpen));
+    mobileMenuToggle.setAttribute(
+      "aria-label",
+      isOpen ? "Đóng menu điều hướng" : "Mở menu điều hướng",
+    );
+    mobileMenuToggle.title = isOpen ? "Đóng menu" : "Mở menu";
+    mobileMenuToggle.querySelector("i").className =
+      `fa-solid ${isOpen ? "fa-xmark" : "fa-bars"}`;
+  };
+  mobileMenuToggle.addEventListener("click", () => {
+    setMobileMenuOpen(!adminSidebar.classList.contains("is-open"));
+  });
+  adminSidebar.addEventListener("click", (event) => {
+    if (event.target.closest(".nav")) setMobileMenuOpen(false);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (
+      event.key === "Escape" &&
+      adminSidebar.classList.contains("is-open")
+    ) {
+      setMobileMenuOpen(false);
+      mobileMenuToggle.focus();
+    }
+  });
   setTheme(localStorage.getItem(THEME_KEY) || "light");
   $("themeToggle").addEventListener("click", () => {
     const theme = document.body.classList.contains("admin-dark")
@@ -1686,7 +1712,6 @@ import { createManagement, normalizeBooking, recordAudit } from "./admin-managem
     if (b) {
       page = b.dataset.go;
       render();
-      window.scrollTo({top:0,behavior:'instant'});
     }
   });
   window.addEventListener("storage", (event) => {

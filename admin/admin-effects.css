@@ -15,6 +15,29 @@
 .stats-grid .card:nth-child(4), .stats .stat:nth-child(4) { animation-delay:.15s; }
 .stat-card, .stat { transition:transform .2s, box-shadow .2s; }
 .stat-card:hover, .stat:hover { transform:translateY(-4px); box-shadow:0 12px 30px #2563eb16; }
+.overview-quick-section { animation:admin-enter .48s cubic-bezier(.2,.75,.25,1) both; }
+.overview-metrics-section { animation:admin-enter .48s cubic-bezier(.2,.75,.25,1) .08s both; }
+.overview-activity-section { animation:admin-enter .48s cubic-bezier(.2,.75,.25,1) .16s both; }
+.overview-quick-link { animation:admin-pop .38s cubic-bezier(.2,.75,.25,1) both; }
+.overview-quick-link:nth-child(2) { animation-delay:.035s; }
+.overview-quick-link:nth-child(3) { animation-delay:.07s; }
+.overview-quick-link:nth-child(4) { animation-delay:.105s; }
+.overview-quick-link:nth-child(5) { animation-delay:.14s; }
+.overview-quick-link:nth-child(6) { animation-delay:.175s; }
+.overview-quick-link:nth-child(7) { animation-delay:.21s; }
+.overview-quick-link:nth-child(8) { animation-delay:.245s; }
+.overview-quick-link:nth-child(9) { animation-delay:.28s; }
+.overview-quick-link:nth-child(10) { animation-delay:.315s; }
+.overview-quick-link:nth-child(11) { animation-delay:.35s; }
+.overview-quick-link:hover i { animation:admin-icon-bounce .38s ease-out; }
+.overview-metrics-section .stat-card { animation:admin-pop .4s cubic-bezier(.2,.75,.25,1) both; }
+.overview-metrics-section .stat-card:nth-child(2) { animation-delay:.05s; }
+.overview-metrics-section .stat-card:nth-child(3) { animation-delay:.1s; }
+.overview-metrics-section .stat-card:nth-child(4) { animation-delay:.15s; }
+.overview-metrics-section .stat-card:nth-child(5) { animation-delay:.2s; }
+.overview-metrics-section .stat-card:nth-child(6) { animation-delay:.25s; }
+.flight-actions .action-icon:active { transform:scale(.92); }
+.admin-main .nav:active, .admin-main button:active { transform:scale(.98); }
 .admin-main .nav, .admin-page button, .admin-main button { cursor:pointer; }
 .data-table tbody tr, .admin-table tbody tr { animation:admin-row .25s ease-out; }
 .admin-table tbody tr:hover { background:#eff6ff; }
@@ -25,8 +48,9 @@
 @keyframes admin-enter { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
 @keyframes admin-row { from { opacity:.3; } to { opacity:1; } }
 @keyframes admin-pop { from { opacity:0; transform:translateY(8px) scale(.9); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes admin-icon-bounce { 0%,100% { transform:translateY(0) scale(1); } 45% { transform:translateY(-3px) scale(1.08); } 70% { transform:translateY(1px) scale(.98); } }
 @media (max-width:640px) { .admin-back-to-top { right:14px; bottom:18px; min-width:50px; min-height:50px; border-radius:14px; } .admin-pagination { padding:14px; } .admin-section { overflow-x:auto; } }
-@media (prefers-reduced-motion:reduce) { .admin-main .card, .admin-page .admin-section, .admin-page .stat, .data-table tbody tr, .admin-table tbody tr, .admin-back-to-top { animation:none!important; } .admin-back-to-top, .admin-more-button, .stat-card, .stat { transition:none!important; } .admin-back-to-top:hover, .admin-more-button:hover, .stat-card:hover, .stat:hover { transform:none; } }
+@media (prefers-reduced-motion:reduce) { .admin-main .card, .admin-page .admin-section, .admin-page .stat, .data-table tbody tr, .admin-table tbody tr, .admin-back-to-top, .overview-quick-section, .overview-metrics-section, .overview-activity-section, .overview-quick-link, .overview-metrics-section .stat-card { animation:none!important; } .admin-back-to-top, .admin-more-button, .stat-card, .stat, .overview-quick-link, .overview-quick-link i, .action.action-icon { transition:none!important; } .admin-back-to-top:hover, .admin-more-button:hover, .stat-card:hover, .stat:hover, .overview-quick-link:hover, .admin-main .nav:active, .admin-main button:active { transform:none; } }
 
 .quick-reply-dialog { width:min(560px,calc(100% - 32px)); max-height:calc(100vh - 48px); overflow-y:auto; margin:auto; padding:28px; border:1px solid #e2e8f0; border-radius:24px; background:#fff; color:#17243d; box-shadow:0 24px 80px #0f172a40; }
 .quick-reply-dialog[open] { animation:admin-enter .2s ease-out; }
