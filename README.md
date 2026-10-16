@@ -38,6 +38,8 @@ Trong dashboard chọn **Quản lý ghế 2D**:
 - Bấm ghế có vé để xem mã đặt chỗ. Muốn giải phóng phải hủy vé ở **Vé đã đặt**.
 - **Sao lưu & khôi phục** xuất/nhập cả sơ đồ ghế. Bản sao lưu cũ không có sơ đồ ghế vẫn được hỗ trợ.
 
+Mục **Thanh toán** theo dõi từng vé với các trạng thái **Cần xác nhận thanh toán**, **Đang xử lý** và **Đã thanh toán**. Vé thanh toán demo thành công được ghi nhận là đã thanh toán; admin có thể cập nhật trạng thái cho vé chưa bị hủy.
+
 ## Quy tắc và phạm vi demo
 
 Sơ đồ cố định 20 hàng × 6 ghế = 120 vị trí, lối đi ở giữa C và D. Đây là mô hình minh họa; số chỗ bán trong danh mục chuyến bay là hạn mức riêng. Ghế chưa chọn không được giữ chỗ; chỉ ghi nhận khi thanh toán demo thành công. Hệ thống kiểm tra lại ghế lúc xác nhận chọn ghế và thanh toán, chặn ghế trùng/khóa và chặn tạo một ghế trống ở giữa hai ghế đã chiếm. Lỗ trống vốn có từ trước không chặn những lựa chọn ở hàng khác.

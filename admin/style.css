@@ -207,7 +207,10 @@ body {
   font-size: 13px;
   font-weight: 650;
   text-align: left;
-  transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    transform 160ms ease;
 }
 .overview-quick-link:hover {
   transform: translateY(-2px);
@@ -392,14 +395,30 @@ body {
   transform-origin: center bottom;
   animation: report-column-rise 550ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
-.report-chart-column:nth-of-type(2) rect { animation-delay: 50ms; }
-.report-chart-column:nth-of-type(3) rect { animation-delay: 100ms; }
-.report-chart-column:nth-of-type(4) rect { animation-delay: 150ms; }
-.report-chart-column:nth-of-type(5) rect { animation-delay: 200ms; }
-.report-chart-column:nth-of-type(6) rect { animation-delay: 250ms; }
+.report-chart-column:nth-of-type(2) rect {
+  animation-delay: 50ms;
+}
+.report-chart-column:nth-of-type(3) rect {
+  animation-delay: 100ms;
+}
+.report-chart-column:nth-of-type(4) rect {
+  animation-delay: 150ms;
+}
+.report-chart-column:nth-of-type(5) rect {
+  animation-delay: 200ms;
+}
+.report-chart-column:nth-of-type(6) rect {
+  animation-delay: 250ms;
+}
 @keyframes report-column-rise {
-  from { transform: scaleY(0.05); opacity: 0.4; }
-  to { transform: scaleY(1); opacity: 1; }
+  from {
+    transform: scaleY(0.05);
+    opacity: 0.4;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
 }
 .report-pie-layout {
   display: flex;
@@ -419,7 +438,9 @@ body {
   aspect-ratio: 1;
   border-radius: 50%;
   background: conic-gradient(var(--report-pie));
-  box-shadow: inset 0 0 0 1px #0f172a0d, 0 8px 22px #0f172a12;
+  box-shadow:
+    inset 0 0 0 1px #0f172a0d,
+    0 8px 22px #0f172a12;
 }
 .report-pie-wrap > strong {
   color: #334155;
@@ -482,8 +503,12 @@ body {
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
-.report-change-value.is-positive { color: #15803d; }
-.report-change-value.is-negative { color: #dc2626; }
+.report-change-value.is-positive {
+  color: #15803d;
+}
+.report-change-value.is-negative {
+  color: #dc2626;
+}
 .report-change-track {
   position: relative;
   height: 10px;
@@ -551,7 +576,9 @@ body {
   color: #bfdbfe;
 }
 .admin-dark .report-pie {
-  box-shadow: inset 0 0 0 1px #ffffff12, 0 8px 22px #00000030;
+  box-shadow:
+    inset 0 0 0 1px #ffffff12,
+    0 8px 22px #00000030;
 }
 .admin-dark .report-pie-legend small {
   color: #a8b6ca;
@@ -714,7 +741,10 @@ body {
   background: #eff6ff;
   color: #1d4ed8;
   text-decoration: none;
-  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
 }
 .action.action-icon:hover {
   transform: translateY(-1px);
@@ -753,6 +783,36 @@ body {
 .badge.cancel {
   background: #fee2e2;
   color: #991b1b;
+}
+.badge.awaiting-payment {
+  background: #fef3c7;
+  color: #92400e;
+}
+.badge.processing {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.payment-table {
+  min-width: 1100px;
+}
+.payment-status-select {
+  min-width: 205px;
+  padding: 8px 32px 8px 10px;
+}
+.payment-status-select.awaiting-payment {
+  border-color: #fcd34d;
+}
+.payment-status-select.processing {
+  border-color: #93c5fd;
+}
+.payment-confirm-action {
+  display: block;
+  margin-top: 7px;
+}
+.payment-disabled-note {
+  display: block;
+  margin-top: 5px;
+  color: #64748b;
 }
 .empty {
   padding: 56px 20px;
@@ -797,7 +857,7 @@ body {
   }
   .admin-layout > .admin-sidebar.is-open {
     display: grid;
-    animation: mobile-menu-enter 220ms cubic-bezier(.2,.75,.25,1) both;
+    animation: mobile-menu-enter 220ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
   }
   .sidebar-group {
     display: contents;
@@ -940,6 +1000,23 @@ body {
   color: #fecaca;
   background: #562b38;
 }
+.admin-dark .badge.awaiting-payment {
+  color: #fde68a;
+  background: #51401d;
+}
+.admin-dark .badge.processing {
+  color: #bfdbfe;
+  background: #1c3455;
+}
+.admin-dark .payment-status-select.awaiting-payment {
+  border-color: #a16207;
+}
+.admin-dark .payment-status-select.processing {
+  border-color: #31547e;
+}
+.admin-dark .payment-disabled-note {
+  color: #a8b6ca;
+}
 .admin-dark .admin-footer-inner,
 .admin-dark .admin-footer-inner a {
   color: #9fb0c7;
@@ -1046,7 +1123,7 @@ a:focus-visible {
 .admin-dark .action.danger {
   color: #fca5a5;
 }
-.admin-dark .badge:not(.off):not(.cancel) {
+.admin-dark .badge:not(.off):not(.cancel):not(.awaiting-payment):not(.processing) {
   background: #174533;
   color: #bbf7d0;
 }
