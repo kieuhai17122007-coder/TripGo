@@ -1,108 +1,53 @@
 
-const defaultFlights = [
-    {
-        id: "TG101",
-        airline: "Vietnam Airlines",
-        from: "HAN",
-        to: "SGN",
-        departure: "07:00",
-        arrival: "09:10",
-        duration: "2 giờ 10 phút",
-        price: 1500000
-    },
-    {
-        id: "TG102",
-        airline: "Vietjet Air",
-        from: "HAN",
-        to: "SGN",
-        departure: "09:30",
-        arrival: "11:40",
-        duration: "2 giờ 10 phút",
-        price: 1100000
-    },
-    {
-        id: "TG103",
-        airline: "Bamboo Airways",
-        from: "HAN",
-        to: "DAD",
-        departure: "08:00",
-        arrival: "09:25",
-        duration: "1 giờ 25 phút",
-        price: 950000
-    },
-    {
-        id: "TG104",
-        airline: "Vietnam Airlines",
-        from: "SGN",
-        to: "HAN",
-        departure: "14:00",
-        arrival: "16:10",
-        duration: "2 giờ 10 phút",
-        price: 1600000
-    },
-    {
-        id: "TG105",
-        airline: "Vietjet Air",
-        from: "SGN",
-        to: "DAD",
-        departure: "10:00",
-        arrival: "11:20",
-        duration: "1 giờ 20 phút",
-        price: 850000
-    },
-    {
-        id: "TG106",
-        airline: "Bamboo Airways",
-        from: "DAD",
-        to: "HAN",
-        departure: "16:00",
-        arrival: "17:25",
-        duration: "1 giờ 25 phút",
-        price: 1000000
-    },
-    {
-        id: "TG107",
-        airline: "Vietnam Airlines",
-        from: "HAN",
-        to: "CXR",
-        departure: "11:00",
-        arrival: "12:50",
-        duration: "1 giờ 50 phút",
-        price: 1250000
-    },
-    {
-        id: "TG108",
-        airline: "Vietjet Air",
-        from: "HAN",
-        to: "PQC",
-        departure: "13:30",
-        arrival: "15:45",
-        duration: "2 giờ 15 phút",
-        price: 1350000
+const FLIGHTS_KEY = "tripgo_flights";
+let flights = [];
+
+async function readFlights() {
+    let savedFlights = [];
+    const saved = localStorage.getItem(FLIGHTS_KEY);
+
+    if (saved !== null) {
+        try {
+            const parsedFlights = JSON.parse(saved);
+            if (!Array.isArray(parsedFlights)) {
+                throw new TypeError("Danh sách chuyến bay đã lưu không hợp lệ.");
+            }
+            savedFlights = parsedFlights;
+        } catch (error) {
+            console.error("Không thể đọc dữ liệu chuyến bay đã lưu:", error);
+            showError("Không thể đọc danh sách chuyến bay. Hãy tải lại trang hoặc liên hệ quản trị viên.");
+        }
     }
-];
 
-let flights = defaultFlights;
-
-function readFlights() {
+    let defaults;
     try {
-        const savedFlights = localStorage.getItem("tripgo_flights");
-
-        if (savedFlights === null) {
-            flights = defaultFlights;
-            return;
+        const response = await fetch("/admin/flights.json");
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
         }
-
-        const parsedFlights = JSON.parse(savedFlights);
-
-        if (!Array.isArray(parsedFlights)) {
-            throw new TypeError("Danh sách chuyến bay không hợp lệ.");
+        defaults = await response.json();
+        if (!Array.isArray(defaults)) {
+            throw new TypeError("Danh sách chuyến bay mẫu không hợp lệ.");
         }
-
-        flights = parsedFlights;
     } catch (error) {
-        console.error("Không thể đọc dữ liệu chuyến bay:", error);
-        flights = defaultFlights;
+        console.error("Không thể đồng bộ danh sách chuyến bay:", error);
+        flights = savedFlights;
+        if (flights.length === 0) {
+            showError("Không tải được danh sách chuyến bay. Hãy kiểm tra kết nối rồi tải lại trang.");
+        }
+        return;
+    }
+
+    const knownIds = new Set(savedFlights.map(flight => flight.id));
+    const additions = defaults.filter(flight => !knownIds.has(flight.id));
+    flights = [...savedFlights, ...additions];
+    if (additions.length) {
+        try {
+            localStorage.setItem(FLIGHTS_KEY, JSON.stringify(flights));
+        } catch (error) {
+            console.error("Không thể lưu danh sách chuyến bay đã đồng bộ:", error);
+            showError("Đã tải chuyến bay nhưng không thể lưu đồng bộ trên trình duyệt.");
+        }
     }
 }
 
@@ -124,7 +69,7 @@ const tripTypeInputs = document.querySelectorAll(
 
 returnGroup.style.display = "none";
 
-readFlights();
+const flightCatalogReady = readFlights();
 
 const searchParams = new URLSearchParams(window.location.search);
 
@@ -239,10 +184,13 @@ returnInput.addEventListener("change", function () {
     clearError();
 });
 
-searchButton.addEventListener("click", searchFlights);
+searchButton.addEventListener("click", async function () {
+    await flightCatalogReady;
+    searchFlights();
+});
 
 if (searchParams.has("departure")) {
-    searchFlights();
+    flightCatalogReady.then(searchFlights);
 }
 
 function searchFlights() {
@@ -549,13 +497,11 @@ function escapeHtml(value) {
 }
 
 window.addEventListener("storage", function (event) {
-    if (event.key === "tripgo_flights") {
-        readFlights();
-
-        if (departureInput.value) {
-            searchFlights();
-        }
-    }
+    if (event.key !== FLIGHTS_KEY) return;
+    flightCatalogReady.then(async function () {
+        await readFlights();
+        if (departureInput.value) searchFlights();
+    });
 });
 
 function formatPrice(price) {

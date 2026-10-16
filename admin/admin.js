@@ -56,12 +56,17 @@ import {
     PQC: "Phú Quốc",
     CXR: "Nha Trang",
     HPH: "Hải Phòng",
+    HUI: "Huế",
+    VCA: "Cần Thơ",
+    UIH: "Quy Nhơn",
+    VDO: "Vân Đồn",
   };
   const AIRLINES = [
     "TripGo Airlines",
     "VietJet Air",
     "Vietnam Airlines",
     "Bamboo Airways",
+    "Vietravel Airlines",
   ];
   const AIRCRAFTS = ["Airbus A320", "Airbus A321", "Boeing 737"];
   const $ = (id) => document.getElementById(id),
@@ -220,29 +225,24 @@ import {
   }
   async function load() {
     flights = read(KEYS.flights, []);
-    bookings = read(KEYS.bookings, []).map((b) => normalizeBooking(b, flights));
-    if (localStorage.getItem(KEYS.flights) !== null) return;
     try {
       const response = await fetch("flights.json");
-      if (!response.ok) throw Error("HTTP");
+      if (!response.ok) throw Error(`HTTP ${response.status}`);
       const defaults = await response.json();
-      if (
-        localStorage.getItem(KEYS.flights) === null &&
-        Array.isArray(defaults)
-      ) {
-        flights = defaults.map((f) => ({
-          ...f,
-          date: f.date || new Date().toISOString().slice(0, 10),
-          status: f.status || "active",
-        }));
+      if (!Array.isArray(defaults)) {
+        throw new TypeError("Danh sách chuyến bay mẫu không hợp lệ.");
+      }
+      const knownIds = new Set(flights.map((flight) => flight.id));
+      const additions = defaults.filter((flight) => !knownIds.has(flight.id));
+      if (additions.length) {
+        flights = [...flights, ...additions];
         saveFlights();
       }
-    } catch {
-      alertMessage(
-        "Không tải được chuyến bay mẫu. Bạn vẫn có thể thêm chuyến bay mới. Hãy chạy bằng Live Server để nạp dữ liệu JSON.",
-        true,
-      );
+    } catch (error) {
+      console.error("Không thể đồng bộ danh sách chuyến bay mẫu:", error);
+      alertMessage("Không tải được chuyến bay mẫu. Hãy kiểm tra kết nối rồi tải lại trang.", true);
     }
+    bookings = read(KEYS.bookings, []).map((b) => normalizeBooking(b, flights));
   }
   function saveFlights() {
     write(KEYS.flights, flights);
