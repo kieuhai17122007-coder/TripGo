@@ -29,6 +29,8 @@ npm run preview
 
 Tài khoản demo: `admin@tripgo.vn` / `admin123`.
 
+Danh mục mẫu trong `admin/flights.json` có lịch bay 14 ngày cho toàn bộ cặp điểm đi/đến trong biểu mẫu tìm kiếm, với nhiều hãng, giờ bay, giá và số ghế. Admin và trang tìm chuyến dùng chung danh mục này; chuyến đã lưu trong trình duyệt được giữ nguyên khi bổ sung các mã mẫu mới.
+
 Trong dashboard chọn **Quản lý ghế 2D**:
 
 - Chọn chuyến/ngày bay; ngày cố định nếu chuyến đã có lịch cụ thể.

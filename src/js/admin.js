@@ -18,19 +18,28 @@ const money = value => `${Number(value || 0).toLocaleString('vi-VN')} ₫`;
 
 async function loadFlights() {
   const saved = localStorage.getItem(FLIGHTS_KEY);
+  let savedFlights = [];
   if (saved) {
     try {
-      state.flights = JSON.parse(saved);
-      if (!Array.isArray(state.flights)) throw new Error();
-      return;
-    } catch {}
+      savedFlights = JSON.parse(saved);
+      if (!Array.isArray(savedFlights)) throw new TypeError('Danh sách chuyến bay đã lưu không hợp lệ.');
+    } catch (error) {
+      console.error('Không thể đọc danh sách chuyến bay đã lưu:', error);
+    }
   }
 
   try {
-    const response = await fetch('/src/data/flights.json');
-    state.flights = await response.json();
-  } catch {
-    state.flights = [];
+    const response = await fetch('/admin/flights.json');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const defaults = await response.json();
+    if (!Array.isArray(defaults)) throw new TypeError('Danh sách chuyến bay mẫu không hợp lệ.');
+    const knownIds = new Set(savedFlights.map(flight => flight.id));
+    state.flights = [...savedFlights, ...defaults.filter(flight => !knownIds.has(flight.id))];
+    if (state.flights.length !== savedFlights.length) saveFlights();
+  } catch (error) {
+    console.error('Không thể đồng bộ danh sách chuyến bay:', error);
+    state.flights = savedFlights;
+    showAdminMessage('Không tải được danh sách chuyến bay mẫu.', 'error');
   }
 }
 
