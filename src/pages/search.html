@@ -13,18 +13,21 @@
 <body>
 
     <header class="header">
-        <div class="container header-content">
-            <a href="index.html" class="logo">TripGo</a>
-
-            <nav class="navigation">
-                <a href="index.html">Đặt vé</a>
-                <a href="search.html" class="active">Chuyến bay</a>
-                <a href="index.html#services">Dịch vụ</a>
-                <a href="booking.html">Tra cứu</a>
-                <a href="checkin.html">Check-in</a>
-            </nav>
-        </div>
-    </header>
+  <div class="container nav">
+    <a class="logo" href="/" aria-label="TripGo - Trang chủ">
+      <span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 24 24" role="img"><path d="M21.7 10.9c.4.2.4.8 0 1l-7.2 3.3-1.5 5.1c-.1.4-.5.7-.9.7h-1c-.3 0-.5-.3-.4-.6l.8-4.2-3.2 1.4-1.8 2.2c-.2.2-.5.3-.8.2l-.8-.3c-.3-.1-.4-.5-.2-.8l1.2-2.8-3.1-1.4c-.4-.2-.4-.7 0-.9l.8-.4c.2-.1.4-.1.6 0l4 1.1 3.1-1.5-.9-4.2c-.1-.3.1-.6.4-.7l.9-.2c.4-.1.8.1 1 .4l2 3.4 7.2-2.7c.7-.2 1.3.1 1.6.7l.2.4z"/></svg></span><span class="logo-text">TripGo</span></a>
+    <nav class="main-nav" aria-label="Điều hướng chính">
+      <a data-nav="home" href="/">Đặt vé</a>
+      <a data-nav="flights" href="/src/pages/search.html">Chuyến bay</a>
+      <a data-nav="services" href="/#services">Dịch vụ</a>
+      <a data-nav="booking" href="/src/pages/booking.html">Tra cứu</a>
+      <a data-nav="checkin" href="/src/pages/checkin.html">Check-in</a>
+    </nav>
+    <div class="nav-account">
+      <a class="login-btn" data-auth-link href="/src/pages/login.html">Đăng nhập</a>
+    </div>
+  </div>
+</header>
 
     <main class="container main-content">
 
