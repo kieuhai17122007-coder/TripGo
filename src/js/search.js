@@ -1,4 +1,3 @@
-
 const FLIGHTS_KEY = "tripgo_flights";
 let flights = [];
 
@@ -9,9 +8,11 @@ async function readFlights() {
     if (saved !== null) {
         try {
             const parsedFlights = JSON.parse(saved);
+
             if (!Array.isArray(parsedFlights)) {
                 throw new TypeError("Danh sách chuyến bay đã lưu không hợp lệ.");
             }
+
             savedFlights = parsedFlights;
         } catch (error) {
             console.error("Không thể đọc dữ liệu chuyến bay đã lưu:", error);
@@ -19,34 +20,36 @@ async function readFlights() {
         }
     }
 
-    let defaults;
     try {
-        const response = await fetch("/admin/flights.json");
+        const response = await fetch("/TripGo/src/data/flights.json");
+
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
-        defaults = await response.json();
+
+        const defaults = await response.json();
+
         if (!Array.isArray(defaults)) {
             throw new TypeError("Danh sách chuyến bay mẫu không hợp lệ.");
         }
-    } catch (error) {
-        console.error("Không thể đồng bộ danh sách chuyến bay:", error);
-        flights = savedFlights;
-        if (flights.length === 0) {
-            showError("Không tải được danh sách chuyến bay. Hãy kiểm tra kết nối rồi tải lại trang.");
-        }
-        return;
-    }
 
-    const knownIds = new Set(savedFlights.map(flight => flight.id));
-    const additions = defaults.filter(flight => !knownIds.has(flight.id));
-    flights = [...savedFlights, ...additions];
-    if (additions.length) {
+        const knownIds = new Set(savedFlights.map(flight => flight.id));
+        const additions = defaults.filter(flight => !knownIds.has(flight.id));
+
+        flights = [...savedFlights, ...additions];
+
         try {
             localStorage.setItem(FLIGHTS_KEY, JSON.stringify(flights));
         } catch (error) {
-            console.error("Không thể lưu danh sách chuyến bay đã đồng bộ:", error);
-            showError("Đã tải chuyến bay nhưng không thể lưu đồng bộ trên trình duyệt.");
+            console.error("Không thể lưu danh sách chuyến bay:", error);
+            showError("Không thể lưu danh sách chuyến bay trên trình duyệt.");
+        }
+    } catch (error) {
+        console.error("Không thể tải danh sách chuyến bay:", error);
+        flights = savedFlights;
+
+        if (flights.length === 0) {
+            showError("Không tải được danh sách chuyến bay. Hãy kiểm tra đường dẫn dữ liệu rồi tải lại trang.");
         }
     }
 }
@@ -63,9 +66,7 @@ const errorBox = document.getElementById("error");
 const resultTitle = document.getElementById("resultTitle");
 const flightResults = document.getElementById("flightResults");
 
-const tripTypeInputs = document.querySelectorAll(
-    'input[name="tripType"]'
-);
+const tripTypeInputs = document.querySelectorAll('input[name="tripType"]');
 
 returnGroup.style.display = "none";
 
@@ -112,10 +113,7 @@ function updateDateLimits() {
 
     departureInput.min = today;
 
-    if (
-        departureInput.value &&
-        departureInput.value < today
-    ) {
+    if (departureInput.value && departureInput.value < today) {
         departureInput.value = "";
     }
 
@@ -123,10 +121,7 @@ function updateDateLimits() {
 
     returnInput.min = minReturnDate;
 
-    if (
-        returnInput.value &&
-        returnInput.value < minReturnDate
-    ) {
+    if (returnInput.value && returnInput.value < minReturnDate) {
         returnInput.value = "";
     }
 }
@@ -241,26 +236,17 @@ function searchFlights() {
         return;
     }
 
-    if (
-        tripType === "roundtrip" &&
-        !returnDate
-    ) {
+    if (tripType === "roundtrip" && !returnDate) {
         showError("Vui lòng chọn ngày về.");
         return;
     }
 
-    if (
-        tripType === "roundtrip" &&
-        returnDate < today
-    ) {
+    if (tripType === "roundtrip" && returnDate < today) {
         showError("Ngày về không được ở trong quá khứ.");
         return;
     }
 
-    if (
-        tripType === "roundtrip" &&
-        returnDate < departure
-    ) {
+    if (tripType === "roundtrip" && returnDate < departure) {
         showError("Ngày về phải từ ngày đi trở đi.");
         return;
     }
@@ -271,8 +257,10 @@ function searchFlights() {
             flight.to === to &&
             (flight.status === undefined || flight.status === "active") &&
             (!flight.date || flight.date === departure) &&
-            (flight.seats === undefined ||
-                Number(flight.seats) >= passengers)
+            (
+                flight.seats === undefined ||
+                Number(flight.seats) >= passengers
+            )
         );
     });
 
@@ -322,13 +310,12 @@ function displayFlights(
             classMultiplier = 1.8;
         }
 
-        const totalPrice = flight.price * classMultiplier * passengers;
+        const totalPrice = Number(flight.price) * classMultiplier * passengers;
         const card = document.createElement("div");
 
         card.className = "flight-card";
 
-        const duration = flight.duration ||
-            getFlightDuration(flight.departure, flight.arrival);
+        const duration = getDisplayDuration(flight);
 
         card.innerHTML = `
             <div class="flight-top">
@@ -394,6 +381,17 @@ function displayFlights(
     });
 }
 
+function getDisplayDuration(flight) {
+    if (
+        flight.duration &&
+        !String(flight.duration).includes("?")
+    ) {
+        return flight.duration;
+    }
+
+    return getFlightDuration(flight.departure, flight.arrival);
+}
+
 function selectFlight(
     flight,
     passengers,
@@ -413,8 +411,7 @@ function selectFlight(
         tripType: tripType,
         departureTime: flight.departure,
         arrivalTime: flight.arrival,
-        duration: flight.duration ||
-            getFlightDuration(flight.departure, flight.arrival),
+        duration: getDisplayDuration(flight),
         passengers: passengers,
         ticketClass: ticketClass,
         basePrice: flight.price,
@@ -444,7 +441,7 @@ function selectFlight(
     localStorage.removeItem("tripgo_selected_seat");
     localStorage.removeItem("tripgo_selected_seat_flight");
 
-    window.location.href = "/src/pages/passenger.html";
+    window.location.href = "/TripGo/src/pages/passenger.html";
 }
 
 function getFlightDuration(departure, arrival) {
@@ -497,10 +494,16 @@ function escapeHtml(value) {
 }
 
 window.addEventListener("storage", function (event) {
-    if (event.key !== FLIGHTS_KEY) return;
+    if (event.key !== FLIGHTS_KEY) {
+        return;
+    }
+
     flightCatalogReady.then(async function () {
         await readFlights();
-        if (departureInput.value) searchFlights();
+
+        if (departureInput.value) {
+            searchFlights();
+        }
     });
 });
 
