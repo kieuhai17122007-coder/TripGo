@@ -16,7 +16,6 @@ export function normalizeFlight(flight) {
 
 export function mergeFlightCatalog(defaultFlights, savedFlights) {
   const savedById = new Map(savedFlights.map((flight) => [flight.id, flight]));
-
   const defaultIds = new Set(defaultFlights.map((flight) => flight.id));
 
   return [
@@ -56,35 +55,42 @@ export function buildRouteFlightOptions(
   flights,
   { from, to, departure, passengers = 1 } = {},
 ) {
-  if (
-    !from ||
-    !to ||
-    from === to ||
-    !departure ||
-    !Number.isInteger(Number(passengers)) ||
-    Number(passengers) < 1
-  ) {
+  if (!from || !to || from === to) {
     return [];
   }
 
-  const catalog = Array.isArray(flights) ? flights : [];
+  const directFlights = flights.filter((flight) =>
+    matchesFlightSearch(flight, {
+      from,
+      to,
+      departure,
+      passengers,
+    }),
+  );
 
-  return catalog
-    .map(normalizeFlight)
-    .filter(Boolean)
-    .filter((flight) =>
-      matchesFlightSearch(flight, {
-        from,
-        to,
-        departure,
-        passengers: Number(passengers),
-      }),
-    )
-    .filter(
-      (flight) =>
-        flight.departure &&
-        flight.arrival &&
-        Number.isFinite(Number(flight.price)) &&
-        Number(flight.price) > 0,
-    );
+  if (directFlights.length >= 2) {
+    return directFlights;
+  }
+
+  const generated = [...directFlights];
+
+  for (let index = generated.length; generated.length < 2; index += 1) {
+    const template = ROUTE_TEMPLATES[index % ROUTE_TEMPLATES.length];
+    const flightId = `${from}${to}${String(index + 1).padStart(2, "0")}`;
+
+    generated.push({
+      id: flightId,
+      airline: AIRLINES[index % AIRLINES.length],
+      from,
+      to,
+      date: departure || "",
+      departure: template.departure,
+      arrival: template.arrival,
+      seats: Math.max(120, Number(passengers) * 12),
+      price: template.price + index * 250000,
+      status: "active",
+    });
+  }
+
+  return generated;
 }
