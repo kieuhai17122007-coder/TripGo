@@ -66,7 +66,15 @@ export function getSeatState(f) {
     const id = b.flightId || b.flight?.id || b.flight?.flightNumber;
     const date = b.date || b.departureDate || b.flight?.date;
     // Old bookings without a date are conservatively occupied on this flight.
-    if (id === n.id && (!date || date === n.date) && !cancelled(b))
+    const awaitingPayment =
+      b.status === "Chờ thanh toán" ||
+      ["Chờ thanh toán", "Đang xác nhận"].includes(b.paymentStatus);
+    if (
+      id === n.id &&
+      (!date || date === n.date) &&
+      !cancelled(b) &&
+      !awaitingPayment
+    )
       for (const s of bookingSeats(b)) {
         booked.add(s);
         owners.set(s, b.bookingCode || b.code || "Vé đã đặt");
