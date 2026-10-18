@@ -2,6 +2,7 @@ import "./auth.js";
 import flightCatalog from "../data/flights.json";
 import {
   buildRouteFlightOptions,
+  getFlightDuration,
   matchesFlightSearch,
   mergeFlightCatalog,
   normalizeFlight,
@@ -415,25 +416,6 @@ if (window.TripGoAuth.requireLogin()) {
     localStorage.removeItem("tripgo_selected_seat_flight");
 
     window.location.href = "/src/pages/passenger.html";
-  }
-
-  function getFlightDuration(departure, arrival) {
-    if (!departure || !arrival) {
-      return "Thời gian chưa cập nhật";
-    }
-
-    const [departureHour, departureMinute] = departure.split(":").map(Number);
-
-    const [arrivalHour, arrivalMinute] = arrival.split(":").map(Number);
-
-    let minutes =
-      arrivalHour * 60 + arrivalMinute - (departureHour * 60 + departureMinute);
-
-    if (minutes < 0) {
-      minutes += 24 * 60;
-    }
-
-    return `${Math.floor(minutes / 60)} giờ ${minutes % 60} phút`;
   }
 
   function getAirportName(code) {
