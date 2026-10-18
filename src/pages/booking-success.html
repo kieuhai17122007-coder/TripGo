@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>TripGo - Đặt vé thành công</title>
+    <link rel="stylesheet" href="/src/css/main.css" />
+    <link rel="stylesheet" href="/src/css/pages.css" />
+    <link rel="stylesheet" href="/src/css/booking-success.css" />
+    <link rel="stylesheet" href="/src/css/user-experience.css" />
+  </head>
+  <body>
+    <header class="header screen-only">
+      <div class="container nav">
+        <a class="logo" href="/" aria-label="TripGo - Trang chủ">
+          <span class="logo-mark" aria-hidden="true">✈</span>
+          <span class="logo-text">TripGo</span>
+        </a>
+        <nav class="main-nav" aria-label="Điều hướng chính">
+          <a data-nav="home" href="/">Đặt vé</a>
+          <a data-nav="flights" href="/src/pages/search.html">Chuyến bay</a>
+          <a data-nav="services" href="/#services">Dịch vụ</a>
+          <a data-nav="booking" href="/src/pages/booking.html">Tra cứu</a>
+          <a data-nav="checkin" href="/src/pages/checkin.html">Check-in</a>
+        </nav>
+        <div class="nav-account">
+          <a class="login-btn" data-auth-link href="/src/pages/login.html"
+            >Đăng nhập</a
+          >
+        </div>
+      </div>
+    </header>
+
+    <main class="booking-success-page">
+      <div class="container">
+        <div id="missingBooking" class="booking-missing" hidden>
+          <h1>Không tìm thấy vé</h1>
+          <p>Vé này không tồn tại hoặc không thuộc tài khoản đang đăng nhập.</p>
+          <a class="primary-btn" href="/src/pages/history.html"
+            >Xem lịch sử đặt vé</a
+          >
+        </div>
+
+        <div id="paymentPending" class="booking-missing" hidden>
+          <h1 id="pendingTitle">Đơn hàng chưa hoàn tất</h1>
+          <p id="pendingMessage">Đơn hàng chưa được xác nhận thanh toán.</p>
+          <a id="resumePayment" class="primary-btn" href="#" hidden
+            >Tiếp tục thanh toán</a
+          >
+          <a class="secondary-btn" href="/src/pages/history.html"
+            >Xem lịch sử đặt vé</a
+          >
+        </div>
+
+        <article
+          id="ticket"
+          class="success-ticket"
+          aria-labelledby="successTitle"
+          hidden
+        >
+          <header class="success-heading">
+            <div class="success-check" aria-hidden="true">✓</div>
+            <p class="eyebrow dark">TRIPGO · XÁC NHẬN ĐẶT CHỖ</p>
+            <h1 id="successTitle">Đặt vé thành công!</h1>
+            <p>Bạn đã đặt vé máy bay thành công.</p>
+          </header>
+
+          <section class="booking-code-panel" aria-label="Mã đặt chỗ">
+            <span>MÃ ĐẶT CHỖ</span>
+            <strong id="bookingCode"></strong>
+            <div class="booking-status-row">
+              <span>Trạng thái đặt vé</span>
+              <b id="bookingStatus" class="status-badge"></b>
+            </div>
+            <div class="booking-status-row payment-status-row">
+              <span>Trạng thái thanh toán</span>
+              <b id="paymentStatus"></b>
+            </div>
+          </section>
+
+          <section class="ticket-section" aria-labelledby="routeTitle">
+            <div class="ticket-section-title">
+              <h2 id="routeTitle">Hành trình bay</h2>
+              <span id="flightNumber" class="flight-code"></span>
+            </div>
+            <div class="ticket-route">
+              <div class="route-point">
+                <span class="route-label">ĐIỂM KHỞI HÀNH</span>
+                <strong id="fromCode" class="airport-code"></strong>
+                <span id="fromName" class="city-name"></span>
+                <b id="departureTime" class="route-time"></b>
+              </div>
+              <div class="route-connector" aria-hidden="true">
+                <span></span><b>✈</b><span></span>
+              </div>
+              <div class="route-point route-destination">
+                <span class="route-label">ĐIỂM ĐẾN</span>
+                <strong id="toCode" class="airport-code"></strong>
+                <span id="toName" class="city-name"></span>
+                <b id="arrivalTime" class="route-time"></b>
+              </div>
+            </div>
+            <div class="route-date">
+              <span>Ngày khởi hành</span><b id="departureDate"></b>
+            </div>
+          </section>
+
+          <section class="ticket-section">
+            <h2>Thông tin hành khách & vé</h2>
+            <dl class="ticket-details">
+              <div>
+                <dt>Họ tên hành khách</dt>
+                <dd id="passengerName"></dd>
+              </div>
+              <div>
+                <dt>Số lượng hành khách</dt>
+                <dd id="passengerCount"></dd>
+              </div>
+              <div>
+                <dt>Hạng vé</dt>
+                <dd id="ticketClass"></dd>
+              </div>
+              <div>
+                <dt>Số ghế</dt>
+                <dd id="seatNumbers"></dd>
+              </div>
+              <div>
+                <dt>Số lượng vé</dt>
+                <dd id="ticketCount"></dd>
+              </div>
+              <div>
+                <dt>Phương thức thanh toán</dt>
+                <dd id="paymentMethod"></dd>
+              </div>
+              <div>
+                <dt>Thời gian đặt vé</dt>
+                <dd id="bookingTime"></dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="ticket-total" aria-label="Chi tiết giá vé">
+            <div><span>Giá vé mỗi hành khách</span><b id="unitPrice"></b></div>
+            <div><span>Số lượng vé</span><b id="priceTicketCount"></b></div>
+            <div class="ticket-grand-total">
+              <span>Tổng tiền</span><strong id="totalPrice"></strong>
+            </div>
+            <p>
+              Đặt chỗ được xác nhận sau khi cổng thanh toán xác minh giao dịch.
+            </p>
+          </section>
+        </article>
+
+        <nav
+          class="success-actions screen-only"
+          aria-label="Thao tác với vé"
+          hidden
+        >
+          <button id="printTicket" class="secondary-btn" type="button">
+            In vé
+          </button>
+          <a class="secondary-btn" href="/src/pages/history.html"
+            >Xem lịch sử đặt vé</a
+          >
+          <a class="primary-btn" href="/">Về trang chủ</a>
+        </nav>
+        <div
+          id="emailStatus"
+          class="email-status"
+          role="status"
+          aria-live="polite"
+          hidden
+        >
+          <span id="emailStatusText"></span>
+          <button id="retryEmail" class="secondary-btn" type="button" hidden>
+            Thử gửi lại email
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="/src/js/booking-success.js"></script>
+  </body>
+</html>
