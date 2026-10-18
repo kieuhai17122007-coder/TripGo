@@ -30,8 +30,20 @@ form?.addEventListener("submit", (event) => {
     return show("Mật khẩu xác nhận không khớp.", "error");
   }
 
-  const users = window.TripGoAuth.getUsers();
-  if (users.some((user) => user.email === email)) {
+  const users = window.TripGoAuth?.getUsers();
+
+  if (!Array.isArray(users)) {
+    return show("Không thể tải dữ liệu tài khoản. Vui lòng thử lại.", "error");
+  }
+
+  if (
+    users.some(
+      (user) =>
+        user &&
+        typeof user.email === "string" &&
+        user.email.toLowerCase() === email,
+    )
+  ) {
     return show("Email này đã được đăng ký.", "error");
   }
 
@@ -52,6 +64,11 @@ form?.addEventListener("submit", (event) => {
 });
 
 function show(message, type) {
+  if (!result) {
+    console.error(message);
+    return;
+  }
+
   result.className = type;
   result.textContent = message;
 }
