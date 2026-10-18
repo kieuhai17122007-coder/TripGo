@@ -15,33 +15,26 @@ export function normalizeFlight(flight) {
 }
 
 export function mergeFlightCatalog(defaultFlights, savedFlights) {
-  const savedById = new Map(
-    savedFlights.map((flight) => [flight.id, flight])
-  );
+  const savedById = new Map(savedFlights.map((flight) => [flight.id, flight]));
 
   const defaultIds = new Set(defaultFlights.map((flight) => flight.id));
 
   return [
-    ...defaultFlights.map(
-      (flight) => savedById.get(flight.id) ?? flight
-    ),
-    ...savedFlights.filter(
-      (flight) => !defaultIds.has(flight.id)
-    ),
+    ...defaultFlights.map((flight) => savedById.get(flight.id) ?? flight),
+    ...savedFlights.filter((flight) => !defaultIds.has(flight.id)),
   ];
 }
 
 export function matchesFlightSearch(
   flight,
-  { from, to, departure, passengers }
+  { from, to, departure, passengers },
 ) {
   return (
     flight.from === from &&
     flight.to === to &&
     (flight.status === undefined || flight.status === "active") &&
     (!flight.date || flight.date === departure) &&
-    (flight.seats === undefined ||
-      Number(flight.seats) >= passengers)
+    (flight.seats === undefined || Number(flight.seats) >= passengers)
   );
 }
 
@@ -61,50 +54,37 @@ const ROUTE_TEMPLATES = [
 
 export function buildRouteFlightOptions(
   flights,
-  { from, to, departure, passengers = 1 } = {}
+  { from, to, departure, passengers = 1 } = {},
 ) {
-  if (!from || !to || from === to) {
+  if (
+    !from ||
+    !to ||
+    from === to ||
+    !departure ||
+    !Number.isInteger(Number(passengers)) ||
+    Number(passengers) < 1
+  ) {
     return [];
   }
 
-  const directFlights = flights.filter((flight) =>
-    matchesFlightSearch(flight, {
-      from,
-      to,
-      departure,
-      passengers,
-    })
-  );
+  const catalog = Array.isArray(flights) ? flights : [];
 
-  if (directFlights.length >= 2) {
-    return directFlights;
-  }
-
-  const generated = [...directFlights];
-
-  for (
-    let index = generated.length;
-    generated.length < 2;
-    index += 1
-  ) {
-    const template = ROUTE_TEMPLATES[index % ROUTE_TEMPLATES.length];
-
-    const flightId =
-      `${from}${to}${String(index + 1).padStart(2, "0")}`;
-
-    generated.push({
-      id: flightId,
-      airline: AIRLINES[index % AIRLINES.length],
-      from,
-      to,
-      date: departure || "",
-      departure: template.departure,
-      arrival: template.arrival,
-      seats: Math.max(120, Number(passengers) * 12),
-      price: template.price + index * 250000,
-      status: "active",
-    });
-  }
-
-  return generated;
+  return catalog
+    .map(normalizeFlight)
+    .filter(Boolean)
+    .filter((flight) =>
+      matchesFlightSearch(flight, {
+        from,
+        to,
+        departure,
+        passengers: Number(passengers),
+      }),
+    )
+    .filter(
+      (flight) =>
+        flight.departure &&
+        flight.arrival &&
+        Number.isFinite(Number(flight.price)) &&
+        Number(flight.price) > 0,
+    );
 }
