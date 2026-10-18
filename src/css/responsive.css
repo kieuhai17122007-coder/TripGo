@@ -165,3 +165,71 @@
     font-size: 34px;
   }
 }
+
+@media (max-width: 900px) {
+  .home-search-box .search-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+  }
+
+  .home-search-box .swap {
+    display: block;
+  }
+
+  .home-search-box .route-fields {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 600px) {
+  .home-search-box {
+    padding: 20px 17px 18px;
+  }
+
+  .search-box-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 17px;
+  }
+
+  .search-box-heading h2 {
+    font-size: 18px;
+  }
+
+  .home-search-box .search-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 13px;
+  }
+
+  .home-search-box .route-fields {
+    grid-column: auto;
+    grid-template-columns: minmax(0, 1fr) 38px minmax(0, 1fr);
+    gap: 7px;
+  }
+
+  .home-search-box .field select,
+  .home-search-box .field input {
+    height: 47px;
+    padding-right: 7px;
+    padding-left: 9px;
+    font-size: 12px;
+  }
+
+  .home-search-box .swap {
+    display: block;
+    width: 34px;
+    height: 34px;
+    margin-top: 25px;
+  }
+
+  .home-search-box .route-fields .field span {
+    white-space: nowrap;
+    letter-spacing: 0;
+  }
+
+  .home-search-box .search-btn {
+    width: 100%;
+    margin-top: 10px;
+  }
+}
