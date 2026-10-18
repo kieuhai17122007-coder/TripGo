@@ -3,15 +3,43 @@ export function normalizeFlight(flight) {
     return null;
   }
 
+  const departure = flight.departure ?? flight.departureTime ?? "";
+  const arrival = flight.arrival ?? flight.arrivalTime ?? "";
+
   return {
     ...flight,
     id: flight.id ?? flight.flightNumber ?? "",
     date: flight.date ?? flight.departureDate ?? "",
-    departure: flight.departure ?? flight.departureTime ?? "",
-    arrival: flight.arrival ?? flight.arrivalTime ?? "",
+    departure,
+    arrival,
+    duration:
+      typeof flight.duration === "string" &&
+      /^\d+ giờ \d+ phút$/.test(flight.duration)
+        ? flight.duration
+        : getFlightDuration(departure, arrival),
     seats: flight.seats ?? flight.availableSeats,
     status: flight.status === "available" ? "active" : flight.status,
   };
+}
+
+export function getFlightDuration(departure, arrival) {
+  const parseTime = (value) => {
+    if (typeof value !== "string") return null;
+
+    const match = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(value);
+    return match ? Number(match[1]) * 60 + Number(match[2]) : null;
+  };
+
+  const departureMinutes = parseTime(departure);
+  const arrivalMinutes = parseTime(arrival);
+
+  if (departureMinutes === null || arrivalMinutes === null) {
+    return "Thời gian chưa cập nhật";
+  }
+
+  const durationMinutes =
+    (arrivalMinutes - departureMinutes + 24 * 60) % (24 * 60);
+  return `${Math.floor(durationMinutes / 60)} giờ ${durationMinutes % 60} phút`;
 }
 
 export function mergeFlightCatalog(defaultFlights, savedFlights) {
