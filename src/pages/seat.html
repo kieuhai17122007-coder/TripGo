@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/src/css/main.css" />
     <link rel="stylesheet" href="/src/css/pages.css" />
     <link rel="stylesheet" href="/src/css/seat-map.css" />
+    <link rel="stylesheet" href="/src/css/user-experience.css" />
   </head>
   <body>
     <header class="header">
@@ -35,9 +36,11 @@
     </header>
     <div class="booking-progress">
       <div class="container progress-track">
-        <div data-step="1"><span>01</span>Chọn chuyến</div>
-        <div data-step="2"><span>02</span>Hành khách</div>
-        <div data-step="3"><span>03</span>Chọn ghế</div>
+        <div class="done" data-step="1"><span>01</span>Chọn chuyến</div>
+        <div class="done" data-step="2"><span>02</span>Hành khách</div>
+        <div class="active" aria-current="step" data-step="3">
+          <span>03</span>Chọn ghế
+        </div>
         <div data-step="4"><span>04</span>Xác nhận</div>
         <div data-step="5"><span>05</span>Thanh toán</div>
       </div>
@@ -92,13 +95,7 @@
           </div>
           <div id="selectedSeatList" class="selected-seat-list"></div>
           <small id="seatError" class="seat-error" role="alert"></small>
-          <div class="seat-note">
-            Nhóm khách chọn ghế liền nhau trong từng cụm A–B–C hoặc D–E–F. Nhóm
-            đông có thể chọn thêm các cụm ở phía sau, không bắt buộc các hàng
-            sát nhau. Ví dụ 9 khách: 1A–1F + 3A–3C. Chỉ chia thành các ghế đơn
-            khi không còn đủ cụm liền nhau. Không bỏ trống ghế giữa. Ghế được
-            ghi nhận sau thanh toán demo.
-          </div>
+
           <div class="booking-actions">
             <a class="secondary-btn" href="/src/pages/passenger.html"
               >← Quay lại</a
