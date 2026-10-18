@@ -92,7 +92,6 @@ function logout() {
   location.replace("/");
 }
 
-fu;
 function updateAuthUI() {
   const user = getCurrentUser();
   const currentPath = location.pathname;
@@ -101,136 +100,52 @@ function updateAuthUI() {
   document.querySelectorAll("[data-nav]").forEach((link) => {
     const key = link.dataset.nav;
     let active = false;
-
-    if (key === "home") {
-      active = currentPath === "/" && !currentHash;
-    }
-    if (key === "flights") {
-      active = currentPath.endsWith("/search.html");
-    }
-    if (key === "services") {
+    if (key === "home") active = currentPath === "/" && !currentHash;
+    if (key === "flights") active = currentPath.endsWith("/search.html");
+    if (key === "services")
       active = currentPath === "/" && currentHash === "#services";
-    }
-    if (key === "booking") {
-      active = currentPath.endsWith("/booking.html");
-    }
-    if (key === "checkin") {
-      active = currentPath.endsWith("/checkin.html");
-    }
-
+    if (key === "booking") active = currentPath.endsWith("/booking.html");
+    if (key === "checkin") active = currentPath.endsWith("/checkin.html");
     link.classList.toggle("active", active);
   });
 
   document.querySelectorAll("[data-auth-link]").forEach((link) => {
-    const existingMenu = link.closest(".account-menu");
-
     if (!user) {
-      if (existingMenu) {
-        const loginLink = document.createElement("a");
-        loginLink.dataset.authLink = "";
-        loginLink.href = "/src/pages/login.html";
-        loginLink.textContent = "Đăng nhập";
-        existingMenu.replaceWith(loginLink);
-      } else {
-        link.textContent = "Đăng nhập";
-        link.href = "/src/pages/login.html";
-      }
+      link.textContent = "Đăng nhập";
+      link.href = "/src/pages/login.html";
       return;
     }
-
-    if (existingMenu) {
-      const name = existingMenu.querySelector(".account-name");
-      const avatar = existingMenu.querySelector(".account-avatar");
-      const adminLink = existingMenu.querySelector(".account-admin-link");
-      const historyLink = existingMenu.querySelector(".account-history-link");
-
-      if (name) {
-        name.textContent =
-          user.role === "admin" ? "Quản trị" : user.name || "Tài khoản";
-      }
-
-      if (avatar) {
-        avatar.textContent = String(user.name || "U")
-          .charAt(0)
-          .toUpperCase();
-      }
-
-      if (adminLink) adminLink.hidden = user.role !== "admin";
-      if (historyLink) historyLink.hidden = user.role === "admin";
-
-      return;
-    }
-
+    if (link.closest(".account-menu")) return;
     const wrapper = document.createElement("div");
     wrapper.className = "account-menu";
-
-    const trigger = document.createElement("button");
-    trigger.className = "account-trigger";
-    trigger.type = "button";
-    trigger.setAttribute("aria-expanded", "false");
-
-    const avatar = document.createElement("span");
-    avatar.className = "account-avatar";
-    avatar.textContent = String(user.name || "U")
-      .charAt(0)
-      .toUpperCase();
-
-    const name = document.createElement("span");
-    name.className = "account-name";
-    name.textContent =
-      user.role === "admin" ? "Quản trị" : user.name || "Tài khoản";
-
-    const chevron = document.createElement("span");
-    chevron.className = "account-chevron";
-    chevron.setAttribute("aria-hidden", "true");
-
-    trigger.append(avatar, name, chevron);
-
-    const dropdown = document.createElement("div");
-    dropdown.className = "account-dropdown";
-
-    const adminLink = document.createElement("a");
-    adminLink.className = "account-admin-link";
-    adminLink.href = "/admin/";
-    adminLink.textContent = "⚙ Quản trị";
-    adminLink.hidden = user.role !== "admin";
-
-    const historyLink = document.createElement("a");
-    historyLink.className = "account-history-link";
-    historyLink.href = "/src/pages/history.html";
-    historyLink.textContent = "✈ Lịch sử đặt vé";
-    historyLink.hidden = user.role === "admin";
-
-    const bookingLink = document.createElement("a");
-    bookingLink.href = "/src/pages/booking.html";
-    bookingLink.textContent = "⌕ Tra cứu đặt chỗ";
-
-    const logoutButton = document.createElement("button");
-    logoutButton.type = "button";
-    logoutButton.dataset.logout = "";
-    logoutButton.textContent = "↪ Đăng xuất";
-    logoutButton.addEventListener("click", logout);
-
-    dropdown.append(adminLink, historyLink, bookingLink, logoutButton);
-    wrapper.append(trigger, dropdown);
-
-    trigger.addEventListener("click", (event) => {
-      event.stopPropagation();
-
-      document.querySelectorAll(".account-menu.open").forEach((menu) => {
-        if (menu !== wrapper) {
-          menu.classList.remove("open");
-          menu
-            .querySelector(".account-trigger")
-            ?.setAttribute("aria-expanded", "false");
+    wrapper.innerHTML = `
+      <button class="account-trigger" type="button" aria-expanded="false">
+        <span class="account-avatar">${String(user.name || "U")
+          .charAt(0)
+          .toUpperCase()}</span>
+        <span class="account-name">${String(user.role === "admin" ? "Quản trị" : user.name || "Tài khoản")}</span>
+        <span class="account-chevron" aria-hidden="true"></span>
+      </button>
+      <div class="account-dropdown">
+        ${
+          user.role === "admin"
+            ? '<a href="/admin/">⚙ Quản trị</a>'
+            : '<a href="/src/pages/history.html">✈ Lịch sử đặt vé</a>'
         }
-      });
-
-      const isOpen = wrapper.classList.toggle("open");
-      trigger.setAttribute("aria-expanded", String(isOpen));
-    });
-
+        <a href="/src/pages/booking.html">⌕ Tra cứu đặt chỗ</a>
+        <button type="button" data-logout>↪ Đăng xuất</button>
+      </div>`;
     link.replaceWith(wrapper);
+    const trigger = wrapper.querySelector(".account-trigger");
+    trigger.addEventListener("click", (e) => {
+      e.stopPropagation();
+      document
+        .querySelectorAll(".account-menu.open")
+        .forEach((x) => x !== wrapper && x.classList.remove("open"));
+      wrapper.classList.toggle("open");
+      trigger.setAttribute("aria-expanded", wrapper.classList.contains("open"));
+    });
+    wrapper.querySelector("[data-logout]").onclick = logout;
   });
 }
 
