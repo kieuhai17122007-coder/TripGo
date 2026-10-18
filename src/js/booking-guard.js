@@ -1,3 +1,4 @@
+
 import "./auth.js";
 
 const path = location.pathname;
@@ -43,5 +44,15 @@ if (
       localStorage.getItem("tripgo_selected_seat")
     ))
 ) {
-  location.replace("/src/pages/search.html");
+  const bookingCode = new URLSearchParams(location.search).get("bookingCode");
+  const user = window.TripGoAuth.getCurrentUser();
+  const resumableBooking =
+    bookingCode &&
+    window.TripGoAuth.getBookings().some(
+      (booking) =>
+        booking.bookingCode === bookingCode &&
+        booking.userEmail?.toLowerCase() === user?.email?.toLowerCase() &&
+        ["Chờ thanh toán", "Đã đặt vé"].includes(booking.status),
+    );
+  if (!resumableBooking) location.replace("/src/pages/search.html");
 }
