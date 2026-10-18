@@ -1123,7 +1123,8 @@ a:focus-visible {
 .admin-dark .action.danger {
   color: #fca5a5;
 }
-.admin-dark .badge:not(.off):not(.cancel):not(.awaiting-payment):not(.processing) {
+.admin-dark
+  .badge:not(.off):not(.cancel):not(.awaiting-payment):not(.processing) {
   background: #174533;
   color: #bbf7d0;
 }
