@@ -185,6 +185,18 @@ if (window.TripGoAuth.requireLogin()) {
       const passengers = Number(passengersInput.value);
       const ticketClass = ticketClassInput.value;
 
+      if (!Number.isInteger(passengers) || passengers < 1 || passengers > 9) {
+        showError("Số hành khách phải từ 1 đến 9.");
+        passengersInput.focus();
+        return;
+      }
+
+      if (!["economy", "business"].includes(ticketClass)) {
+        showError("Vui lòng chọn hạng vé hợp lệ.");
+        ticketClassInput.focus();
+        return;
+      }
+
       const selectedTripType = document.querySelector(
         'input[name="tripType"]:checked',
       );
@@ -277,10 +289,30 @@ if (window.TripGoAuth.requireLogin()) {
         return;
       }
 
-      resultTitle.textContent = `Tìm thấy ${result.length} chuyến bay`;
-      flightResults.innerHTML = "";
+      const validFlights = result.filter(
+        (flight) =>
+          flight &&
+          Number.isFinite(Number(flight.price)) &&
+          Number(flight.price) > 0 &&
+          flight.departure &&
+          flight.arrival,
+      );
 
-      result.forEach((flight) => {
+      if (validFlights.length === 0) {
+        resultTitle.textContent = "Không có chuyến bay phù hợp";
+        flightResults.innerHTML = `
+    <div class="empty-result">
+      <div class="empty-icon">✈</div>
+      <h3>Không có chuyến bay hợp lệ</h3>
+      <p>Vui lòng thử lại với tuyến bay hoặc ngày khác.</p>
+    </div>
+  `;
+        return;
+      }
+
+      resultTitle.textContent = `Tìm thấy ${validFlights.length} chuyến bay`;
+      flightResults.innerHTML = "";
+      validFlights.forEach((flight) => {
         const className =
           ticketClass === "business" ? "Thương gia" : "Phổ thông";
         const classMultiplier = ticketClass === "business" ? 1.8 : 1;
