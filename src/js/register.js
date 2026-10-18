@@ -4,6 +4,7 @@ import "../css/pages.css";
 
 const form = document.getElementById("registerForm");
 const result = document.getElementById("result");
+const returnUrl = new URLSearchParams(location.search).get("returnUrl");
 
 form?.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -30,20 +31,8 @@ form?.addEventListener("submit", (event) => {
     return show("Mật khẩu xác nhận không khớp.", "error");
   }
 
-  const users = window.TripGoAuth?.getUsers();
-
-  if (!Array.isArray(users)) {
-    return show("Không thể tải dữ liệu tài khoản. Vui lòng thử lại.", "error");
-  }
-
-  if (
-    users.some(
-      (user) =>
-        user &&
-        typeof user.email === "string" &&
-        user.email.toLowerCase() === email,
-    )
-  ) {
+  const users = window.TripGoAuth.getUsers();
+  if (users.some((user) => user.email === email)) {
     return show("Email này đã được đăng ký.", "error");
   }
 
@@ -60,15 +49,13 @@ form?.addEventListener("submit", (event) => {
   window.TripGoAuth.saveUsers(users);
   form.reset();
   show("Đăng ký thành công. Đang chuyển tới trang đăng nhập...", "notice");
-  setTimeout(() => location.replace("/src/pages/login.html"), 700);
+  const loginUrl = returnUrl
+    ? `/src/pages/login.html?returnUrl=${encodeURIComponent(returnUrl)}`
+    : "/src/pages/login.html";
+  setTimeout(() => location.replace(loginUrl), 700);
 });
 
 function show(message, type) {
-  if (!result) {
-    console.error(message);
-    return;
-  }
-
   result.className = type;
   result.textContent = message;
 }
