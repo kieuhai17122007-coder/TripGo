@@ -21,7 +21,7 @@ async function readFlights() {
     }
 
     try {
-        const response = await fetch("/TripGo/src/data/flights.json");
+        const response = await fetch("/src/data/flights.json");
 
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
@@ -441,7 +441,7 @@ function selectFlight(
     localStorage.removeItem("tripgo_selected_seat");
     localStorage.removeItem("tripgo_selected_seat_flight");
 
-    window.location.href = "/TripGo/src/pages/passenger.html";
+    window.location.href = "/src/pages/passenger.html";
 }
 
 function getFlightDuration(departure, arrival) {
