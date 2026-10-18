@@ -6,6 +6,7 @@
     <title>TripGo - Xác nhận</title>
     <link rel="stylesheet" href="/src/css/main.css" />
     <link rel="stylesheet" href="/src/css/pages.css" />
+    <link rel="stylesheet" href="/src/css/user-experience.css" />
   </head>
   <body>
     <header class="header">
@@ -34,10 +35,12 @@
     </header>
     <div class="booking-progress">
       <div class="container progress-track">
-        <div data-step="1"><span>01</span>Chọn chuyến</div>
-        <div data-step="2"><span>02</span>Hành khách</div>
-        <div data-step="3"><span>03</span>Chọn ghế</div>
-        <div data-step="4"><span>04</span>Xác nhận</div>
+        <div class="done" data-step="1"><span>01</span>Chọn chuyến</div>
+        <div class="done" data-step="2"><span>02</span>Hành khách</div>
+        <div class="done" data-step="3"><span>03</span>Chọn ghế</div>
+        <div class="active" aria-current="step" data-step="4">
+          <span>04</span>Xác nhận
+        </div>
         <div data-step="5"><span>05</span>Thanh toán</div>
       </div>
     </div>

@@ -6,6 +6,7 @@
     <title>TripGo - Tra cứu đặt vé</title>
     <link rel="stylesheet" href="/src/css/main.css" />
     <link rel="stylesheet" href="/src/css/pages.css" />
+    <link rel="stylesheet" href="/src/css/user-experience.css" />
   </head>
   <body>
     <header class="header">
@@ -37,62 +38,79 @@
         <p class="eyebrow dark">MANAGE BOOKING</p>
         <h1>Tra cứu đặt chỗ</h1>
         <p>Nhập mã đặt chỗ và Email/Số điện thoại để xem thông tin vé.</p>
-        <label
-          >Mã đặt chỗ<input id="code" type="text" placeholder="Ví dụ: TG123456"
-        /></label>
-        <label
-          >Email/Số điện thoại<input
-            id="contact"
-            type="text"
-            placeholder="Nhập Email hoặc số điện thoại"
-        /></label>
+        <label for="code">Mã đặt chỗ</label
+        ><input
+          id="code"
+          type="text"
+          placeholder="Ví dụ: TG123456"
+          autocomplete="off"
+        />
+        <label for="contact">Email/Số điện thoại</label
+        ><input
+          id="contact"
+          type="text"
+          placeholder="Nhập Email hoặc số điện thoại"
+          autocomplete="email"
+        />
         <button class="primary-btn wide" id="lookupBtn">TRA CỨU</button>
         <div id="result"></div>
       </div>
     </main>
     <script type="module">
       import "../js/auth.js";
-      window.TripGoAuth.updateAuthUI();
-      const escapeHtml = (value) =>
-        String(value ?? "").replace(
-          /[&<>"']/g,
-          (c) =>
-            ({
-              "&": "&amp;",
-              "<": "&lt;",
-              ">": "&gt;",
-              '"': "&quot;",
-              "'": "&#039;",
-            })[c],
-        );
-      const formatPrice = (value) =>
-        `${Number(value || 0).toLocaleString("vi-VN")} VNĐ`;
-      document.getElementById("lookupBtn").addEventListener("click", () => {
-        const code = document.getElementById("code").value.trim().toUpperCase();
-        const contact = document
-          .getElementById("contact")
-          .value.trim()
-          .toLowerCase();
-        const result = document.getElementById("result");
-        if (!code || !contact) {
-          result.innerHTML =
-            '<div class="error">Vui lòng nhập mã đặt chỗ và Email/Số điện thoại.</div>';
-          return;
-        }
-        const booking = window.TripGoAuth.getBookings().find((item) => {
-          const email = item.passenger?.email?.toLowerCase() || "";
-          const phone = item.passenger?.phone || "";
-          return (
-            item.bookingCode?.toUpperCase() === code &&
-            (email === contact || phone === contact)
+      if (window.TripGoAuth.requireLogin()) {
+        window.TripGoAuth.updateAuthUI();
+        const escapeHtml = (value) =>
+          String(value ?? "").replace(
+            /[&<>"']/g,
+            (c) =>
+              ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#039;",
+              })[c],
           );
-        });
-        if (!booking) {
-          result.innerHTML =
-            '<div class="error">Không tìm thấy đặt chỗ phù hợp.</div>';
-          return;
-        }
-        result.innerHTML = `<div class="notice"><h3>Thông tin đặt vé</h3>
+        const formatPrice = (value) =>
+          `${Number(value || 0).toLocaleString("vi-VN")} VNĐ`;
+        document.getElementById("lookupBtn").addEventListener("click", () => {
+          const code = document
+            .getElementById("code")
+            .value.trim()
+            .toUpperCase();
+          const contact = document
+            .getElementById("contact")
+            .value.trim()
+            .toLowerCase();
+          const result = document.getElementById("result");
+          if (!code || !contact) {
+            result.innerHTML =
+              '<div class="error">Vui lòng nhập mã đặt chỗ và Email/Số điện thoại.</div>';
+            return;
+          }
+          const user = window.TripGoAuth.getCurrentUser();
+          const booking = window.TripGoAuth.getBookings().find((item) => {
+            const email = item.passenger?.email?.toLowerCase() || "";
+            const phone = item.passenger?.phone || "";
+            const ownerEmail = (item.userEmail || email).toLowerCase();
+            const ownedByUser =
+              window.TripGoAuth.isAdmin() ||
+              ownerEmail === user.email?.toLowerCase() ||
+              email === user.email?.toLowerCase() ||
+              (user.phone && phone === user.phone);
+            return (
+              ownedByUser &&
+              item.bookingCode?.toUpperCase() === code &&
+              (email === contact || phone === contact)
+            );
+          });
+          if (!booking) {
+            result.innerHTML =
+              '<div class="error">Không tìm thấy đặt chỗ phù hợp.</div>';
+            return;
+          }
+          result.innerHTML = `<div class="notice"><h3>Thông tin đặt vé</h3>
     <p><b>Mã đặt chỗ:</b> ${escapeHtml(booking.bookingCode)}</p>
     <p><b>Hành khách:</b> ${escapeHtml(booking.passenger?.fullName || "N/A")}</p>
     <p><b>Email:</b> ${escapeHtml(booking.passenger?.email || "N/A")}</p>
@@ -101,7 +119,8 @@
     <p><b>Hành trình:</b> ${escapeHtml(booking.flight?.from || "")} → ${escapeHtml(booking.flight?.to || "")}</p>
     <p><b>Số hành khách:</b> ${escapeHtml(booking.passengerCount || 1)}</p><p><b>Ghế:</b> ${escapeHtml((booking.seats || booking.seat || []).toString().replaceAll(",", ", "))}</p><p><b>Loại vé:</b> ${escapeHtml(booking.ticketType || "N/A")}</p>
     <p><b>Tổng tiền:</b> ${formatPrice(booking.totalPrice)}</p><p><b>Trạng thái:</b> ${escapeHtml(booking.status || "Đã đặt vé")}</p></div>`;
-      });
+        });
+      }
     </script>
     <script type="module" src="/src/js/auth-page.js"></script>
   </body>
