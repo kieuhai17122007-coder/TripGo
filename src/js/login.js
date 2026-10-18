@@ -23,8 +23,20 @@ form?.addEventListener("submit", (event) => {
     return;
   }
 
-  const users = window.TripGoAuth.getUsers();
-  const user = users.find((item) => item.email === email);
+  const users = window.TripGoAuth?.getUsers();
+
+  if (!Array.isArray(users)) {
+    result.className = "error";
+    result.textContent = "Không thể tải dữ liệu tài khoản. Vui lòng thử lại.";
+    return;
+  }
+
+  const user = users.find(
+    (item) =>
+      item &&
+      typeof item.email === "string" &&
+      item.email.toLowerCase() === email,
+  );
 
   if (!user || user.password !== password) {
     result.className = "error";
