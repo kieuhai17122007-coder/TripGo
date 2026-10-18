@@ -302,6 +302,165 @@ button {
   letter-spacing: 0.4px;
 }
 
+/* Homepage search keeps the booking shortcut distinct from the flight results page. */
+.home-search-box {
+  max-width: 1080px;
+  padding: 27px 30px 25px;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: 20px;
+  box-shadow: 0 24px 68px rgba(0, 22, 46, 0.28);
+}
+
+.search-box-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 21px;
+}
+
+.search-box-heading .eyebrow {
+  margin-bottom: 4px;
+}
+
+.search-box-heading h2 {
+  color: #1d344f;
+  font-size: 20px;
+  line-height: 1.3;
+}
+
+.search-box-heading > a {
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.search-box-heading > a:hover {
+  color: var(--primary-dark);
+}
+
+.home-search-box .trip-type {
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+}
+
+.home-search-box .trip-type label {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid #e1e8f0;
+  border-radius: 999px;
+  background: #fff;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.home-search-box .trip-type label:has(input:checked) {
+  border-color: #bdd8f1;
+  background: #f0f7ff;
+  color: var(--primary);
+}
+
+.home-search-box .search-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 18px;
+  align-items: start;
+}
+
+.home-search-box .route-fields {
+  display: grid;
+  grid-column: span 2;
+  grid-template-columns: minmax(0, 1fr) 42px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.home-search-box .field {
+  min-width: 0;
+  gap: 8px;
+}
+
+.home-search-box .field span {
+  font-size: 10px;
+  letter-spacing: 0.55px;
+}
+
+.home-search-box .field select,
+.home-search-box .field input {
+  width: 100%;
+  height: 50px;
+  border-radius: 10px;
+  font-size: 13px;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.home-search-box .field select:hover,
+.home-search-box .field input:hover {
+  border-color: #a8bfd5;
+}
+
+.home-search-box .swap {
+  align-self: end;
+  width: 38px;
+  height: 38px;
+  margin: 23px auto 0;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.home-search-box .swap:hover {
+  transform: rotate(180deg);
+}
+
+.home-search-box .field-error {
+  display: block;
+  min-height: 0;
+  color: #b42318;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.home-search-box [aria-invalid="true"] {
+  border-color: #d92d20;
+}
+
+.home-search-box .search-form-error {
+  min-height: 0;
+  margin-top: 8px;
+  color: #b42318;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.home-search-box .search-btn {
+  width: min(508px, 100%);
+  min-height: 70px;
+  margin-top: 12px;
+  border-radius: 15px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  box-shadow: 0 12px 26px rgba(7, 87, 160, 0.2);
+}
+
+.home-search-box .search-btn:hover {
+  box-shadow: 0 16px 32px rgba(7, 87, 160, 0.27);
+}
+
+.home-search-box .search-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 7px 16px rgba(7, 87, 160, 0.18);
+}
+
+.home-search-box .return-field[hidden] {
+  display: none;
+}
+
 /* Sections */
 .section {
   padding: 88px 0;

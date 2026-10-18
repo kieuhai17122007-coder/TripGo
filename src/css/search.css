@@ -1,35 +1,13 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap");
-
-:root {
-  --primary: #0757a0;
-  --primary-dark: #043d72;
-  --accent: #e7b44a;
-  --ink: #172033;
-  --muted: #667085;
-  --line: #e4e9f0;
-  --surface: #f5f7fb;
-  --white: #fff;
-  --shadow: 0 18px 50px rgba(15, 34, 58, 0.12);
-}
-
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html {
-  scroll-behavior: smooth;
-  overflow-x: hidden;
-}
-
 body {
-  width: 100%;
-  overflow-x: hidden;
-  font-family: Inter, Arial, sans-serif;
-  color: var(--ink);
-  background: #fff;
-  line-height: 1.55;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f5f7fb;
+  color: #1f2937;
 }
 
 a {
@@ -40,95 +18,152 @@ a {
 button,
 input,
 select {
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
+  font-family: inherit;
 }
 
 .container {
-  width: min(1180px, 92%);
-  margin: auto;
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* Header */
+/* HEADER */
+
 .header {
-  height: 78px;
-  background: rgba(255, 255, 255, 0.96);
-  border-bottom: 1px solid var(--line);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  backdrop-filter: blur(14px);
+  height: 72px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.nav {
+.header-content {
   height: 100%;
   display: flex;
   align-items: center;
-  gap: 38px;
+  justify-content: space-between;
 }
 
 .logo {
-  font-size: 25px;
+  font-size: 28px;
   font-weight: 800;
-  color: var(--primary);
+  color: #1677ff;
+}
+
+.navigation {
   display: flex;
   align-items: center;
-  gap: 9px;
-  letter-spacing: -0.5px;
+  gap: 28px;
 }
 
-.logo span {
-  font-size: 27px;
-}
-
-.nav nav {
-  display: flex;
-  align-items: center;
-  gap: 26px;
-  flex: 1;
-}
-
-.nav nav a {
+.navigation a {
   font-size: 14px;
   font-weight: 600;
-  color: #344054;
-  position: relative;
-  padding: 29px 0;
-}
-
-.nav nav a:hover {
-  color: var(--primary);
-}
-
-.nav nav a:after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 100%;
-  bottom: 19px;
-  height: 2px;
-  background: var(--primary);
+  color: #555;
   transition: 0.2s;
 }
 
-.nav nav a:hover:after {
-  right: 0;
+.navigation a:hover {
+  color: #1677ff;
 }
 
+.navigation a.active {
+  color: #1677ff;
+}
+.nav-account {
+  margin-left: auto;
+  position: relative;
+}
 .login-btn {
-  border: 1px solid #b8c8da;
-  color: var(--primary);
-  padding: 10px 19px;
-  border-radius: 999px;
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #1677ff;
   font-size: 14px;
+  font-weight: 700;
 }
-
-.login-btn:hover {
-  background: #eef6ff;
+.account-menu {
+  position: relative;
+}
+.account-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  max-width: 220px;
+  padding: 4px 12px 4px 5px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #fff;
+  color: #0757a0;
+  font-weight: 700;
+  cursor: pointer;
+}
+.account-avatar {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 50%;
+  background: #1677ff;
+  color: #fff;
+}
+.account-name {
+  overflow: hidden;
+  max-width: 130px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.account-chevron {
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+.account-menu.open .account-chevron {
+  transform: rotate(225deg);
+}
+.account-dropdown {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 220px;
+  padding: 6px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 10px 28px #0f172a1a;
+  opacity: 0;
+  visibility: hidden;
+}
+.account-menu.open .account-dropdown {
+  opacity: 1;
+  visibility: visible;
+}
+.account-dropdown a,
+.account-dropdown button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #344054;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.account-dropdown a:hover,
+.account-dropdown button:hover {
+  background: #f3f8fd;
+}
+.account-dropdown button {
+  color: #b42318;
 }
 
 /* MAIN */
@@ -221,20 +256,37 @@ button {
 .form-group select {
   width: 100%;
   height: 46px;
-  padding: 0 13px;
+  padding: 0 14px;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border-radius: 11px;
   background: #ffffff;
   color: #333;
   font-size: 14px;
   outline: none;
-  transition: 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    background-color 0.2s;
+}
+
+.search-card .form-group select {
+  appearance: none;
+  padding-right: 42px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2368788d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  cursor: pointer;
+}
+
+.form-group input:hover,
+.form-group select:hover {
+  border-color: #b6cadc;
 }
 
 .form-group input:focus,
 .form-group select:focus {
-  border-color: #1677ff;
-  box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.1);
+  border-color: #4b9bd3;
+  box-shadow: 0 0 0 4px rgba(7, 94, 168, 0.11);
 }
 
 /* ERROR */
@@ -250,25 +302,31 @@ button {
 /* SEARCH BUTTON */
 
 .search-button {
-  width: 100%;
-  height: 48px;
+  width: min(100%, 340px);
+  min-height: 54px;
   margin-top: 5px;
-  border: none;
-  border-radius: 8px;
-  background: #1677ff;
+  border: 1px solid #075ea8;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #075ea8, #0a73bb);
   color: #ffffff;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 800;
   cursor: pointer;
-  transition: 0.2s;
+  box-shadow: 0 9px 22px rgba(7, 87, 160, 0.18);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    background 0.2s;
 }
 
 .search-button:hover {
-  background: #095dcc;
+  background: linear-gradient(135deg, #043b6e, #075ea8);
+  box-shadow: 0 12px 26px rgba(7, 87, 160, 0.24);
+  transform: translateY(-1px);
 }
 
 .search-button:active {
-  transform: scale(0.99);
+  transform: translateY(0);
 }
 
 /* RESULT */
@@ -322,26 +380,30 @@ button {
 /* FLIGHT CARD */
 
 .flight-card {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.75fr) minmax(0, 3fr);
+  align-items: center;
+  gap: 24px;
   margin-bottom: 16px;
-  padding: 22px;
+  padding: 24px;
   background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
-  transition: 0.2s;
+  border: 1px solid #dce7f1;
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(15, 34, 58, 0.05);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
 }
 
 .flight-card:hover {
-  border-color: #b8d2ff;
-  box-shadow: 0 6px 18px rgba(22, 119, 255, 0.08);
+  border-color: #b7d2e8;
+  box-shadow: 0 14px 30px rgba(15, 34, 58, 0.09);
+  transform: translateY(-2px);
 }
 
 .flight-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 18px;
-  border-bottom: 1px solid #eeeeee;
+  min-width: 0;
 }
 
 .airline {
@@ -357,10 +419,13 @@ button {
 
 .flight-content {
   display: grid;
-  grid-template-columns: 1fr 1.4fr 1fr;
+  grid-template-columns: minmax(74px, 0.8fr) minmax(110px, 1.2fr) minmax(
+      90px,
+      0.8fr
+    ) minmax(155px, 1.1fr);
   align-items: center;
-  gap: 25px;
-  padding-top: 20px;
+  gap: 20px;
+  min-width: 0;
 }
 
 .flight-time {
@@ -430,20 +495,29 @@ button {
 
 .select-button {
   width: 100%;
-  height: 40px;
+  min-height: 46px;
   margin-top: 12px;
-  border: none;
-  border-radius: 7px;
-  background: #1677ff;
+  padding: 10px 14px;
+  border: 1px solid #075ea8;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #075ea8, #0a73bb);
   color: #ffffff;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 800;
+  line-height: 1.25;
+  white-space: normal;
   cursor: pointer;
-  transition: 0.2s;
+  box-shadow: 0 7px 18px rgba(7, 87, 160, 0.16);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    background 0.2s;
 }
 
 .select-button:hover {
-  background: #095dcc;
+  background: linear-gradient(135deg, #043b6e, #075ea8);
+  box-shadow: 0 10px 22px rgba(7, 87, 160, 0.22);
+  transform: translateY(-1px);
 }
 
 /* FOOTER */
@@ -476,12 +550,11 @@ button {
   }
 
   .flight-content {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .route {
-    grid-column: 1 / -1;
-    grid-row: 2;
+    grid-template-columns: minmax(70px, 0.8fr) minmax(100px, 1.2fr) minmax(
+        75px,
+        0.8fr
+      ) minmax(135px, 1fr);
+    gap: 14px;
   }
 
   .flight-price {
@@ -499,6 +572,13 @@ button {
   .header {
     height: auto;
     padding: 18px 0;
+  }
+  .header-content {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .nav-account {
+    margin-left: auto;
   }
 
   .header-content {
@@ -534,21 +614,28 @@ button {
   }
 
   .flight-content {
-    grid-template-columns: 1fr;
-    gap: 20px;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
   }
 
   .route {
-    grid-column: auto;
-    grid-row: auto;
-    text-align: left;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    text-align: center;
   }
 
   .flight-price {
+    grid-column: 1 / -1;
     text-align: left;
   }
 
   .flight-card {
     padding: 18px;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .route {
+    text-align: left;
   }
 }
