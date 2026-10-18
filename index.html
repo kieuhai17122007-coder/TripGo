@@ -32,37 +32,44 @@
       <h1>Hành trình của bạn,<br>khởi đầu từ đây</h1>
       <p>Đặt vé máy bay nội địa nhanh chóng và thuận tiện.</p>
 
-      <div class="search-box">
+      <form class="search-box home-search-box" id="homeSearchForm" novalidate>
         <div class="trip-type">
           <label><input type="radio" name="tripType" value="roundtrip" checked> Khứ hồi</label>
           <label><input type="radio" name="tripType" value="oneway"> Một chiều</label>
         </div>
         <div class="search-grid">
-          <label class="field">
-            <span>Điểm đi</span>
-            <select id="from"><option value="HAN">Hà Nội (HAN)</option><option value="SGN">TP. Hồ Chí Minh (SGN)</option><option value="DAD">Đà Nẵng (DAD)</option><option value="PQC">Phú Quốc (PQC)</option><option value="CXR">Nha Trang (CXR)</option><option value="HPH">Hải Phòng (HPH)</option><option value="HUI">Huế (HUI)</option><option value="VCA">Cần Thơ (VCA)</option><option value="UIH">Quy Nhơn (UIH)</option><option value="VDO">Vân Đồn (VDO)</option></select>
-          </label>
-          <button class="swap" id="swapBtn" title="Đổi điểm đi/đến">⇄</button>
-          <label class="field">
-            <span>Điểm đến</span>
-            <select id="to"><option value="HAN">Hà Nội (HAN)</option><option value="SGN">TP. Hồ Chí Minh (SGN)</option><option value="DAD">Đà Nẵng (DAD)</option><option value="PQC">Phú Quốc (PQC)</option><option value="CXR">Nha Trang (CXR)</option><option value="HPH">Hải Phòng (HPH)</option><option value="HUI">Huế (HUI)</option><option value="VCA">Cần Thơ (VCA)</option><option value="UIH">Quy Nhơn (UIH)</option><option value="VDO">Vân Đồn (VDO)</option></select>
-          </label>
+          <div class="route-fields">
+            <label class="field">
+              <span>Điểm đi</span>
+              <select id="from" aria-describedby="fromError"><option value="HAN">Hà Nội (HAN)</option><option value="SGN">TP. Hồ Chí Minh (SGN)</option><option value="DAD">Đà Nẵng (DAD)</option><option value="PQC">Phú Quốc (PQC)</option><option value="CXR">Nha Trang (CXR)</option><option value="HPH">Hải Phòng (HPH)</option><option value="HUI">Huế (HUI)</option><option value="VCA">Cần Thơ (VCA)</option><option value="UIH">Quy Nhơn (UIH)</option><option value="VDO">Vân Đồn (VDO)</option></select>
+              <small class="field-error" id="fromError"></small>
+            </label>
+            <button class="swap" id="swapBtn" type="button" title="Đổi điểm đi/đến">⇄</button>
+            <label class="field">
+              <span>Điểm đến</span>
+              <select id="to" aria-describedby="toError"><option value="HAN">Hà Nội (HAN)</option><option value="SGN">TP. Hồ Chí Minh (SGN)</option><option value="DAD">Đà Nẵng (DAD)</option><option value="PQC">Phú Quốc (PQC)</option><option value="CXR">Nha Trang (CXR)</option><option value="HPH">Hải Phòng (HPH)</option><option value="HUI">Huế (HUI)</option><option value="VCA">Cần Thơ (VCA)</option><option value="UIH">Quy Nhơn (UIH)</option><option value="VDO">Vân Đồn (VDO)</option></select>
+              <small class="field-error" id="toError"></small>
+            </label>
+          </div>
           <label class="field">
             <span>Ngày đi</span>
-            <input type="date" id="departure">
+            <input type="date" id="departure" aria-describedby="departureError">
+            <small class="field-error" id="departureError"></small>
           </label>
           <label class="field return-field">
             <span>Ngày về</span>
-            <input type="date" id="returnDate">
+            <input type="date" id="returnDate" aria-describedby="returnDateError">
+            <small class="field-error" id="returnDateError"></small>
           </label>
           <label class="field">
             <span>Hành khách</span>
-            <select id="passengers">
+            <select id="passengers" aria-describedby="passengersError">
               <option value="1">1 hành khách</option>
               <option value="2">2 hành khách</option>
               <option value="3">3 hành khách</option>
               <option value="4">4 hành khách</option>
             </select>
+            <small class="field-error" id="passengersError"></small>
           </label>
           <label class="field">
             <span>Hạng vé</span>
@@ -72,8 +79,9 @@
             </select>
           </label>
         </div>
-        <button class="primary-btn search-btn" id="searchBtn">TÌM CHUYẾN BAY</button>
-      </div>
+        <p class="search-form-error" id="searchError" role="alert" aria-live="polite"></p>
+        <button class="primary-btn search-btn" id="searchBtn" type="submit">TÌM CHUYẾN BAY</button>
+      </form>
     </div>
   </div>
 </section>
