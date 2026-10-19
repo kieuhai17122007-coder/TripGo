@@ -102,76 +102,6 @@
   transform: translateY(-4px);
   box-shadow: 0 12px 30px #2563eb16;
 }
-.overview-quick-section {
-  animation: admin-enter 0.48s cubic-bezier(0.2, 0.75, 0.25, 1) both;
-}
-.overview-metrics-section {
-  animation: admin-enter 0.48s cubic-bezier(0.2, 0.75, 0.25, 1) 0.08s both;
-}
-.overview-activity-section {
-  animation: admin-enter 0.48s cubic-bezier(0.2, 0.75, 0.25, 1) 0.16s both;
-}
-.overview-quick-link {
-  animation: admin-pop 0.38s cubic-bezier(0.2, 0.75, 0.25, 1) both;
-}
-.overview-quick-link:nth-child(2) {
-  animation-delay: 0.035s;
-}
-.overview-quick-link:nth-child(3) {
-  animation-delay: 0.07s;
-}
-.overview-quick-link:nth-child(4) {
-  animation-delay: 0.105s;
-}
-.overview-quick-link:nth-child(5) {
-  animation-delay: 0.14s;
-}
-.overview-quick-link:nth-child(6) {
-  animation-delay: 0.175s;
-}
-.overview-quick-link:nth-child(7) {
-  animation-delay: 0.21s;
-}
-.overview-quick-link:nth-child(8) {
-  animation-delay: 0.245s;
-}
-.overview-quick-link:nth-child(9) {
-  animation-delay: 0.28s;
-}
-.overview-quick-link:nth-child(10) {
-  animation-delay: 0.315s;
-}
-.overview-quick-link:nth-child(11) {
-  animation-delay: 0.35s;
-}
-.overview-quick-link:hover i {
-  animation: admin-icon-bounce 0.38s ease-out;
-}
-.overview-metrics-section .stat-card {
-  animation: admin-pop 0.4s cubic-bezier(0.2, 0.75, 0.25, 1) both;
-}
-.overview-metrics-section .stat-card:nth-child(2) {
-  animation-delay: 0.05s;
-}
-.overview-metrics-section .stat-card:nth-child(3) {
-  animation-delay: 0.1s;
-}
-.overview-metrics-section .stat-card:nth-child(4) {
-  animation-delay: 0.15s;
-}
-.overview-metrics-section .stat-card:nth-child(5) {
-  animation-delay: 0.2s;
-}
-.overview-metrics-section .stat-card:nth-child(6) {
-  animation-delay: 0.25s;
-}
-.flight-actions .action-icon:active {
-  transform: scale(0.92);
-}
-.admin-main .nav:active,
-.admin-main button:active {
-  transform: scale(0.98);
-}
 .admin-main .nav,
 .admin-page button,
 .admin-main button {
@@ -226,18 +156,6 @@
     transform: translateY(0) scale(1);
   }
 }
-@keyframes admin-icon-bounce {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-  }
-  45% {
-    transform: translateY(-3px) scale(1.08);
-  }
-  70% {
-    transform: translateY(1px) scale(0.98);
-  }
-}
 @media (max-width: 640px) {
   .admin-back-to-top {
     right: 14px;
@@ -259,30 +177,19 @@
   .admin-page .stat,
   .data-table tbody tr,
   .admin-table tbody tr,
-  .admin-back-to-top,
-  .overview-quick-section,
-  .overview-metrics-section,
-  .overview-activity-section,
-  .overview-quick-link,
-  .overview-metrics-section .stat-card {
+  .admin-back-to-top {
     animation: none !important;
   }
   .admin-back-to-top,
   .admin-more-button,
   .stat-card,
-  .stat,
-  .overview-quick-link,
-  .overview-quick-link i,
-  .action.action-icon {
+  .stat {
     transition: none !important;
   }
   .admin-back-to-top:hover,
   .admin-more-button:hover,
   .stat-card:hover,
-  .stat:hover,
-  .overview-quick-link:hover,
-  .admin-main .nav:active,
-  .admin-main button:active {
+  .stat:hover {
     transform: none;
   }
 }
