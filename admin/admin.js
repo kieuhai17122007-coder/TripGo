@@ -1526,6 +1526,18 @@ import {
         return;
       }
       booking.paymentStatus = state;
+      booking.paymentState =
+        state === "awaiting_confirmation" ? "pending" : state;
+      if (state === "paid") {
+        const confirmedAt = new Date().toISOString();
+        booking.status = "Đã đặt vé";
+        booking.paidAt = confirmedAt;
+        booking.confirmedAt = confirmedAt;
+      } else {
+        booking.status = "Chờ thanh toán";
+        delete booking.paidAt;
+        delete booking.confirmedAt;
+      }
       try {
         write(KEYS.bookings, bookings);
         renderPayments();

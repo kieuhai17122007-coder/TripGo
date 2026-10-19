@@ -460,8 +460,12 @@ export function createManagement(ctx) {
         return true;
       }
       if (!confirm(`Xác nhận thanh toán mô phỏng cho vé ${id}?`)) return true;
-      b.status = "confirmed";
-      b.confirmedAt = new Date().toISOString();
+      const confirmedAt = new Date().toISOString();
+      b.status = "Đã đặt vé";
+      b.paymentStatus = "paid";
+      b.paymentState = "paid";
+      b.paidAt = confirmedAt;
+      b.confirmedAt = confirmedAt;
       try {
         write("tripgo_bookings", all);
         render();
