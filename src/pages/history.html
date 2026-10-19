@@ -6,6 +6,7 @@
     <title>TripGo - Lịch sử đặt vé</title>
     <link rel="stylesheet" href="/src/css/main.css" />
     <link rel="stylesheet" href="/src/css/pages.css" />
+    <link rel="stylesheet" href="/src/css/user-experience.css" />
   </head>
   <body>
     <header class="header">
@@ -45,7 +46,7 @@
     <script type="module">
       import "../js/auth.js";
       const auth = window.TripGoAuth;
-      if (!auth.requireLogin(location.pathname)) throw new Error("redirect");
+      const authenticated = auth.requireLogin(location.pathname);
       const user = auth.getCurrentUser();
       const root = document.getElementById("historyContent");
       const escape = (v) =>
@@ -80,19 +81,50 @@
           return;
         }
         root.innerHTML = `<div class="history-list">${bookings
-          .map((b, i) => {
+          .map((b) => {
             const seats = b.seats || b.seat || [];
             const seatText = Array.isArray(seats) ? seats.join(", ") : seats;
-            const statusClass = (b.status || "").includes("hủy")
+            const bookingStatus = b.status || "Đã đặt vé";
+            const normalizedStatus = bookingStatus.toLowerCase();
+            const statusClass = normalizedStatus.includes("hủy")
               ? "cancelled"
-              : (b.status || "").includes("check-in")
-                ? "checked"
-                : "confirmed";
+              : normalizedStatus.includes("thanh toán")
+                ? "pending"
+                : normalizedStatus.includes("check-in")
+                  ? "checked"
+                  : "confirmed";
+            const paymentState =
+              b.paymentState ||
+              (/^(đã thanh toán|đã xác nhận chuyển khoản)/i.test(
+                b.paymentStatus || "",
+              )
+                ? "paid"
+                : "pending");
+            const paymentLabel =
+              b.paymentStatus ||
+              {
+                paid: "Đã thanh toán",
+                processing: "Đang xác nhận",
+                failed: "Thanh toán thất bại",
+                expired: "Yêu cầu thanh toán hết hạn",
+                cancelled: "Đã hủy thanh toán",
+              }[paymentState] ||
+              "Chưa xác nhận thanh toán";
+            const paymentClass =
+              paymentState === "paid"
+                ? "payment-paid"
+                : ["failed", "expired", "cancelled"].includes(paymentState)
+                  ? "payment-failed"
+                  : "payment-pending";
+            const paymentLink =
+              bookingStatus === "Chờ thanh toán"
+                ? `<a class="primary-btn" href="/src/pages/payment.html?bookingCode=${encodeURIComponent(b.bookingCode)}">Tiếp tục thanh toán</a>`
+                : `<a class="secondary-btn" href="/src/pages/booking.html">Xem đặt chỗ</a>`;
             return `<article class="history-card">
-      <div class="history-top"><div><span class="history-code">${escape(b.bookingCode)}</span><span class="status-pill ${statusClass}">${escape(b.status || "Đã đặt vé")}</span></div><small>Đặt ngày ${date(b.createdAt)}</small></div>
+      <div class="history-top"><div class="history-statuses"><span class="history-code">${escape(b.bookingCode)}</span><span class="status-pill ${statusClass}">${escape(bookingStatus)}</span><span class="status-pill ${paymentClass}">${escape(paymentLabel)}</span></div><small>Đặt ngày ${date(b.createdAt)}</small></div>
       <div class="history-route"><div><strong>${escape(b.flight?.from)}</strong><span>${escape(b.flight?.departure || "")}</span></div><div class="history-plane">✈<i></i><small>${escape(b.flight?.flightNumber)}</small></div><div><strong>${escape(b.flight?.to)}</strong><span>${escape(b.flight?.arrival || "")}</span></div></div>
       <div class="history-meta"><span>👤 ${escape(b.passenger?.fullName)}</span><span>💺 ${escape(seatText || "Chưa chọn")}</span><span>👥 ${escape(b.passengerCount || 1)} hành khách</span><strong>${money(b.totalPrice)}</strong></div>
-      <div class="history-actions"><a class="secondary-btn" href="/src/pages/booking.html">Xem đặt chỗ</a>${b.status !== "Đã hủy" && b.status !== "Đã check-in" ? `<button class="text-danger cancel-booking" data-code="${escape(b.bookingCode)}">Hủy đặt vé</button>` : ""}</div>
+      <div class="history-actions">${paymentLink}${b.status !== "Đã hủy" && b.status !== "Đã check-in" ? `<button class="text-danger cancel-booking" data-code="${escape(b.bookingCode)}">Hủy đặt vé</button>` : ""}</div>
     </article>`;
           })
           .join("")}</div>`;
@@ -109,8 +141,10 @@
           }),
         );
       }
-      auth.updateAuthUI();
-      render();
+      if (authenticated) {
+        auth.updateAuthUI();
+        render();
+      }
     </script>
     <script type="module" src="/src/js/auth-page.js"></script>
   </body>
