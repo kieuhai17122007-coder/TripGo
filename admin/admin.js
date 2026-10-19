@@ -1,4 +1,12 @@
+import { renderExtended } from "./admin-extended.js";
+import { renderSeatManagement } from "./admin-seats.js";
 import "../src/js/auth.js";
+import {
+  createManagement,
+  normalizeBooking,
+  PAYMENT_STATUS_LABELS,
+  recordAudit,
+} from "./admin-management.js";
 
 (() => {
   "use strict";
@@ -49,12 +57,17 @@ import "../src/js/auth.js";
     PQC: "Phú Quốc",
     CXR: "Nha Trang",
     HPH: "Hải Phòng",
+    HUI: "Huế",
+    VCA: "Cần Thơ",
+    UIH: "Quy Nhơn",
+    VDO: "Vân Đồn",
   };
   const AIRLINES = [
     "TripGo Airlines",
     "VietJet Air",
     "Vietnam Airlines",
     "Bamboo Airways",
+    "Vietravel Airlines",
   ];
   const AIRCRAFTS = ["Airbus A320", "Airbus A321", "Boeing 737"];
   const $ = (id) => document.getElementById(id),
@@ -82,8 +95,10 @@ import "../src/js/auth.js";
       return fallback;
     }
   };
-  const write = (key, value) =>
+  const write = (key, value) => {
     localStorage.setItem(key, JSON.stringify(value));
+    recordAudit(read, key, Array.isArray(value) ? value.length : 0);
+  };
   function getServiceCatalog() {
     try {
       const value = localStorage.getItem(SERVICE_KEY);
@@ -129,13 +144,47 @@ import "../src/js/auth.js";
     if (value === "pending" || value === "chờ thanh toán") return "pending";
     return "confirmed";
   };
+  const paymentState = (booking) =>
+    Object.hasOwn(PAYMENT_STATUS_LABELS, booking.paymentStatus)
+      ? booking.paymentStatus
+      : "awaiting_confirmation";
+  const paymentStatusClass = (state) =>
+    state === "awaiting_confirmation"
+      ? "awaiting-payment"
+      : state === "processing"
+        ? "processing"
+        : "";
   let bookingLimit = 10;
+  let paymentLimit = 10;
   let page = "overview",
     editing = null,
     editingServiceId = null,
     flights = [],
     bookings = [],
     selectedCustomerEmail = null;
+  const management = createManagement({
+    read,
+    write,
+    safe,
+    money,
+    date,
+    bookingState,
+    alertMessage,
+    getFlights: () => read(KEYS.flights, flights),
+    getBookings: () =>
+      read(KEYS.bookings, []).map((b) =>
+        normalizeBooking(b, read(KEYS.flights, flights)),
+      ),
+    render,
+    openModal,
+    getServiceCatalog,
+    paymentStatusLabel: (value) =>
+      Object.hasOwn(PAYMENT_STATUS_LABELS, value)
+        ? PAYMENT_STATUS_LABELS[value]
+        : PAYMENT_STATUS_LABELS.awaiting_confirmation,
+    flightStatusLabel,
+    localToday,
+  });
   function authenticated() {
     return window.TripGoAuth.isAdmin();
   }
@@ -144,9 +193,7 @@ import "../src/js/auth.js";
       if (window.TripGoAuth.isLoggedIn()) {
         window.location.replace("/");
       } else {
-        window.location.replace(
-          "/src/pages/login.html?returnUrl=%2Fadmin%2F",
-        );
+        window.location.replace("/src/pages/login.html?returnUrl=%2Fadmin%2F");
       }
       return;
     }
@@ -179,29 +226,24 @@ import "../src/js/auth.js";
   }
   async function load() {
     flights = read(KEYS.flights, []);
-    bookings = read(KEYS.bookings, []);
-    if (localStorage.getItem(KEYS.flights) !== null) return;
     try {
       const response = await fetch("flights.json");
-      if (!response.ok) throw Error("HTTP");
+      if (!response.ok) throw Error(`HTTP ${response.status}`);
       const defaults = await response.json();
-      if (
-        localStorage.getItem(KEYS.flights) === null &&
-        Array.isArray(defaults)
-      ) {
-        flights = defaults.map((f) => ({
-          ...f,
-          date: f.date || new Date().toISOString().slice(0, 10),
-          status: f.status || "active",
-        }));
+      if (!Array.isArray(defaults)) {
+        throw new TypeError("Danh sách chuyến bay mẫu không hợp lệ.");
+      }
+      const knownIds = new Set(flights.map((flight) => flight.id));
+      const additions = defaults.filter((flight) => !knownIds.has(flight.id));
+      if (additions.length) {
+        flights = [...flights, ...additions];
         saveFlights();
       }
-    } catch {
-      alertMessage(
-        "Không tải được chuyến bay mẫu. Bạn vẫn có thể thêm chuyến bay mới. Hãy chạy bằng Live Server để nạp dữ liệu JSON.",
-        true,
-      );
+    } catch (error) {
+      console.error("Không thể đồng bộ danh sách chuyến bay mẫu:", error);
+      alertMessage("Không tải được chuyến bay mẫu. Hãy kiểm tra kết nối rồi tải lại trang.", true);
     }
+    bookings = read(KEYS.bookings, []).map((b) => normalizeBooking(b, flights));
   }
   function saveFlights() {
     write(KEYS.flights, flights);
@@ -225,6 +267,26 @@ import "../src/js/auth.js";
   }
   function header() {
     const titles = {
+      refunds: ["Hoàn tiền & đối soát", "Quản lý yêu cầu hoàn và sổ giao dịch demo."],
+      staff: ["Nhân viên", "Quản lý tài khoản và vai trò nhân viên demo."],
+      workflow: ["Xử lý yêu cầu vé", "Đổi chuyến, thay tên và hủy vé."],
+      inventory: ["Tồn ghế & giữ chỗ", "Theo dõi số chỗ và phiên giữ ghế demo."],
+      alerts: ["Thông báo vận hành", "Theo dõi các sự kiện và hàng đợi xử lý."],
+      analytics: ["Báo cáo chuyên sâu", "Hiệu quả kinh doanh mô phỏng theo tuyến và chuyến."],
+      settings: ["Cấu hình hệ thống", "Thiết lập chính sách vận hành cho bản demo."],
+      seats: [
+        "Quản lý ghế",
+        "Sơ đồ máy bay 2D, ghế đã đặt và khóa ghế theo ngày bay.",
+      ],
+      schedule: [
+        "Lịch bay",
+        "Theo dõi lịch theo ngày, trạng thái và số chỗ còn lại.",
+      ],
+      data: [
+        "Sao lưu & khôi phục",
+        "Chuyển dữ liệu quản lý giữa các máy bằng JSON.",
+      ],
+      audit: ["Nhật ký thao tác", "Tra cứu các lần cập nhật dữ liệu từ admin."],
       banned: [
         "Hành khách bị cấm bay",
         "Quản lý hồ sơ, lý do và thời hạn cấm bay trong bản demo.",
@@ -232,6 +294,10 @@ import "../src/js/auth.js";
       overview: ["Tổng quan", "Theo dõi dữ liệu đặt vé và chuyến bay."],
       flights: ["Quản lý chuyến bay", "Thêm, cập nhật và quản lý lịch bay."],
       bookings: ["Vé đã đặt", "Theo dõi danh sách vé và trạng thái đặt chỗ."],
+      payments: [
+        "Thanh toán",
+        "Theo dõi và cập nhật trạng thái thanh toán của từng vé.",
+      ],
       customers: [
         "Khách hàng",
         "Theo dõi hồ sơ, chi tiêu và hoạt động của khách hàng.",
@@ -252,11 +318,12 @@ import "../src/js/auth.js";
     $("pageTitle").textContent = titles[page][0];
     $("pageDescription").textContent = titles[page][1];
     $("newFlight").classList.toggle("hidden", page !== "flights");
-    document
-      .querySelectorAll(".nav")
-      .forEach((item) =>
-        item.classList.toggle("active", item.dataset.page === page),
-      );
+    document.querySelectorAll(".nav").forEach((item) => {
+      const isActive = item.dataset.page === page;
+      item.classList.toggle("active", isActive);
+      if (isActive) item.setAttribute("aria-current", "page");
+      else item.removeAttribute("aria-current");
+    });
   }
   function render() {
     if (!authenticated()) {
@@ -264,35 +331,51 @@ import "../src/js/auth.js";
       return;
     }
     flights = read(KEYS.flights, flights);
-    bookings = read(KEYS.bookings, []);
+    bookings = read(KEYS.bookings, []).map((b) => normalizeBooking(b, flights));
     header();
     if (page === "overview") {
       renderOverview();
       const quick = document.createElement("div");
-      quick.className = "grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6";
+      quick.className = "card p-5 sm:p-6 mb-6 overview-quick-section";
       quick.innerHTML = [
-        ["flights", "✈", "Chuyến bay"],
-        ["bookings", "▤", "Quản lý vé"],
-        ["services", "▣", "Dịch vụ"],
-        ["support", "◉", "Hỗ trợ khách hàng"],
-        ["banned", "⊘", "Hành khách cấm bay"],
-        ["customers", "♙", "Khách hàng"],
-        ["reports", "◫", "Báo cáo"],
+        ["flights", "fa-plane", "Chuyến bay"],
+        ["seats", "fa-chair", "Quản lý ghế 2D"],
+        ["bookings", "fa-ticket", "Quản lý vé"],
+        ["payments", "fa-credit-card", "Thanh toán"],
+        ["services", "fa-bag-shopping", "Dịch vụ"],
+        ["support", "fa-headset", "Hỗ trợ khách hàng"],
+        ["banned", "fa-ban", "Hành khách cấm bay"],
+        ["customers", "fa-users", "Khách hàng"],
+        ["reports", "fa-chart-column", "Báo cáo"],
+        ["schedule", "fa-calendar-days", "Lịch bay"],
+        ["data", "fa-database", "Sao lưu & khôi phục"],
+        ["audit", "fa-clock-rotate-left", "Nhật ký thao tác"],
       ]
         .map(
-          ([p, i, l]) =>
-            `<button data-go="${p}" class="card p-4 text-left hover:border-blue-400 transition"><span class="text-2xl text-blue-600">${i}</span><span class="block font-semibold mt-2 text-sm">${l}</span></button>`,
+          ([p, icon, label]) =>
+            `<button data-go="${p}" class="overview-quick-link"><i class="fa-solid ${icon}" aria-hidden="true"></i><span>${label}</span></button>`,
         )
         .join("");
+      quick.innerHTML = `
+        <div class="overview-section-heading">
+          <div><h2><i class="fa-solid fa-bolt" aria-hidden="true"></i> Truy cập nhanh</h2><p>Mở nhanh các khu vực quản lý thường dùng.</p></div>
+        </div>
+        <div class="overview-quick-grid">${quick.innerHTML}</div>`;
       $("content").prepend(quick);
     }
+    renderExtended(page);
+    if (page === "seats") renderSeatManagement({ safe, write, alertMessage });
     if (page === "flights") renderFlights();
     if (page === "bookings") renderBookings();
+    if (page === "payments") renderPayments();
     if (page === "customers") renderCustomers();
     if (page === "reports") renderReports();
     if (page === "services") renderServices();
     if (page === "support") renderSupport();
     if (page === "banned") renderBanned();
+    if (page === "schedule") management.renderSchedule();
+    if (page === "data") management.renderData();
+    if (page === "audit") management.renderAudit();
   }
   function renderOverview() {
     const active = flights.filter((f) => f.status === "active");
@@ -356,16 +439,25 @@ import "../src/js/auth.js";
       ["Khách hàng", customerEmails.size, '<i class="fa-solid fa-users"></i>'],
     ];
     $("content").innerHTML = `
-      <div class="stats-grid">${stats
-        .map(
-          ([label, value, icon]) => {
+      <section class="card p-5 sm:p-6 overview-metrics-section" aria-labelledby="overviewMetricsTitle">
+        <div class="overview-section-heading">
+          <div><h2 id="overviewMetricsTitle"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i> Chỉ số tổng quan</h2><p>Tình hình chuyến bay, đặt vé và khách hàng.</p></div>
+        </div>
+        <div class="stats-grid">${stats
+          .map(([label, value, icon]) => {
             const valueClass =
-              label === "Doanh thu" ? "stat-value stat-value-money" : "stat-value";
+              label === "Doanh thu"
+                ? "stat-value stat-value-money"
+                : "stat-value";
             return `<div class="card stat-card"><div class="stat-icon">${icon}</div><p class="stat-label">${label}</p><p class="${valueClass}">${value}</p></div>`;
-          },
-        )
-        .join("")}</div>
-      <div class="grid xl:grid-cols-[1.25fr_0.75fr] gap-6 mt-6">
+          })
+          .join("")}</div>
+      </section>
+      <section class="overview-activity-section" aria-labelledby="overviewActivityTitle">
+        <div class="overview-section-heading">
+          <div><h2 id="overviewActivityTitle"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Phân tích & hoạt động</h2><p>Tuyến bay phổ biến và các đặt chỗ gần đây.</p></div>
+        </div>
+      <div class="grid xl:grid-cols-[1.25fr_0.75fr] gap-6">
         <div class="card p-6">
           <div class="flex items-center justify-between mb-4">
             <h2 class="font-bold text-lg">Top tuyến phổ biến</h2>
@@ -403,6 +495,7 @@ import "../src/js/auth.js";
           }
         </div>
       </div>
+      </section>
     `;
   }
   function renderServices() {
@@ -830,7 +923,8 @@ import "../src/js/auth.js";
     return `${String(month).padStart(2, "0")}/${year}`;
   }
   function csvEscape(value) {
-    return `"${String(value ?? "").replace(/"/g, '""')}"`;
+    const text = String(value ?? "");
+    return `"${(/^[=+@-]/.test(text) ? "'" + text : text).replace(/"/g, '""')}"`;
   }
   function downloadCsv(filename, rows) {
     if (!rows.length) return;
@@ -952,6 +1046,154 @@ import "../src/js/auth.js";
       0,
     );
     const avgOrder = totalBookings ? totalRevenue / totalBookings : 0;
+    const reportBookings = bookings.filter((booking) =>
+      reportRows.some(
+        (month) =>
+          getMonthKey(
+            booking.date || booking.createdAt || booking.departureDate,
+          ) === month.key,
+      ),
+    );
+    const bookingStates = [
+      {
+        key: "confirmed",
+        label: "Đã xác nhận",
+        count: reportBookings.filter(
+          (booking) => bookingState(booking) === "confirmed",
+        ).length,
+        color: "#2563eb",
+      },
+      {
+        key: "pending",
+        label: "Chờ thanh toán",
+        count: reportBookings.filter(
+          (booking) => bookingState(booking) === "pending",
+        ).length,
+        color: "#f59e0b",
+      },
+      {
+        key: "cancelled",
+        label: "Đã hủy",
+        count: reportBookings.filter(
+          (booking) => bookingState(booking) === "cancelled",
+        ).length,
+        color: "#ef4444",
+      },
+    ];
+    const pieTotal = bookingStates.reduce((sum, state) => sum + state.count, 0);
+    let pieOffset = 0;
+    const pieGradient = bookingStates
+      .map((state) => {
+        const share = pieTotal ? (state.count / pieTotal) * 100 : 0;
+        const start = pieOffset;
+        pieOffset += share;
+        return `${state.color} ${start}% ${pieOffset}%`;
+      })
+      .join(", ");
+    const chartWidth = 720;
+    const chartHeight = 520;
+    const chartTop = 24;
+    const chartBottom = 452;
+    const chartStep = chartWidth / reportRows.length;
+    const chartMaxRevenue = Math.max(
+      1,
+      ...reportRows.map((month) => month.revenue),
+    );
+    const chartMaxBookings = Math.max(
+      1,
+      ...reportRows.map((month) => month.bookings),
+    );
+    const chartPoints = reportRows.map((month, index) => ({
+      x: chartStep * index + chartStep / 2,
+      y:
+        chartBottom -
+        (month.bookings / chartMaxBookings) * (chartBottom - chartTop),
+    }));
+    const bookingFlowPath = chartPoints.reduce((path, point, index) => {
+      if (index === 0) return `M ${point.x} ${point.y}`;
+      const previous = chartPoints[index - 1];
+      const middleX = (previous.x + point.x) / 2;
+      return `${path} Q ${middleX} ${previous.y}, ${middleX} ${(previous.y + point.y) / 2} T ${point.x} ${point.y}`;
+    }, "");
+    const chartBars = reportRows
+      .map((month, index) => {
+        const barWidth = Math.min(54, chartStep * 0.46);
+        const barHeight =
+          (month.revenue / chartMaxRevenue) * (chartBottom - chartTop);
+        const x = chartStep * index + (chartStep - barWidth) / 2;
+        const y = chartBottom - barHeight;
+        const point = chartPoints[index];
+        return `
+          <g class="report-chart-column">
+            <title>${safe(month.label)}: ${safe(money(month.revenue))}, ${month.bookings} vé</title>
+            <rect x="${x}" y="${y}" width="${barWidth}" height="${Math.max(2, barHeight)}" rx="8" fill="url(#reportBarFill)"></rect>
+            <text class="report-chart-value" x="${point.x}" y="${Math.max(16, y - 8)}" text-anchor="middle">${safe(
+              month.revenue
+                ? `${(month.revenue / 1_000_000).toLocaleString("vi-VN", { maximumFractionDigits: 1 })}tr`
+                : "0",
+            )}</text>
+            <text class="report-chart-month" x="${point.x}" y="490" text-anchor="middle">${safe(month.label)}</text>
+          </g>`;
+      })
+      .join("");
+    const chartGrid = [0, 1, 2, 3]
+      .map((step) => {
+        const y = chartTop + ((chartBottom - chartTop) / 3) * step;
+        return `<line class="report-chart-gridline" x1="0" y1="${y}" x2="${chartWidth}" y2="${y}"></line>`;
+      })
+      .join("");
+    const statusLegend = bookingStates
+      .map((state) => {
+        const share = pieTotal ? Math.round((state.count / pieTotal) * 100) : 0;
+        return `<li><span class="report-legend-key" style="--legend-color:${state.color}"></span><span>${state.label}</span><strong>${state.count} <small>(${share}%)</small></strong></li>`;
+      })
+      .join("");
+    const changeRows = [
+      {
+        label: "Số vé",
+        previous: reportRows.at(-2)?.bookings || 0,
+        current: reportRows.at(-1)?.bookings || 0,
+      },
+      {
+        label: "Doanh thu",
+        previous: reportRows.at(-2)?.revenue || 0,
+        current: reportRows.at(-1)?.revenue || 0,
+      },
+    ]
+      .map((item) => {
+        const change =
+          item.previous === 0
+            ? item.current === 0
+              ? 0
+              : null
+            : ((item.current - item.previous) / item.previous) * 100;
+        const positive = change === null ? item.current > 0 : change >= 0;
+        const barWidth =
+          change === null
+            ? item.current > 0
+              ? 50
+              : 0
+            : Math.min(50, Math.abs(change) / 2);
+        const displayChange =
+          change === null
+            ? item.current > 0
+              ? "Mới"
+              : "0%"
+            : `${change > 0 ? "+" : ""}${change.toLocaleString("vi-VN", { maximumFractionDigits: 1 })}%`;
+        const barStyle = `--change-width:${barWidth}%;`;
+        return `
+        <div class="report-change-row">
+          <div class="report-change-heading">
+            <strong>${item.label}</strong>
+            <span class="report-change-value ${positive ? "is-positive" : "is-negative"}">${displayChange}</span>
+          </div>
+          <div class="report-change-track ${positive ? "is-positive" : "is-negative"}" aria-hidden="true">
+            <span style="${barStyle}"></span>
+          </div>
+          <p>${safe(reportRows.at(-1)?.label || "")}: ${item.label === "Số vé" ? item.current : safe(money(item.current))} <span>·</span> tháng trước: ${item.label === "Số vé" ? item.previous : safe(money(item.previous))}</p>
+        </div>`;
+      })
+      .join("");
     $("content").innerHTML = `
       <div class="card p-4 sm:p-5">
         <div class="flex flex-wrap items-center justify-between gap-3">
@@ -962,6 +1204,44 @@ import "../src/js/auth.js";
           <div class="card stat-card"><div class="stat-icon">▤</div><p class="stat-label">Tổng vé</p><p class="stat-value">${totalBookings}</p></div>
           <div class="card stat-card"><div class="stat-icon">₫</div><p class="stat-label">Doanh thu</p><p class="stat-value stat-value-money">${money(totalRevenue)}</p></div>
           <div class="card stat-card"><div class="stat-icon">↩</div><p class="stat-label">Giá trị trung bình / vé</p><p class="stat-value stat-value-money">${money(avgOrder)}</p></div>
+        </div>
+        <div class="report-charts">
+          <section class="card report-chart-card report-chart-flow" aria-labelledby="reportFlowTitle">
+            <div class="report-chart-heading">
+              <div><h3 id="reportFlowTitle">Dòng chảy doanh thu</h3><p>Cột: doanh thu · Đường: số vé theo tháng</p></div>
+              <span class="report-chart-period">6 tháng</span>
+            </div>
+            <div class="report-flow-legend"><span><i></i>Doanh thu</span><span><i></i>Số vé</span></div>
+            <div class="report-chart-scroll">
+              <svg class="report-flow-svg" viewBox="0 0 ${chartWidth} ${chartHeight}" role="img" aria-label="Biểu đồ cột doanh thu và đường xu hướng số vé trong 6 tháng gần nhất">
+                <defs><linearGradient id="reportBarFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3b82f6"></stop><stop offset="100%" stop-color="#93c5fd"></stop></linearGradient></defs>
+                ${chartGrid}
+                ${chartBars}
+                <path class="report-booking-flow" d="${bookingFlowPath}"></path>
+                ${chartPoints.map((point) => `<circle class="report-booking-point" cx="${point.x}" cy="${point.y}" r="4"></circle>`).join("")}
+              </svg>
+            </div>
+            <p class="report-chart-footnote">Giá trị trên cột tính theo triệu đồng; điểm đường biểu thị số vé.</p>
+          </section>
+          <section class="card report-chart-card" aria-labelledby="reportPieTitle">
+            <div class="report-chart-heading">
+              <div><h3 id="reportPieTitle">Cơ cấu trạng thái vé</h3><p>Tỷ trọng trong 6 tháng gần nhất</p></div>
+            </div>
+            <div class="report-pie-layout">
+              <div class="report-pie-wrap">
+                <div class="report-pie" style="--report-pie:${pieTotal ? pieGradient : "#e2e8f0 0% 100%"}" role="img" aria-label="${pieTotal ? `Cơ cấu ${pieTotal} vé theo trạng thái` : "Chưa có dữ liệu vé"}"></div>
+                <strong>${pieTotal} vé</strong>
+              </div>
+              <ul class="report-pie-legend">${statusLegend}</ul>
+            </div>
+          </section>
+          <section class="card report-chart-card report-ratio-card" aria-labelledby="reportRatioTitle">
+            <div class="report-chart-heading">
+              <div><h3 id="reportRatioTitle">Tỷ lệ tăng / giảm</h3><p>So sánh tháng gần nhất với tháng trước</p></div>
+            </div>
+            <div class="report-change-list">${changeRows}</div>
+            <p class="report-chart-footnote">Thanh thể hiện mức thay đổi tương đối, tối đa 100%. Khi tháng trước chưa có dữ liệu, chỉ số được ghi là “Mới”.</p>
+          </section>
         </div>
         <div class="table-scroll mt-6">
           <table class="data-table">
@@ -1103,6 +1383,13 @@ import "../src/js/auth.js";
       fillFlights($("flightSearch").value),
     );
     fillFlights(query);
+    const archived = flights.filter((f) => f.status === "deleted");
+    if (archived.length) {
+      const section = document.createElement("details");
+      section.className = "card p-5 mt-5";
+      section.innerHTML = `<summary class="font-bold cursor-pointer">Chuyến đã lưu trữ (${archived.length})</summary><div class="space-y-3 mt-4">${archived.map((f) => `<div class="flex justify-between gap-3"><span>${safe(f.id)} · ${date(f.date)} · ${safe(f.from)} → ${safe(f.to)}</span><button class="action" data-action="restore-flight" data-id="${safe(f.id)}">Khôi phục</button></div>`).join("")}</div>`;
+      $("content").append(section);
+    }
   }
   function fillFlights(query) {
     const matches = flights.filter(
@@ -1119,10 +1406,10 @@ import "../src/js/auth.js";
       ? matches
           .map(
             (f) =>
-              `<tr><td><b>${safe(f.id)}</b><br><span class="text-slate-500">${safe(f.airline)}</span></td><td>${safe(AIRPORTS[f.from] || f.from)} → ${safe(AIRPORTS[f.to] || f.to)}</td><td>${date(f.date)}<br><span class="text-slate-500">${safe(f.departure)} – ${safe(f.arrival)}</span></td><td>${money(f.price)}</td><td><span class="badge ${flightStatusClass(f.status)}">${flightStatusLabel(f.status)}</span></td><td><button class="action" data-action="edit" data-id="${safe(f.id)}">Sửa</button></td></tr>`,
+              `<tr><td><b>${safe(f.id)}</b><br><span class="text-slate-500">${safe(f.airline)}</span></td><td>${safe(AIRPORTS[f.from] || f.from)} → ${safe(AIRPORTS[f.to] || f.to)}</td><td>${date(f.date)}<br><span class="text-slate-500">${safe(f.departure)} – ${safe(f.arrival)}</span></td><td>${money(f.price)}</td><td><span class="badge ${flightStatusClass(f.status)}">${flightStatusLabel(f.status)}</span></td><td class="flight-actions"><button class="action action-icon" data-action="edit" data-id="${safe(f.id)}" aria-label="Sửa chuyến bay ${safe(f.id)}" title="Sửa chuyến bay"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></button><button class="action action-icon archive-action" data-action="archive-flight" data-id="${safe(f.id)}" aria-label="Lưu trữ chuyến bay ${safe(f.id)}" title="Lưu trữ chuyến bay"><i class="fa-solid fa-box-archive" aria-hidden="true"></i></button></td></tr>`,
           )
           .join("")
-      : '<tr><td colspan="5" class="empty">Không tìm thấy chuyến bay nào.</td></tr>';
+      : '<tr><td colspan="6" class="empty">Không tìm thấy chuyến bay nào.</td></tr>';
   }
   function renderBookings() {
     bookingLimit = 10;
@@ -1143,6 +1430,135 @@ import "../src/js/auth.js";
     });
     $("exportBookingsCsv").addEventListener("click", exportBookingsCsv);
     fillBookings();
+  }
+  function renderPayments() {
+    paymentLimit = 10;
+    $("content").innerHTML =
+      `<div class="space-y-5"><section class="stats-grid" aria-label="Tổng quan thanh toán"><article class="card stat-card"><p class="stat-label">Cần xác nhận</p><p id="paymentAwaitingCount" class="stat-value">0</p></article><article class="card stat-card"><p class="stat-label">Đang xử lý</p><p id="paymentProcessingCount" class="stat-value">0</p></article><article class="card stat-card"><p class="stat-label">Đã thanh toán</p><p id="paymentPaidCount" class="stat-value">0</p></article></section><section class="card"><div class="booking-tools"><h2 class="font-bold">Danh sách thanh toán <span id="paymentCount" class="text-slate-400 font-normal">(0)</span></h2><div class="booking-filters payment-filters"><input id="paymentSearch" class="field" aria-label="Tìm thanh toán" placeholder="Tìm mã vé, hành khách, chuyến bay"><select id="paymentStatusFilter" class="field" aria-label="Lọc theo trạng thái thanh toán"><option value="all">Tất cả trạng thái</option>${Object.entries(PAYMENT_STATUS_LABELS).map(([value, label]) => `<option value="${value}">${label}</option>`).join("")}</select></div></div><div class="table-scroll"><table class="data-table payment-table"><thead><tr><th>Mã vé</th><th>Hành khách</th><th>Chuyến bay</th><th>Phương thức</th><th>Tổng tiền</th><th>Trạng thái thanh toán</th></tr></thead><tbody id="paymentRows"></tbody></table></div><div class="p-4 flex items-center justify-between gap-3"><span id="paymentProgress" class="text-sm text-slate-500"></span><button id="morePayments" class="secondary hidden">Xem thêm 10 khoản</button></div></section></div>`;
+    $("paymentSearch").addEventListener("input", () => {
+      paymentLimit = 10;
+      fillPayments();
+    });
+    $("paymentStatusFilter").addEventListener("change", () => {
+      paymentLimit = 10;
+      fillPayments();
+    });
+    $("morePayments").addEventListener("click", () => {
+      paymentLimit += 10;
+      fillPayments();
+    });
+    fillPayments();
+  }
+  function fillPayments() {
+    const query = $("paymentSearch").value.trim().toLowerCase();
+    const selectedStatus = $("paymentStatusFilter").value;
+    const rows = bookings.slice().reverse();
+    const matches = rows.filter((booking) => {
+      const names = (booking.passengerDetails || [])
+        .map((person) => person.name || person.fullName)
+        .join(" ");
+      const searchable = [
+        booking.bookingCode,
+        booking.code,
+        booking.flightId,
+        booking.passenger?.name,
+        booking.passenger?.email,
+        booking.email,
+        booking.paymentMethod,
+        booking.flight?.from,
+        booking.flight?.to,
+        booking.from,
+        booking.to,
+      ];
+      return (
+        (selectedStatus === "all" || paymentState(booking) === selectedStatus) &&
+        searchable
+          .concat(names)
+          .some((value) => String(value || "").toLowerCase().includes(query))
+      );
+    });
+    $("paymentAwaitingCount").textContent = String(
+      bookings.filter(
+        (booking) => paymentState(booking) === "awaiting_confirmation",
+      ).length,
+    );
+    $("paymentProcessingCount").textContent = String(
+      bookings.filter((booking) => paymentState(booking) === "processing")
+        .length,
+    );
+    $("paymentPaidCount").textContent = String(
+      bookings.filter((booking) => paymentState(booking) === "paid").length,
+    );
+    $("paymentCount").textContent = `(${matches.length}/${bookings.length})`;
+    $("paymentProgress").textContent =
+      `Hiển thị ${Math.min(paymentLimit, matches.length)} / ${matches.length} khoản`;
+    $("morePayments").classList.toggle(
+      "hidden",
+      matches.length <= paymentLimit,
+    );
+    $("paymentRows").innerHTML = matches.length
+      ? matches
+          .slice(0, paymentLimit)
+          .map((booking) => {
+            const code = booking.bookingCode || booking.code;
+            const state = paymentState(booking);
+            const passenger =
+              (booking.passengerDetails || [])
+                .map((person) => person.name || person.fullName)
+                .filter(Boolean)
+                .join(", ") ||
+              booking.passenger?.name ||
+              "-";
+            const cancelled = bookingState(booking) === "cancelled";
+            return `<tr><td><b>${safe(code || "-")}</b></td><td>${safe(passenger)}<br><span class="text-slate-500">${safe(booking.email || booking.passenger?.email || "")}</span></td><td>${safe(booking.flightId || "-")}<br><span class="text-slate-500">${date(booking.date || booking.departureDate)}</span></td><td>${safe(booking.paymentMethod || "-")}</td><td>${money(booking.totalPrice ?? booking.total)}</td><td><select class="field payment-status-select ${paymentStatusClass(state)}" data-code="${safe(code)}" aria-label="Trạng thái thanh toán vé ${safe(code)}"${cancelled ? " disabled" : ""}>${Object.entries(PAYMENT_STATUS_LABELS).map(([value, label]) => `<option value="${value}"${state === value ? " selected" : ""}>${label}</option>`).join("")}</select>${!cancelled && state !== "paid" ? `<button class="action payment-confirm-action" data-payment-confirm="${safe(code)}">Xác nhận thanh toán</button>` : ""}${cancelled ? '<small class="payment-disabled-note">Vé đã hủy</small>' : ""}</td></tr>`;
+          })
+          .join("")
+      : '<tr><td colspan="6" class="empty">Không có khoản thanh toán phù hợp.</td></tr>';
+    const updatePaymentStatus = (booking, state) => {
+      if (!authenticated()) return;
+      if (
+        !booking ||
+        bookingState(booking) === "cancelled" ||
+        !Object.hasOwn(PAYMENT_STATUS_LABELS, state)
+      ) {
+        alertMessage("Không thể cập nhật khoản thanh toán này.", true);
+        renderPayments();
+        return;
+      }
+      booking.paymentStatus = state;
+      try {
+        write(KEYS.bookings, bookings);
+        renderPayments();
+        alertMessage("Đã cập nhật trạng thái thanh toán.");
+      } catch (error) {
+        console.error("Could not update payment status", error);
+        alertMessage("Không thể lưu trạng thái thanh toán.", true);
+        renderPayments();
+      }
+    };
+    $("paymentRows")
+      .querySelectorAll(".payment-status-select")
+      .forEach((select) =>
+        select.addEventListener("change", () => {
+          const booking = bookings.find(
+            (item) =>
+              (item.bookingCode || item.code) === select.dataset.code,
+          );
+          updatePaymentStatus(booking, select.value);
+        }),
+      );
+    $("paymentRows")
+      .querySelectorAll("[data-payment-confirm]")
+      .forEach((button) =>
+        button.addEventListener("click", () => {
+          const booking = bookings.find(
+            (item) =>
+              (item.bookingCode || item.code) ===
+              button.dataset.paymentConfirm,
+          );
+          updatePaymentStatus(booking, "paid");
+        }),
+      );
   }
   function fillBookings() {
     const query = ($("bookingSearch").value || "").trim().toLowerCase();
@@ -1196,7 +1612,7 @@ import "../src/js/auth.js";
                 .join(", ") ||
               booking.passenger?.name ||
               "-";
-            return `<tr><td><b>${safe(code || "-")}</b></td><td>${safe(passenger)}</td><td>${safe(booking.from || booking.flight?.from || "-")} → ${safe(booking.to || booking.flight?.to || "-")}</td><td>${date(booking.date || booking.departureDate)}</td><td>${money(booking.totalPrice ?? booking.total)}</td><td><span class="badge ${bookingStatus === "cancelled" ? "cancel" : bookingStatus === "pending" ? "off" : ""}">${status(booking.status)}</span></td><td>${bookingStatus === "cancelled" ? "-" : `<button class="action danger" data-action="cancel" data-id="${safe(code)}">Hủy vé</button>`}</td></tr>`;
+            return `<tr><td><b>${safe(code || "-")}</b></td><td>${safe(passenger)}</td><td>${safe(booking.from || booking.flight?.from || "-")} → ${safe(booking.to || booking.flight?.to || "-")}</td><td>${date(booking.date || booking.departureDate)}</td><td>${money(booking.totalPrice ?? booking.total)}</td><td><span class="badge ${bookingStatus === "cancelled" ? "cancel" : bookingStatus === "pending" ? "off" : ""}">${status(booking.status)}</span></td><td><button class="action" data-action="booking-detail" data-id="${safe(code)}">Chi tiết</button>${bookingStatus === "pending" ? ` · <button class="action" data-action="confirm-booking" data-id="${safe(code)}">Xác nhận</button>` : ""}${bookingStatus === "cancelled" ? "" : ` · <button class="action danger" data-action="cancel" data-id="${safe(code)}">Hủy vé</button>`}</td></tr>`;
           })
           .join("")
       : '<tr><td colspan="7" class="empty">Không tìm thấy vé phù hợp.</td></tr>';
@@ -1251,7 +1667,8 @@ import "../src/js/auth.js";
           status: "active",
         }[key] ??
         "";
-    form.elements.date.min = localToday();
+    form.elements.date.min =
+      f?.date && f.date < localToday() ? f.date : localToday();
     form.elements.id.disabled = !!editing;
     $("modalTitle").textContent = editing
       ? "Sửa chuyến bay"
@@ -1292,7 +1709,10 @@ import "../src/js/auth.js";
       error = "Điểm đi và điểm đến phải khác nhau.";
     else if (!validDate(data.date) || !data.departure || !data.arrival)
       error = "Vui lòng nhập đủ ngày và giờ bay.";
-    else if (data.date < localToday())
+    else if (
+      data.date < localToday() &&
+      (!editing || data.date !== flights.find((x) => x.id === editing)?.date)
+    )
       error = "Ngày bay không được ở trong quá khứ.";
     else if (data.departure === data.arrival)
       error = "Giờ đi và giờ đến không được trùng nhau.";
@@ -1316,6 +1736,16 @@ import "../src/js/auth.js";
       data.baggage > 100
     )
       error = "Hành lý phải là số nguyên từ 0 đến 100 kg.";
+    if (
+      !error &&
+      editing &&
+      data.status === "cancelled" &&
+      bookings.some(
+        (b) => b.flightId === editing && bookingState(b) !== "cancelled",
+      )
+    )
+      error =
+        "Chuyến bay còn vé chưa hủy. Hãy xử lý các vé liên quan trước khi hủy chuyến.";
     if (error) {
       $("formError").textContent = error;
       return;
@@ -1337,6 +1767,8 @@ import "../src/js/auth.js";
     const button = event.target.closest("button[data-action]");
     if (!button) return;
     const { action, id } = button.dataset;
+    if (!authenticated()) return;
+    if (management.handleAction(action, id)) return;
     if (action === "edit-service" || action === "toggle-service") {
       const services = getServiceCatalog();
       const service = services.find((item) => item.id === id);
@@ -1373,7 +1805,7 @@ import "../src/js/auth.js";
     if (action === "cancel") {
       if (!confirm(`Hủy vé ${id}?`)) return;
       const index = bookings.findIndex((x) => (x.bookingCode || x.code) === id);
-      if (index < 0) return;
+      if (index < 0 || bookingState(bookings[index]) === "cancelled") return;
       bookings[index] = {
         ...bookings[index],
         status: "cancelled",
@@ -1385,6 +1817,8 @@ import "../src/js/auth.js";
       );
       if (
         flightIndex >= 0 &&
+        (bookings[index].inventoryReserved === true ||
+          (bookings[index].flightId && !bookings[index].flight)) &&
         Number.isFinite(Number(flights[flightIndex].seats))
       ) {
         flights[flightIndex].seats =
@@ -1407,6 +1841,31 @@ import "../src/js/auth.js";
     }
   }
   $("logout").addEventListener("click", () => window.TripGoAuth.logout());
+  const mobileMenuToggle = $("mobileMenuToggle");
+  const adminSidebar = $("adminSidebar");
+  const setMobileMenuOpen = (isOpen) => {
+    adminSidebar.classList.toggle("is-open", isOpen);
+    mobileMenuToggle.setAttribute("aria-expanded", String(isOpen));
+    mobileMenuToggle.setAttribute(
+      "aria-label",
+      isOpen ? "Đóng menu điều hướng" : "Mở menu điều hướng",
+    );
+    mobileMenuToggle.title = isOpen ? "Đóng menu" : "Mở menu";
+    mobileMenuToggle.querySelector("i").className =
+      `fa-solid ${isOpen ? "fa-xmark" : "fa-bars"}`;
+  };
+  mobileMenuToggle.addEventListener("click", () => {
+    setMobileMenuOpen(!adminSidebar.classList.contains("is-open"));
+  });
+  adminSidebar.addEventListener("click", (event) => {
+    if (event.target.closest(".nav")) setMobileMenuOpen(false);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && adminSidebar.classList.contains("is-open")) {
+      setMobileMenuOpen(false);
+      mobileMenuToggle.focus();
+    }
+  });
   setTheme(localStorage.getItem(THEME_KEY) || "light");
   $("themeToggle").addEventListener("click", () => {
     const theme = document.body.classList.contains("admin-dark")
@@ -1452,6 +1911,7 @@ import "../src/js/auth.js";
     }
   });
   window.addEventListener("storage", (event) => {
+    if (event.key === "tripgo_seat_maps" && page === "seats") render();
     if (event.key === SERVICE_KEY && page === "services") renderServices();
     if (event.key === SUPPORT_KEY && page === "support") render();
     if (event.key === BAN_KEY && page === "banned") render();

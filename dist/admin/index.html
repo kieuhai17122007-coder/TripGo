@@ -11,84 +11,94 @@
         theme: {
           extend: {
             boxShadow: {
-              soft: '0 12px 30px rgba(15, 23, 42, 0.08)',
+              soft: "0 12px 30px rgba(15, 23, 42, 0.08)",
             },
             colors: {
               brand: {
-                50: '#eef6ff',
-                100: '#dfeeff',
-                500: '#2563eb',
-                600: '#1d4ed8',
-                700: '#1e3a8a'
+                50: "#eef6ff",
+                100: "#dfeeff",
+                500: "#2563eb",
+                600: "#1d4ed8",
+                700: "#1e3a8a",
               },
             },
           },
         },
       };
     </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="style.css" />
-    <style type="text/tailwindcss">
-@layer components {
-.card { @apply rounded-2xl border border-slate-200 bg-white shadow-sm; }
-.primary { @apply rounded-xl bg-blue-700 px-4 py-2.5 font-semibold text-white hover:bg-blue-800 focus-visible:ring-4 focus-visible:ring-blue-200; }
-.secondary { @apply rounded-xl border border-slate-200 bg-white px-4 py-2.5 font-semibold text-slate-700 hover:bg-slate-50; }
-.field { @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500; }
-.nav { @apply flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold hover:bg-blue-50; }
-.action { @apply cursor-pointer text-blue-700 hover:underline; }
-}
-    </style>
-  <link rel="stylesheet" href="./admin-effects.css">
-</head>
-  <body class="admin-body bg-slate-50 text-slate-800">
-    <div
-      id="loginView"
-      class="min-h-screen flex items-center justify-center p-4"
-    >
-      <div
-        class="w-full max-w-md rounded-3xl bg-white p-7 sm:p-9 shadow-xl border border-slate-100"
-      >
-        <div class="text-3xl font-black text-blue-900">
-          ✈ TripGo<span class="text-amber-500">.</span>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      media="print"
+      onload="this.media = 'all'"
+      onerror="this.media = 'all'"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="stylesheet"
+      href="/assets/style-bWsBKzy3.css"
+      media="print"
+      onload="this.media = 'all'"
+      onerror="this.media = 'all'"
+    />
+
+    <link
+      rel="stylesheet"
+      href="/assets/admin-effects-CuGZfN0P.css"
+      media="print"
+      onload="this.media = 'all'"
+      onerror="this.media = 'all'"
+    />
+    <style>body>:not(#adminLoader){opacity:1;transition:opacity .45s ease-out}body.admin-loading>:not(#adminLoader){opacity:0;visibility:hidden}#adminLoader{z-index:1000;color:#17243d;background:#f8fbff;place-items:center;font-family:Inter,ui-sans-serif,system-ui,sans-serif;transition:transform .45s cubic-bezier(.22,.68,.24,1);display:grid;position:fixed;inset:0;transform:translateY(0)}#adminLoader.is-leaving{transform:translateY(-100%)}#adminLoader[hidden]{display:none}.admin-loader-content{justify-items:center;gap:16px;font-size:14px;font-weight:600;display:grid}.admin-loader-brand{color:#1e40af;font-size:28px;font-weight:800}.admin-loader-track{background:#dbeafe;border-radius:999px;width:min(260px,70vw);height:8px;overflow:hidden}.admin-loader-bar{border-radius:inherit;transform-origin:0;will-change:transform;background:linear-gradient(90deg,#2563eb,#60a5fa);width:100%;height:100%;animation:1.5s linear forwards admin-loader-progress;transform:scaleX(0)}#adminLoader.is-complete .admin-loader-bar{animation:none;transform:scaleX(1)}@keyframes admin-loader-progress{0%{animation-timing-function:cubic-bezier(.12,.72,.28,1);transform:scaleX(0)}42%{animation-timing-function:cubic-bezier(.68,0,.82,.18);transform:scaleX(.46)}72%{animation-timing-function:cubic-bezier(.16,.76,.28,1);transform:scaleX(.62)}to{transform:scaleX(1)}}@media (prefers-reduced-motion:reduce){#adminLoader,body>:not(#adminLoader){transition-duration:1ms}.admin-loader-bar{transition-duration:1ms;animation-duration:1ms}}</style>
+    <script>
+      const adminLoaderStartedAt = performance.now();
+      window.addEventListener(
+        "load",
+        () => {
+          const loader = document.getElementById("adminLoader");
+          const minimumDuration = 1500;
+          const elapsed = performance.now() - adminLoaderStartedAt;
+          window.setTimeout(
+            () => {
+              loader.classList.add("is-complete");
+              document.body.classList.remove("admin-loading");
+              loader.classList.add("is-leaving");
+              loader.addEventListener(
+                "transitionend",
+                () => {
+                  loader.hidden = true;
+                },
+                { once: true },
+              );
+            },
+            Math.max(0, minimumDuration - elapsed),
+          );
+        },
+        { once: true },
+      );
+    </script>
+    <script type="module" crossorigin src="/assets/admin-N9rgxXVO.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-P2Xu9kJm.js">
+    <link rel="modulepreload" crossorigin href="/assets/auth-DT5i0A2m.js">
+    <link rel="modulepreload" crossorigin href="/assets/seat-store-DFhIyWBB.js">
+    <link rel="stylesheet" crossorigin href="/assets/seat-map-CRfFlI5H.css">
+  </head>
+  <body class="admin-body admin-loading bg-slate-50 text-slate-800">
+    <div id="adminLoader" role="status" aria-live="polite">
+      <div class="admin-loader-content">
+        <div class="admin-loader-brand">✈ TripGo<span>.</span></div>
+        <div
+          class="admin-loader-track"
+          role="progressbar"
+          aria-label="Đang tải trang quản trị"
+        >
+          <div class="admin-loader-bar"></div>
         </div>
-        <p
-          class="mt-2 text-sm font-bold tracking-widest text-amber-600 uppercase"
-        >
-          Admin Dashboard
-        </p>
-        <h1 class="text-2xl font-bold mt-7">Đăng nhập quản trị</h1>
-        <p class="text-sm text-slate-500 mt-2">
-          Quản lý chuyến bay và vé đặt trong dự án TripGo.
-        </p>
-        <form id="loginForm" class="space-y-4 mt-7">
-          <label class="block text-sm font-semibold"
-            >Email<input
-              name="email"
-              type="email"
-              autocomplete="username"
-              required
-              class="field mt-2"
-              placeholder="admin@tripgo.com" /></label
-          ><label class="block text-sm font-semibold"
-            >Mật khẩu<input
-              name="password"
-              type="password"
-              autocomplete="current-password"
-              required
-              class="field mt-2"
-              placeholder="Nhập mật khẩu"
-          /></label>
-          <p id="loginError" role="alert" class="text-sm text-red-600"></p>
-          <button class="primary w-full">Đăng nhập</button>
-        </form>
-        <a
-          href="../index.html"
-          class="block text-center text-sm text-blue-700 mt-6 hover:underline"
-          >← Về trang chủ</a
-        >
+        <span>Đang tải trang quản trị...</span>
       </div>
     </div>
-    <div id="appView" class="admin-app hidden min-h-screen">
+    <div id="appView" class="admin-app min-h-screen">
       <header
         class="admin-header bg-white border-b border-slate-200 sticky top-0 z-20"
       >
@@ -102,42 +112,127 @@
             ></a
           >
           <div class="flex gap-3 items-center text-sm">
-            <button id="themeToggle" class="secondary theme-toggle" type="button" aria-label="Chuyển sang giao diện tối" title="Chuyển giao diện">
+            <button
+              id="mobileMenuToggle"
+              class="secondary mobile-menu-toggle"
+              type="button"
+              aria-label="Mở menu điều hướng"
+              aria-controls="adminSidebar"
+              aria-expanded="false"
+              title="Mở menu"
+            >
+              <i class="fa-solid fa-bars" aria-hidden="true"></i>
+            </button>
+            <button
+              id="themeToggle"
+              class="secondary theme-toggle"
+              type="button"
+              aria-label="Chuyển sang giao diện tối"
+              title="Chuyển giao diện"
+            >
               <i id="themeIcon" class="fa-solid fa-moon"></i>
               <span class="hidden sm:inline">Giao diện tối</span>
             </button>
-            <div class="hidden sm:flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5">
-              <span class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-white"><i class="fa-solid fa-user-shield"></i></span>
-              <span class="text-slate-600">admin@tripgo.com</span>
+            <div
+              class="hidden sm:flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5"
+            >
+              <span
+                class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-white"
+                ><i class="fa-solid fa-user-shield"></i
+              ></span>
+              <span id="adminEmail" class="text-slate-600"></span>
             </div>
-            <button id="logout" class="secondary"><i class="fa-solid fa-right-from-bracket mr-2"></i>Đăng xuất</button>
+            <button
+              id="logout"
+              class="secondary"
+              aria-label="Đăng xuất"
+              title="Đăng xuất"
+            >
+              <i
+                class="fa-solid fa-right-from-bracket mr-2"
+                aria-hidden="true"
+              ></i
+              ><span class="mobile-logout-label">Đăng xuất</span>
+            </button>
           </div>
         </div>
       </header>
-      <div
-        class="admin-layout w-full md:flex min-h-[calc(100vh-128px)]"
-      >
+      <div class="admin-layout w-full md:flex min-h-[calc(100vh-128px)]">
         <nav
+          id="adminSidebar"
           class="admin-sidebar p-4 md:pt-8 md:w-60 flex md:flex-col gap-2 overflow-x-auto shrink-0"
           aria-label="Menu quản trị"
         >
-          <div class="hidden md:block px-4 mb-4 text-xs font-bold uppercase tracking-widest text-slate-400">Dashboard</div>
-          <button data-page="overview" class="nav active">
-            ◫ <span>Tổng quan</span></button
-          ><button data-page="flights" class="nav">
-            ✈ <span>Chuyến bay</span></button
-          ><button data-page="bookings" class="nav">
-            ▤ <span>Vé đã đặt</span></button
-          ><button data-page="customers" class="nav">
-            <i class="fa-solid fa-users"></i> <span>Khách hàng</span></button
-          ><button data-page="reports" class="nav">
-            <i class="fa-solid fa-chart-column"></i> <span>Báo cáo</span></button
-          ><button data-page="services" class="nav">
-            <i class="fa-solid fa-bag-shopping"></i> <span>Dịch vụ</span></button
-          ><button data-page="support" class="nav">
-            <i class="fa-solid fa-headset"></i> <span>Hỗ trợ</span>
-          </button>
-          <button data-page="banned" class="nav">⊘ <span>Cấm bay</span></button>
+          <section class="sidebar-group" aria-labelledby="navOverviewGroup">
+            <h2 id="navOverviewGroup" class="sidebar-group-heading">
+              Tổng quan
+            </h2>
+            <button data-page="overview" class="nav active" aria-current="page">
+              <i class="fa-solid fa-house" aria-hidden="true"></i
+              ><span>Tổng quan</span>
+            </button>
+            <button data-page="reports" class="nav">
+              <i class="fa-solid fa-chart-column" aria-hidden="true"></i
+              ><span>Báo cáo</span>
+            </button>
+          </section>
+          <section class="sidebar-group" aria-labelledby="navOperationsGroup">
+            <h2 id="navOperationsGroup" class="sidebar-group-heading">
+              Vận hành
+            </h2>
+            <button data-page="flights" class="nav">
+              <i class="fa-solid fa-plane" aria-hidden="true"></i
+              ><span>Chuyến bay</span>
+            </button>
+            <button data-page="seats" class="nav">
+              <i class="fa-solid fa-chair" aria-hidden="true"></i
+              ><span>Quản lý ghế 2D</span>
+            </button>
+            <button data-page="schedule" class="nav">
+              <i class="fa-solid fa-calendar-days" aria-hidden="true"></i
+              ><span>Lịch bay</span>
+            </button>
+          </section>
+          <section class="sidebar-group" aria-labelledby="navCustomersGroup">
+            <h2 id="navCustomersGroup" class="sidebar-group-heading">
+              Khách hàng &amp; Dịch vụ
+            </h2>
+            <button data-page="bookings" class="nav">
+              <i class="fa-solid fa-ticket" aria-hidden="true"></i
+              ><span>Vé đã đặt</span>
+            </button>
+            <button data-page="payments" class="nav">
+              <i class="fa-solid fa-credit-card" aria-hidden="true"></i
+              ><span>Thanh toán</span>
+            </button>
+            <button data-page="customers" class="nav">
+              <i class="fa-solid fa-users" aria-hidden="true"></i
+              ><span>Khách hàng</span>
+            </button>
+            <button data-page="services" class="nav">
+              <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i
+              ><span>Dịch vụ</span>
+            </button>
+            <button data-page="support" class="nav">
+              <i class="fa-solid fa-headset" aria-hidden="true"></i
+              ><span>Hỗ trợ</span>
+            </button>
+            <button data-page="banned" class="nav">
+              <i class="fa-solid fa-ban" aria-hidden="true"></i
+              ><span>Hành khách cấm bay</span>
+            </button>
+          </section>
+          <section class="sidebar-group" aria-labelledby="navSystemGroup">
+            <h2 id="navSystemGroup" class="sidebar-group-heading">Hệ thống</h2>
+            <button data-page="data" class="nav">
+              <i class="fa-solid fa-database" aria-hidden="true"></i
+              ><span>Sao lưu &amp; khôi phục</span>
+            </button>
+            <button data-page="audit" class="nav">
+              <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i
+              ><span>Nhật ký thao tác</span>
+            </button>
+          </section>
         </nav>
         <main class="admin-main flex-1 min-w-0 p-4 sm:p-6 md:py-8">
           <div class="flex items-start justify-between gap-3 flex-wrap mb-6">
@@ -284,19 +379,46 @@
       aria-modal="true"
       aria-labelledby="serviceModalTitle"
     >
-      <div class="bg-white rounded-3xl max-w-xl mx-auto my-8 p-5 sm:p-8 shadow-2xl">
+      <div
+        class="bg-white rounded-3xl max-w-xl mx-auto my-8 p-5 sm:p-8 shadow-2xl"
+      >
         <div class="flex justify-between gap-4">
           <div>
-            <p class="text-xs text-amber-600 uppercase font-bold">Dịch vụ TripGo</p>
-            <h2 id="serviceModalTitle" class="text-2xl font-bold mt-1">Thêm dịch vụ</h2>
+            <p class="text-xs text-amber-600 uppercase font-bold">
+              Dịch vụ TripGo
+            </p>
+            <h2 id="serviceModalTitle" class="text-2xl font-bold mt-1">
+              Thêm dịch vụ
+            </h2>
           </div>
-          <button id="closeServiceModal" class="text-2xl self-start" aria-label="Đóng">×</button>
+          <button
+            id="closeServiceModal"
+            class="text-2xl self-start"
+            aria-label="Đóng"
+          >
+            ×
+          </button>
         </div>
         <form id="serviceForm" novalidate class="mt-6 space-y-4">
-          <label class="label">Tên dịch vụ<input class="field" name="title" maxlength="60" required placeholder="Ví dụ: Hành lý ký gửi" /></label>
-          <label class="label">Mô tả<input class="field" name="description" maxlength="160" required placeholder="Mô tả ngắn về dịch vụ" /></label>
+          <label class="label"
+            >Tên dịch vụ<input
+              class="field"
+              name="title"
+              maxlength="60"
+              required
+              placeholder="Ví dụ: Hành lý ký gửi"
+          /></label>
+          <label class="label"
+            >Mô tả<input
+              class="field"
+              name="description"
+              maxlength="160"
+              required
+              placeholder="Mô tả ngắn về dịch vụ"
+          /></label>
           <div class="grid sm:grid-cols-2 gap-4">
-            <label class="label">Biểu tượng
+            <label class="label"
+              >Biểu tượng
               <select class="field" name="icon">
                 <option value="fa-plane">Máy bay</option>
                 <option value="fa-ticket">Vé</option>
@@ -308,7 +430,8 @@
                 <option value="fa-circle-info">Thông tin</option>
               </select>
             </label>
-            <label class="label">Khi nhấn vào dịch vụ
+            <label class="label"
+              >Khi nhấn vào dịch vụ
               <select class="field" name="href">
                 <option value="#search">Tìm chuyến bay</option>
                 <option value="#booking-search">Tra cứu đặt chỗ</option>
@@ -316,19 +439,30 @@
               </select>
             </label>
           </div>
-          <label class="flex items-center gap-3 text-sm font-semibold text-slate-600">
-            <input type="checkbox" name="enabled" checked class="h-4 w-4 accent-blue-700" />
+          <label
+            class="flex items-center gap-3 text-sm font-semibold text-slate-600"
+          >
+            <input
+              type="checkbox"
+              name="enabled"
+              checked
+              class="h-4 w-4 accent-blue-700"
+            />
             Hiển thị trên trang bán vé
           </label>
-          <p id="serviceFormError" role="alert" class="text-red-600 text-sm"></p>
+          <p
+            id="serviceFormError"
+            role="alert"
+            class="text-red-600 text-sm"
+          ></p>
           <div class="flex justify-end gap-3">
-            <button id="cancelServiceModal" type="button" class="secondary">Hủy</button>
+            <button id="cancelServiceModal" type="button" class="secondary">
+              Hủy
+            </button>
             <button class="primary" type="submit">Lưu dịch vụ</button>
           </div>
         </form>
       </div>
-    </div>
-    <script type="module" src="./admin.js"></script>
-  <script type="module" src="./admin-enhancements.js"></script>
-</body>
+    </div>
+  </body>
 </html>
