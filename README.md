@@ -69,3 +69,21 @@ Các tệp giao diện khác được giữ lại. Build được cập nhật �
 - Nếu khoang chỉ còn ghế đơn, cho phép tách nhóm theo chỗ còn trống.
 - Tự xếp ghế vẫn ưu tiên các hàng gần nhau; đây là gợi ý, không phải giới hạn cho chọn thủ công.
 - Cùng quy tắc được kiểm tra khi bấm ghế, xác nhận và thanh toán demo.
+
+## Admin: nghiệp vụ demo mở rộng (2026-10)
+
+Trong `/admin/` có thêm 7 trang dùng **JavaScript thuần + Tailwind**:
+
+1. **Hoàn tiền & đối soát:** tạo yêu cầu theo vé đã thanh toán, duyệt/từ chối, kiểm tra không hoàn vượt tổng tiền vé, sổ hoàn tiền mô phỏng.
+2. **Nhân viên:** tạo tài khoản và bật/tắt tài khoản thử nghiệm; role gồm `admin`, `operator`, `support`, `accountant`.
+3. **Xử lý yêu cầu vé:** tạo và xử lý yêu cầu đổi chuyến, sửa tên, hủy vé; đổi chuyến xóa vị trí ghế trước đó để chọn lại.
+4. **Tồn ghế & giữ chỗ:** thống kê sơ đồ 120 ghế, giữ theo chuyến/ngày trong thời hạn cấu hình, kiểm tra ghế đang có trong dữ liệu đặt, bị khóa hoặc đã được giữ tạm; giải phóng giữ chỗ.
+5. **Thông báo vận hành:** hiển thị các sự kiện của module mới, đánh dấu đọc và dọn thông báo đã đọc.
+6. **Báo cáo chuyên sâu:** doanh thu của vé đã đánh dấu thanh toán, hoàn tiền đã duyệt, theo tuyến/chuyến, xuất CSV.
+7. **Cấu hình hệ thống:** thời hạn giữ ghế, tỷ lệ hoàn tiền gợi ý, thời gian chờ xử lý và tùy chọn thông báo.
+
+### Hướng dẫn chạy
+
+`npm install` rồi `npm run dev` và mở `/admin/`. Tài khoản demo có sẵn: `admin@tripgo.vn` / `admin123` (chỉ phục vụ bài tập). Nếu chưa có dữ liệu, hãy tạo vé/chuyến từ chức năng có sẵn trước khi thao tác ở các trang bổ sung.
+
+**Giới hạn demo:** Dữ liệu lưu bằng `localStorage` trong cùng trình duyệt. Không có thanh toán/hoàn tiền thật, giao tiếp server, khóa ghế transaction, hoặc đồng bộ giữa thiết bị. Tính năng giữ ghế mới chỉ được quản lý trong trang Admin, **chưa tích hợp với luồng đặt vé phía khách hàng**; việc giữ ghế đồng thời không bảo đảm chống trùng trong trường hợp nhiều tab ghi cùng một thời điểm. Vai trò nhân viên chỉ là metadata/demo, không cấu thành phân quyền backend. Không dùng thông tin thanh toán hay mật khẩu cá nhân thật. Bộ sao lưu cũ chưa bao gồm các key `tripgo_demo_*` mới.

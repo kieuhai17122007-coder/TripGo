@@ -1,5 +1,10 @@
 // Management tools for the existing Vanilla JS admin; no additional dependencies.
 export const AUDIT_KEY = "tripgo_admin_audit";
+export const PAYMENT_STATUS_LABELS = {
+  awaiting_confirmation: "Cần xác nhận thanh toán",
+  processing: "Đang xử lý",
+  paid: "Đã thanh toán",
+};
 export function normalizeBooking(b, flights) {
   const flightId = b.flightId || b.flight?.id || b.flight?.flightNumber;
   const f = flights.find((f) => f.id === flightId);
@@ -122,10 +127,12 @@ export function validateBackup(value) {
         key === "tripgo_bookings" &&
         (!Number.isFinite(Number(r.totalPrice ?? r.total ?? 0)) ||
           Number(r.totalPrice ?? r.total ?? 0) < 0 ||
+          (r.paymentStatus !== undefined &&
+            !Object.hasOwn(PAYMENT_STATUS_LABELS, r.paymentStatus)) ||
           (r.passengerDetails !== undefined &&
             !Array.isArray(r.passengerDetails)))
       )
-        throw Error("Thông tin vé không hợp lệ.");
+        throw Error("Thông tin vé hoặc trạng thái thanh toán không hợp lệ.");
       if (
         key === "tripgo_bookings" &&
         ((r.passengerDetails || []).some((p) => !p || typeof p !== "object") ||
@@ -164,13 +171,13 @@ export function createManagement(ctx) {
     money,
     date,
     bookingState,
-    paymentState,
     alertMessage,
     getFlights,
     getBookings,
     render,
     openModal,
     getServiceCatalog,
+    paymentStatusLabel,
   } = ctx;
   const $ = (id) => document.getElementById(id);
   const download = (name, data) => {
@@ -221,32 +228,22 @@ export function createManagement(ctx) {
       ["Hạng vé", b.ticketType || b.classType],
       ["Tổng tiền", money(b.totalPrice ?? b.total)],
       [
-        "Trạng thái vé",
+        "Trạng thái",
         bookingState(b) === "pending"
           ? "Chờ thanh toán"
           : bookingState(b) === "cancelled"
             ? "Đã hủy"
             : "Đã xác nhận",
       ],
-      [
-        "Trạng thái thanh toán",
-        b.paymentStatus || b.paymentState || "Chưa xác nhận",
-      ],
-      ["Phương thức thanh toán", b.paymentMethod],
-      ["Xác nhận bởi", b.paymentVerifiedBy],
-      [
-        "Thời gian xác nhận",
-        b.paymentVerifiedAt
-          ? new Date(b.paymentVerifiedAt).toLocaleString("vi-VN")
-          : "",
-      ],
+      ["Thanh toán", b.paymentMethod],
+      ["Trạng thái thanh toán", paymentStatusLabel(b.paymentStatus)],
       ["Ghi chú nội bộ", b.adminNote],
     ];
     const dialog = document.createElement("dialog");
     dialog.id = "bookingDetailDialog";
     dialog.className = "card p-6 w-full max-w-2xl";
     dialog.setAttribute("aria-labelledby", "bookingDetailTitle");
-    dialog.innerHTML = `<div class="flex justify-between gap-4 mb-5"><h2 id="bookingDetailTitle" class="text-xl font-bold">Chi tiết vé</h2><button class="secondary" data-close-detail aria-label="Đóng chi tiết vé">Đóng</button></div><dl class="grid sm:grid-cols-2 gap-4">${rows.map(([l, v]) => `<div><dt class="text-sm text-slate-500">${safe(l)}</dt><dd class="font-semibold break-words whitespace-pre-wrap">${safe(v || "-")}</dd></div>`).join("")}</dl><form id="bookingNoteForm" class="mt-5 space-y-3"><label class="label">Ghi chú nội bộ<textarea name="note" class="field" rows="3" maxlength="1000">${safe(b.adminNote || "")}</textarea></label><button class="primary">Lưu ghi chú</button></form><p class="text-sm text-slate-500 mt-4">Chỉ xác nhận đã thanh toán sau khi đối soát đúng số tiền và nội dung chuyển khoản.</p>`;
+    dialog.innerHTML = `<div class="flex justify-between gap-4 mb-5"><h2 id="bookingDetailTitle" class="text-xl font-bold">Chi tiết vé</h2><button class="secondary" data-close-detail aria-label="Đóng chi tiết vé">Đóng</button></div><dl class="grid sm:grid-cols-2 gap-4">${rows.map(([l, v]) => `<div><dt class="text-sm text-slate-500">${safe(l)}</dt><dd class="font-semibold break-words whitespace-pre-wrap">${safe(v || "-")}</dd></div>`).join("")}</dl><form id="bookingNoteForm" class="mt-5 space-y-3"><label class="label">Ghi chú nội bộ<textarea name="note" class="field" rows="3" maxlength="1000">${safe(b.adminNote || "")}</textarea></label><button class="primary">Lưu ghi chú</button></form><p class="text-sm text-slate-500 mt-4">Trạng thái thanh toán là dữ liệu mô phỏng của bài tập.</p>`;
     document.body.append(dialog);
     dialog.querySelector("[data-close-detail]").onclick = closeDetail;
     dialog.addEventListener("click", (e) => {
@@ -272,83 +269,6 @@ export function createManagement(ctx) {
     };
     dialog.showModal();
   }
-  function editBooking(b) {
-    closeDetail();
-    const code = b.bookingCode || b.code;
-    const primaryPassenger = b.passengerDetails?.[0] || b.passenger || {};
-    const passengerName =
-      primaryPassenger.name || primaryPassenger.fullName || "";
-    const email = primaryPassenger.email || b.email || "";
-    const phone = primaryPassenger.phone || b.passenger?.phone || "";
-    const dialog = document.createElement("dialog");
-    dialog.id = "bookingEditDialog";
-    dialog.className = "card booking-editor-dialog";
-    dialog.setAttribute("aria-labelledby", "bookingEditTitle");
-    dialog.innerHTML = `<form id="bookingEditForm" class="space-y-4"><div class="flex justify-between gap-4"><div><p class="text-xs font-bold uppercase tracking-widest text-blue-700">Vé ${safe(code)}</p><h2 id="bookingEditTitle" class="text-xl font-bold mt-1">Sửa thông tin vé</h2></div><button class="secondary" type="button" data-close-booking-edit>Đóng</button></div><label class="label">Tên hành khách<input class="field" name="name" required maxlength="120" value="${safe(passengerName)}"></label><label class="label">Email liên hệ<input class="field" name="email" type="email" maxlength="254" value="${safe(email)}"></label><label class="label">Số điện thoại<input class="field" name="phone" type="tel" maxlength="30" value="${safe(phone)}"></label><label class="label">Ghi chú nội bộ<textarea class="field" name="note" rows="3" maxlength="1000">${safe(b.adminNote || "")}</textarea></label><p class="text-sm text-slate-500">Trạng thái vé và thanh toán không thay đổi khi lưu biểu mẫu này.</p><div class="flex justify-end gap-3"><button class="secondary" type="button" data-close-booking-edit>Hủy</button><button class="primary" type="submit">Lưu thay đổi</button></div></form>`;
-    document.body.append(dialog);
-    const close = () => {
-      dialog.close();
-      dialog.remove();
-    };
-    dialog.addEventListener("close", () => dialog.remove(), { once: true });
-    dialog.querySelectorAll("[data-close-booking-edit]").forEach((button) => {
-      button.addEventListener("click", close);
-    });
-    dialog.addEventListener("click", (event) => {
-      if (event.target === dialog) close();
-    });
-    dialog.querySelector("form").onsubmit = (event) => {
-      event.preventDefault();
-      if (!window.TripGoAuth.isAdmin()) return;
-      const form = event.currentTarget;
-      const name = form.elements.name.value.trim();
-      if (!name) {
-        form.elements.name.focus();
-        return;
-      }
-      const all = getBookings();
-      const target = all.find(
-        (item) => (item.bookingCode || item.code) === code,
-      );
-      if (!target) {
-        close();
-        alertMessage("Không tìm thấy vé cần sửa.", true);
-        return;
-      }
-      const contactEmail = form.elements.email.value.trim();
-      const contactPhone = form.elements.phone.value.trim();
-      target.passenger = {
-        ...target.passenger,
-        name,
-        fullName: name,
-        email: contactEmail,
-        phone: contactPhone,
-      };
-      target.email = contactEmail;
-      target.adminNote = form.elements.note.value.trim();
-      if (
-        Array.isArray(target.passengerDetails) &&
-        target.passengerDetails.length
-      ) {
-        target.passengerDetails[0] = {
-          ...target.passengerDetails[0],
-          name,
-          fullName: name,
-        };
-      }
-      try {
-        write("tripgo_bookings", all);
-        close();
-        render();
-        alertMessage("Đã cập nhật thông tin vé.");
-      } catch (error) {
-        alertMessage("Không thể lưu thay đổi vé.", true);
-        console.error("Could not update booking details", error);
-      }
-    };
-    dialog.showModal();
-    dialog.querySelector('[name="name"]').focus();
-  }
   function renderSchedule() {
     $("content").innerHTML =
       `<div class="card p-5"><div class="flex flex-wrap gap-4 mb-5"><label class="label">Ngày bay<input id="scheduleDate" class="field" type="date"></label><label class="label">Trạng thái<select id="scheduleStatus" class="field"><option value="all">Tất cả</option><option value="active">Đang hoạt động</option><option value="flying">Đang bay</option><option value="cancelled">Đã hủy</option></select></label><button id="scheduleAll" class="secondary self-end">Tất cả ngày</button></div><p id="scheduleSummary" class="text-sm text-slate-500 mb-4" aria-live="polite"></p><div class="table-scroll"><table class="data-table"><thead><tr><th>Ngày / Giờ</th><th>Chuyến bay</th><th>Hành trình</th><th>Chỗ còn lại</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody id="scheduleRows"></tbody></table></div><button id="scheduleMore" class="secondary mt-4" hidden>Xem thêm 10 chuyến</button></div>`;
@@ -372,7 +292,7 @@ export function createManagement(ctx) {
           .slice(0, limit)
           .map(
             (f) =>
-              `<tr><td>${date(f.date)} · ${safe(f.departure)}</td><td>${safe(f.id)}<br>${safe(f.airline)}</td><td>${safe(f.from)} → ${safe(f.to)}</td><td>${safe(f.seats)}</td><td>${safe(ctx.flightStatusLabel(f.status))}</td><td><button class="action" data-action="edit" data-id="${safe(f.id)}">Sửa</button></td></tr>`,
+              `<tr><td>${date(f.date)} · ${safe(f.departure)}</td><td>${safe(f.id)}<br>${safe(f.airline)}</td><td>${safe(f.from)} → ${safe(f.to)}</td><td>${safe(f.seats)}</td><td>${safe(ctx.flightStatusLabel(f.status))}</td><td class="flight-actions"><button class="action action-icon" data-action="edit" data-id="${safe(f.id)}" aria-label="Sửa chuyến bay ${safe(f.id)}" title="Sửa chuyến bay"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></button></td></tr>`,
           )
           .join("") ||
         '<tr><td colspan="6" class="empty">Không có chuyến bay phù hợp.</td></tr>';
@@ -527,51 +447,25 @@ export function createManagement(ctx) {
       if (b) showBooking(b);
       return true;
     }
-    if (action === "edit-booking") {
-      const b = getBookings().find((b) => (b.bookingCode || b.code) === id);
-      if (b) editBooking(b);
-      return true;
-    }
     if (action === "confirm-booking") {
       const all = getBookings();
       const b = all.find((b) => (b.bookingCode || b.code) === id);
-      if (!b || bookingState(b) === "cancelled" || paymentState(b) === "paid")
-        return true;
-      const flightId = b.flightId || b.flight?.id || b.flight?.flightNumber;
-      const f = getFlights().find((flight) => flight.id === flightId);
-      if (f && ["cancelled", "deleted"].includes(f.status)) {
+      if (!b || bookingState(b) !== "pending") return true;
+      const f = getFlights().find((f) => f.id === b.flightId);
+      if (!f || ["cancelled", "deleted"].includes(f.status)) {
         alertMessage(
-          "Không thể xác nhận vé: chuyến bay đã bị hủy hoặc lưu trữ.",
+          "Không thể xác nhận vé: chuyến bay không hoạt động.",
           true,
         );
         return true;
       }
-      if (!f && (!(b.flight?.from || b.from) || !(b.flight?.to || b.to))) {
-        alertMessage(
-          "Không thể xác nhận vé: thiếu thông tin hành trình để đối soát.",
-          true,
-        );
-        return true;
-      }
-      if (
-        !confirm(
-          `Chỉ tiếp tục nếu đã kiểm tra tài khoản ngân hàng và đối soát đúng số tiền/nội dung chuyển khoản. Xác nhận đã nhận tiền cho vé ${id}?`,
-        )
-      )
-        return true;
-      const verifiedAt = new Date().toISOString();
-      b.status = "Đã đặt vé";
-      b.paymentState = "paid";
-      b.paymentStatus = "Đã xác nhận chuyển khoản thủ công";
-      b.paidAt = verifiedAt;
-      b.paymentVerifiedAt = verifiedAt;
-      b.paymentVerifiedBy =
-        window.TripGoAuth.getCurrentUser()?.email || "Admin";
-      b.confirmedAt = verifiedAt;
+      if (!confirm(`Xác nhận thanh toán mô phỏng cho vé ${id}?`)) return true;
+      b.status = "confirmed";
+      b.confirmedAt = new Date().toISOString();
       try {
         write("tripgo_bookings", all);
         render();
-        alertMessage("Đã ghi nhận chuyển khoản và xác nhận vé.");
+        alertMessage("Đã xác nhận vé trong demo.");
       } catch {
         alertMessage("Không thể lưu vé.", true);
       }

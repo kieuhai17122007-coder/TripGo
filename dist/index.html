@@ -4,11 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TripGo - Đặt vé máy bay</title>
-  <script type="module" crossorigin src="/assets/main-Ca5NNSI3.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/auth-BEs63xOb.js">
-  <link rel="modulepreload" crossorigin href="/assets/auth-page-5Y1sCq3P.js">
-  <link rel="stylesheet" crossorigin href="/assets/main-BInVahy-.css">
-  <link rel="stylesheet" crossorigin href="/assets/responsive-abABoHJ5.css">
+  <script type="module" crossorigin src="/assets/main-C7iW4MV5.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-P2Xu9kJm.js">
+  <link rel="modulepreload" crossorigin href="/assets/auth-DT5i0A2m.js">
+  <link rel="modulepreload" crossorigin href="/assets/auth-page-BqsNcYy9.js">
+  <link rel="stylesheet" crossorigin href="/assets/main-Dr0aPoa5.css">
+  <link rel="stylesheet" crossorigin href="/assets/main-DvzoLopw.css">
 </head>
 <body>
 <header class="header">
@@ -35,44 +36,37 @@
       <h1>Hành trình của bạn,<br>khởi đầu từ đây</h1>
       <p>Đặt vé máy bay nội địa nhanh chóng và thuận tiện.</p>
 
-      <form class="search-box home-search-box" id="homeSearchForm">
+      <div class="search-box">
         <div class="trip-type">
           <label><input type="radio" name="tripType" value="roundtrip" checked> Khứ hồi</label>
           <label><input type="radio" name="tripType" value="oneway"> Một chiều</label>
         </div>
         <div class="search-grid">
-          <div class="route-fields">
-            <label class="field">
-              <span>Điểm đi</span>
-              <select id="from" aria-describedby="fromError"><option value="HAN">Hà Nội (HAN)</option><option value="SGN">TP. Hồ Chí Minh (SGN)</option><option value="DAD">Đà Nẵng (DAD)</option><option value="PQC">Phú Quốc (PQC)</option><option value="CXR">Nha Trang (CXR)</option><option value="HPH">Hải Phòng (HPH)</option><option value="HUI">Huế (HUI)</option><option value="VCA">Cần Thơ (VCA)</option><option value="UIH">Quy Nhơn (UIH)</option><option value="VDO">Vân Đồn (VDO)</option></select>
-              <small class="field-error" id="fromError"></small>
-            </label>
-            <button class="swap" id="swapBtn" type="button" title="Đổi điểm đi/đến">⇄</button>
-            <label class="field">
-              <span>Điểm đến</span>
-              <select id="to" aria-describedby="toError"><option value="HAN">Hà Nội (HAN)</option><option value="SGN">TP. Hồ Chí Minh (SGN)</option><option value="DAD">Đà Nẵng (DAD)</option><option value="PQC">Phú Quốc (PQC)</option><option value="CXR">Nha Trang (CXR)</option><option value="HPH">Hải Phòng (HPH)</option><option value="HUI">Huế (HUI)</option><option value="VCA">Cần Thơ (VCA)</option><option value="UIH">Quy Nhơn (UIH)</option><option value="VDO">Vân Đồn (VDO)</option></select>
-              <small class="field-error" id="toError"></small>
-            </label>
-          </div>
+          <label class="field">
+            <span>Điểm đi</span>
+            <select id="from"><option value="HAN">Hà Nội (HAN)</option><option value="SGN">TP. Hồ Chí Minh (SGN)</option><option value="DAD">Đà Nẵng (DAD)</option><option value="PQC">Phú Quốc (PQC)</option><option value="CXR">Nha Trang (CXR)</option><option value="HPH">Hải Phòng (HPH)</option><option value="HUI">Huế (HUI)</option><option value="VCA">Cần Thơ (VCA)</option><option value="UIH">Quy Nhơn (UIH)</option><option value="VDO">Vân Đồn (VDO)</option></select>
+          </label>
+          <button class="swap" id="swapBtn" title="Đổi điểm đi/đến">⇄</button>
+          <label class="field">
+            <span>Điểm đến</span>
+            <select id="to"><option value="HAN">Hà Nội (HAN)</option><option value="SGN">TP. Hồ Chí Minh (SGN)</option><option value="DAD">Đà Nẵng (DAD)</option><option value="PQC">Phú Quốc (PQC)</option><option value="CXR">Nha Trang (CXR)</option><option value="HPH">Hải Phòng (HPH)</option><option value="HUI">Huế (HUI)</option><option value="VCA">Cần Thơ (VCA)</option><option value="UIH">Quy Nhơn (UIH)</option><option value="VDO">Vân Đồn (VDO)</option></select>
+          </label>
           <label class="field">
             <span>Ngày đi</span>
-            <input type="date" id="departure" aria-describedby="departureError">
-            <small class="field-error" id="departureError"></small>
+            <input type="date" id="departure">
           </label>
           <label class="field return-field">
             <span>Ngày về</span>
-            <input type="date" id="returnDate" aria-describedby="returnDateError">
-            <small class="field-error" id="returnDateError"></small>
+            <input type="date" id="returnDate">
           </label>
           <label class="field">
             <span>Hành khách</span>
-            <select id="passengers" aria-describedby="passengersError">
+            <select id="passengers">
               <option value="1">1 hành khách</option>
               <option value="2">2 hành khách</option>
               <option value="3">3 hành khách</option>
               <option value="4">4 hành khách</option>
             </select>
-            <small class="field-error" id="passengersError"></small>
           </label>
           <label class="field">
             <span>Hạng vé</span>
@@ -82,9 +76,8 @@
             </select>
           </label>
         </div>
-        <p class="search-form-error" id="searchError" role="alert" aria-live="polite"></p>
-        <button class="primary-btn search-btn" id="searchBtn" type="submit">TÌM CHUYẾN BAY</button>
-      </form>
+        <button class="primary-btn search-btn" id="searchBtn">TÌM CHUYẾN BAY</button>
+      </div>
     </div>
   </div>
 </section>
