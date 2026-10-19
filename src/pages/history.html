@@ -101,6 +101,11 @@
                 ? "paid"
                 : "pending");
             const paymentLabel =
+              {
+                awaiting_confirmation: "Cần xác nhận thanh toán",
+                processing: "Đang xử lý",
+                paid: "Đã thanh toán",
+              }[b.paymentStatus] ||
               b.paymentStatus ||
               {
                 paid: "Đã thanh toán",

@@ -22,6 +22,11 @@ const paymentLabels = {
   "international-card": "Thẻ quốc tế",
   ewallet: "Ví điện tử",
 };
+const paymentStatusLabels = {
+  awaiting_confirmation: "Cần xác nhận thanh toán",
+  processing: "Đang xử lý",
+  paid: "Đã thanh toán",
+};
 const booking = bookingCode
   ? auth
       .getBookings()
@@ -89,7 +94,10 @@ if (!booking) {
   const values = {
     bookingCode: booking.bookingCode,
     bookingStatus: booking.status || "Đã đặt vé",
-    paymentStatus: booking.paymentStatus || "Chưa xác nhận thanh toán",
+    paymentStatus:
+      paymentStatusLabels[booking.paymentStatus] ||
+      booking.paymentStatus ||
+      "Chưa xác nhận thanh toán",
     flightNumber: booking.flightId || flight.flightNumber || flight.id || "—",
     fromCode: flight.from || booking.from || "—",
     fromName: airports[flight.from || booking.from] || "—",
