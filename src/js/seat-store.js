@@ -244,6 +244,7 @@ export function adjacentGroupError(seats, count, unavailable = new Set()) {
 export function suggestSeats(count, unavailable) {
   return planGroup(count, unavailable)?.seats || [];
 }
+
 export function renderCabin(
   box,
   state,
@@ -252,38 +253,94 @@ export function renderCabin(
 ) {
   box.replaceChildren();
   box.className = "seat-grid-2d";
-  for (let r = 1; r <= ROWS; r++) {
-    const row = document.createElement("div");
-    row.className = "seat-row-2d";
-    for (const c of LETTERS) {
-      if (c === "D") {
-        const aisle = document.createElement("span");
-        aisle.className = "seat-aisle";
-        aisle.textContent = r;
-        row.append(aisle);
-      }
-      const id = `${r}${c}`,
-        status = state.booked.has(id)
+
+  const sections = [
+    {
+      title: "THƯƠNG GIA",
+      subtitle: "BUSINESS CLASS · HÀNG 1–3",
+      start: 1,
+      end: 3,
+      className: "business-cabin",
+    },
+    {
+      title: "PHỔ THÔNG",
+      subtitle: "ECONOMY CLASS · HÀNG 4–20",
+      start: 4,
+      end: ROWS,
+      className: "economy-cabin",
+    },
+  ];
+
+  for (const section of sections) {
+    const cabin = document.createElement("section");
+    cabin.className = `seat-cabin-section ${section.className}`;
+
+    const heading = document.createElement("div");
+    heading.className = "seat-cabin-heading";
+
+    const title = document.createElement("h3");
+    title.textContent = section.title;
+
+    const subtitle = document.createElement("p");
+    subtitle.textContent = section.subtitle;
+
+    heading.append(title, subtitle);
+    cabin.append(heading);
+
+    for (let r = section.start; r <= section.end; r++) {
+      const row = document.createElement("div");
+      row.className = "seat-row-2d";
+
+      for (const c of LETTERS) {
+        if (c === "D") {
+          const aisle = document.createElement("span");
+          aisle.className = "seat-aisle";
+          aisle.textContent = r;
+          aisle.setAttribute("aria-label", `Hàng ${r}`);
+          row.append(aisle);
+        }
+
+        const id = `${r}${c}`;
+        const status = state.booked.has(id)
           ? "booked"
           : state.blocked.has(id)
             ? "blocked"
             : selected.has(id)
               ? "selected"
               : "free";
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = `cabin-seat ${status}`;
-      b.textContent = id;
-      b.dataset.seat = id;
-      b.setAttribute(
-        "aria-label",
-        `Ghế ${id}: ${{ booked: "đã đặt", blocked: "đang khóa", selected: "đang chọn", free: "trống" }[status]}`,
-      );
-      b.setAttribute("aria-pressed", String(status === "selected"));
-      b.title = b.getAttribute("aria-label");
-      b.onclick = () => onSeat(id, status);
-      row.append(b);
+
+        const seat = document.createElement("button");
+        seat.type = "button";
+        seat.className = `cabin-seat ${status} ${
+          section.className === "business-cabin"
+            ? "business-seat"
+            : "economy-seat"
+        }`;
+
+        seat.textContent = id;
+        seat.dataset.seat = id;
+
+        const statusText = {
+          booked: "đã đặt",
+          blocked: "đang khóa",
+          selected: "đang chọn",
+          free: "trống",
+        }[status];
+
+        seat.setAttribute("aria-label", `Ghế ${id}: ${statusText}`);
+        seat.setAttribute("aria-pressed", String(status === "selected"));
+        seat.title = `Ghế ${id} - ${statusText}`;
+        seat.disabled = status === "booked" || status === "blocked";
+
+        seat.onclick = () => onSeat(id, status);
+        row.append(seat);
+      }
+
+      cabin.append(row);
     }
-    box.append(row);
+
+    box.append(cabin);
   }
 }
+
+

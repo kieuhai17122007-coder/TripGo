@@ -197,3 +197,247 @@ html.dark .seat-admin .aircraft-2d {
     transform: none;
   }
 }
+
+/* ===== PHAN KHOANG MAY BAY ===== */
+
+.seat-grid-2d {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  margin: 20px 0;
+}
+
+.seat-cabin-section {
+  position: relative;
+  padding: 16px 10px 20px;
+  border: 1px solid #dbe3ef;
+  border-radius: 18px;
+  min-width: 0;
+}
+
+.seat-cabin-heading {
+  text-align: center;
+  margin-bottom: 18px;
+  padding: 12px 6px;
+  border-radius: 12px;
+}
+
+.seat-cabin-heading h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.seat-cabin-heading p {
+  margin: 6px 0 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+}
+
+.seat-cabin-section .seat-row-2d {
+  margin-bottom: 9px;
+}
+
+.seat-cabin-section .seat-row-2d:last-child {
+  margin-bottom: 0;
+}
+
+/* ===== KHOANG THUONG GIA ===== */
+
+.business-cabin {
+  background: linear-gradient(145deg, #f5f0ff, #ffffff);
+  border: 1px solid #c4b5fd;
+  box-shadow: inset 0 0 25px #8b5cf610;
+}
+
+.business-cabin .seat-cabin-heading {
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+  border: 1px solid #c4b5fd;
+}
+
+.business-cabin .seat-cabin-heading h3 {
+  color: #5b21b6;
+}
+
+.business-cabin .seat-cabin-heading p {
+  color: #7c3aed;
+}
+
+.business-cabin .cabin-seat {
+  height: 46px;
+  border-radius: 11px 11px 7px 7px;
+  border: 1px solid #a78bfa;
+  border-bottom: 4px solid #8b5cf6;
+  background: #ede9fe;
+  color: #5b21b6;
+  font-size: 11px;
+  box-shadow: 0 3px 0 #ddd6fe;
+}
+
+.business-cabin .cabin-seat:hover {
+  background: #ddd6fe;
+}
+
+.business-cabin .cabin-seat.selected {
+  background: #6d28d9;
+  color: #ffffff;
+  border-color: #5b21b6;
+  border-bottom-color: #4c1d95;
+}
+
+.business-cabin .cabin-seat.booked {
+  background: #cbd5e1;
+  color: #475569;
+  border-color: #94a3b8;
+  border-bottom-color: #94a3b8;
+  box-shadow: none;
+}
+
+.business-cabin .cabin-seat.blocked {
+  background: repeating-linear-gradient(
+    45deg,
+    #fef3c7,
+    #fef3c7 6px,
+    #fde68a 6px,
+    #fde68a 10px
+  );
+  color: #92400e;
+  border-color: #d97706;
+  border-bottom-color: #d97706;
+  box-shadow: none;
+}
+
+/* ===== VACH NGAN GIUA HAI KHOANG ===== */
+
+.business-cabin::after {
+  content: "VÁCH NGĂN KHOANG";
+  display: block;
+  text-align: center;
+  color: #7c3aed;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding-top: 18px;
+  margin-top: 18px;
+  border-top: 2px dashed #c4b5fd;
+}
+
+/* ===== KHOANG PHO THONG ===== */
+
+.economy-cabin {
+  background: linear-gradient(145deg, #eff6ff, #ffffff);
+  border: 1px solid #bfdbfe;
+}
+
+.economy-cabin .seat-cabin-heading {
+  background: linear-gradient(135deg, #dbeafe, #eff6ff);
+  border: 1px solid #bfdbfe;
+}
+
+.economy-cabin .seat-cabin-heading h3 {
+  color: #1d4ed8;
+}
+
+.economy-cabin .seat-cabin-heading p {
+  color: #2563eb;
+}
+
+.economy-cabin .cabin-seat {
+  background: #f8fafc;
+  border-color: #93c5fd;
+  border-bottom-color: #60a5fa;
+  color: #1e40af;
+}
+
+.economy-cabin .cabin-seat:hover {
+  background: #dbeafe;
+}
+
+.economy-cabin .cabin-seat.selected {
+  background: #0b63bd;
+  color: #ffffff;
+  border-color: #084b90;
+}
+
+.economy-cabin .cabin-seat.booked {
+  background: #cbd5e1;
+  color: #475569;
+  border-color: #94a3b8;
+  border-bottom-color: #94a3b8;
+}
+
+.economy-cabin .cabin-seat.blocked {
+  background: repeating-linear-gradient(
+    45deg,
+    #fef3c7,
+    #fef3c7 6px,
+    #fde68a 6px,
+    #fde68a 10px
+  );
+  color: #92400e;
+  border-color: #d97706;
+  border-bottom-color: #d97706;
+}
+
+/* ===== LOI DI GIUA ===== */
+
+.seat-cabin-section .seat-aisle {
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+/* ===== DIEN THOAI ===== */
+
+@media (max-width: 480px) {
+  .seat-grid-2d {
+    gap: 16px;
+  }
+
+  .seat-cabin-section {
+    padding: 12px 6px 14px;
+    border-radius: 14px;
+  }
+
+  .seat-cabin-heading h3 {
+    font-size: 14px;
+  }
+
+  .seat-cabin-heading p {
+    font-size: 9px;
+  }
+
+  .seat-cabin-section .seat-row-2d {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr))
+      18px
+      repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .seat-cabin-section .cabin-seat {
+    height: 35px;
+    padding: 0;
+    font-size: 9px;
+    border-radius: 6px 6px 4px 4px;
+  }
+
+  .business-cabin .cabin-seat {
+    height: 39px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seat-cabin-section .cabin-seat {
+    transition: none;
+  }
+
+  .seat-cabin-section .cabin-seat:hover {
+    transform: none;
+  }
+}
