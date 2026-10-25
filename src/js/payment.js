@@ -1,3 +1,4 @@
+import emailjs from "@emailjs/browser";
 import { normalizeFlight, validateSelection, flightKey } from "./seat-store.js";
 import {
   paymentConfig,
@@ -437,6 +438,7 @@ async function checkProviderPayment() {
       localStorage.removeItem("tripgo_selected_seats");
       localStorage.removeItem("tripgo_selected_seat");
       localStorage.removeItem("tripgo_selected_seat_flight");
+      sendConfirmationEmail(activeBooking);
     } else {
       updateBooking({
         paymentState,
@@ -733,3 +735,37 @@ window.addEventListener("storage", (event) => {
     `/src/pages/booking-success.html?bookingCode=${encodeURIComponent(updatedBooking.bookingCode)}`,
   );
 });
+// ===== HÀM GỬI EMAIL XÁC NHẬN =====
+function sendConfirmationEmail(booking) {
+  // 1. Gom dữ liệu từ object booking và map đúng tên biến trên EmailJS
+  const templateParams = {
+    email: booking.passenger?.email || "", // Gửi đến email này
+    to_name: booking.passenger?.fullName || "Quý khách", // {{to_name}}
+    booking_code: booking.bookingCode || "", // {{booking_code}}
+    flight_number: booking.flight?.flightNumber || booking.flight?.id || "", // {{flight_number}}
+    from_city: booking.flight?.from || "", // {{from_city}}
+    to_city: booking.flight?.to || "", // {{to_city}}
+    flight_date: formatDate(booking.date), // {{flight_date}}
+    departure_time: booking.flight?.departure || "", // {{departure_time}}
+    arrival_time: booking.flight?.arrival || "", // {{arrival_time}}
+    total_price: formatPrice(booking.totalPrice), // {{total_price}}
+    booking_status: "Đã thanh toán", // {{booking_status}}
+  };
+
+  console.log("Dữ liệu chuẩn bị gửi mail:", templateParams); // Dùng để debug
+
+  // 2. Gửi qua EmailJS (THAY 3 THÔNG TIN CỦA BẠN VÀO ĐÂY)
+  emailjs
+    .send(
+      "service_ocz0dal", // <-- 1. Thay Service ID của bạn
+      "template_upzs3jp", // <-- 2. Thay Template ID của bạn
+      templateParams,
+      "OWuM-_IXVvt0g_gGW", // <-- 3. Thay Public Key của bạn
+    )
+    .then((response) => {
+      console.log("✅ Gửi email thành công!", response.status, response.text);
+    })
+    .catch((error) => {
+      console.error("❌ Gửi email thất bại:", error);
+    });
+}
