@@ -419,10 +419,9 @@ select {
 
 .flight-content {
   display: grid;
-  grid-template-columns: minmax(74px, 0.8fr) minmax(110px, 1.2fr) minmax(
-      90px,
-      0.8fr
-    ) minmax(155px, 1.1fr);
+  grid-template-columns:
+    minmax(74px, 0.8fr) minmax(110px, 1.2fr) minmax(90px, 0.8fr)
+    minmax(155px, 1.1fr);
   align-items: center;
   gap: 20px;
   min-width: 0;
@@ -550,10 +549,9 @@ select {
   }
 
   .flight-content {
-    grid-template-columns: minmax(70px, 0.8fr) minmax(100px, 1.2fr) minmax(
-        75px,
-        0.8fr
-      ) minmax(135px, 1fr);
+    grid-template-columns:
+      minmax(70px, 0.8fr) minmax(100px, 1.2fr) minmax(75px, 0.8fr)
+      minmax(135px, 1fr);
     gap: 14px;
   }
 
@@ -638,4 +636,30 @@ select {
   .route {
     text-align: left;
   }
+}
+/* =========================================
+   NÂNG CẤP GIAO DIỆN TRANG TÌM CHUYẾN BAY
+   ========================================= */
+
+/* Nền cho toàn bộ khu vực tìm kiếm phía trên */
+.page {
+  background-color: #f8fafc;
+  /* Thêm một lớp gradient xanh nhạt ở trên cùng */
+  background-image: linear-gradient(to bottom, #e6f0fa 0%, #f8fafc 300px);
+  background-repeat: no-repeat;
+  padding-top: 40px; /* Đẩy nội dung xuống một chút */
+}
+
+/* Tiêu đề "Tìm chuyến bay" to và rõ hơn */
+.page-title h1 {
+  color: #0b2944;
+  font-size: 48px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.page-title p {
+  font-size: 16px;
+  color: #475569;
 }
