@@ -663,3 +663,89 @@ select {
   font-size: 16px;
   color: #475569;
 }
+/* Khung trắng chứa form */
+.search-box {
+  background: #ffffff;
+  padding: 35px 40px;
+  border-radius: 24px; /* Bo góc to hơn */
+  box-shadow: 0 20px 50px rgba(13, 42, 70, 0.08); /* Bóng đổ mềm màu xanh đen */
+  border: 1px solid #eef2f6;
+}
+
+/* Các nút chọn Một chiều / Khứ hồi */
+.trip-type {
+  border-bottom: 1px dashed #cbd5e1; /* Đổi đường kẻ liền thành nét đứt cho mềm mại */
+  padding-bottom: 20px;
+  margin-bottom: 25px;
+}
+
+.trip-type label {
+  font-size: 15px;
+  color: #334155;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.trip-type input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+/* Các ô Input / Select */
+.field span {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.field select,
+.field input[type="date"] {
+  height: 54px; /* Cao hơn cho dễ bấm */
+  border: 1.5px solid #e2e8f0; /* Viền dày hơn chút */
+  border-radius: 12px;
+  padding: 0 16px;
+  font-size: 15px;
+  color: #1e293b;
+  background-color: #f8fafc; /* Nền xám rất nhẹ */
+  transition: all 0.3s ease;
+}
+
+/* Hiệu ứng khi click vào ô nhập liệu */
+.field select:focus,
+.field input[type="date"]:focus {
+  background-color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(7, 87, 160, 0.1); /* Viền sáng xanh */
+  outline: none;
+}
+/* Nút Tìm chuyến bay */
+.search-btn {
+  background: linear-gradient(135deg, var(--primary), #0a6dbd);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 16px 40px;
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 10px 25px rgba(7, 87, 160, 0.3); /* Bóng đổ màu xanh */
+  transition: all 0.3s ease;
+  margin-top: 25px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px; /* Khoảng cách nếu có icon */
+}
+
+/* Khi di chuột vào nút */
+.search-btn:hover {
+  transform: translateY(-3px); /* Nút nhích lên */
+  box-shadow: 0 15px 35px rgba(7, 87, 160, 0.4);
+  background: linear-gradient(135deg, #0a6dbd, var(--primary));
+}
+
+/* Khi ấn nút */
+.search-btn:active {
+  transform: translateY(0);
+}
