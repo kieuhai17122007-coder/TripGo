@@ -2246,3 +2246,85 @@ body {
   color: #667085;
   line-height: 1.6;
 }
+/* =========================================
+   CẬP NHẬT GIAO DIỆN KHUNG QUẢN LÝ (ACCOUNT)
+   ========================================= */
+
+.account-highlight {
+  padding: 60px 0 100px 0; /* Tạo khoảng trống trên dưới */
+  background: transparent !important;
+}
+
+.account-highlight-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 30px;
+  padding: 45px 50px;
+  border: 1px solid #dce7f1;
+  border-radius: 28px; /* Bo góc to hơn */
+  /* Nền gradient nhẹ nhàng từ trắng sang xanh biển */
+  background: linear-gradient(135deg, #ffffff 0%, #f2f8fd 100%);
+  box-shadow: 0 20px 40px rgba(7, 87, 160, 0.05); /* Bóng xanh mờ */
+  position: relative;
+  overflow: hidden;
+}
+
+/* Thêm một vòng tròn trang trí mờ ở góc phải cho sinh động */
+.account-highlight-card::before {
+  content: "";
+  position: absolute;
+  right: -50px;
+  top: -50px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(29, 132, 205, 0.05);
+  z-index: 0;
+}
+
+.account-highlight-card h2 {
+  font-size: 34px;
+  margin: 8px 0;
+  color: #0b2944; /* Màu chữ đậm */
+  position: relative;
+  z-index: 1;
+}
+
+.account-highlight-card p {
+  font-size: 15px;
+  color: #667085;
+  max-width: 500px;
+  line-height: 1.6;
+  position: relative;
+  z-index: 1;
+}
+
+/* Làm nổi bật nút Xem lịch sử đặt vé */
+.account-highlight-card .secondary-btn {
+  padding: 12px 24px;
+  font-size: 15px;
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.account-highlight-card .secondary-btn:hover {
+  background: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(7, 87, 160, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Responsive cho điện thoại */
+@media (max-width: 850px) {
+  .account-highlight-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 30px;
+  }
+}
