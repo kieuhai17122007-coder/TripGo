@@ -2181,3 +2181,68 @@ body {
     box-shadow 0.4s ease !important;
   transform-style: flat !important;
 }
+/* =========================================
+   CẬP NHẬT GIAO DIỆN PHẦN LỢI ÍCH (BENEFITS)
+   ========================================= */
+
+/* 1. Khung chứa 3 ô */
+.benefit-grid > div {
+  padding: 40px 30px;
+  border: 1px solid #eef2f6;
+  border-radius: 24px; /* Bo góc tròn hơn */
+  background: #ffffff;
+  box-shadow: 0 4px 20px rgba(13, 42, 70, 0.03);
+  transition: all 0.3s ease; /* Hiệu ứng mượt */
+  position: relative;
+  overflow: hidden;
+}
+
+/* 2. Hiệu ứng khi di chuột vào ô */
+.benefit-grid > div:hover {
+  transform: translateY(-8px); /* Nhích lên */
+  box-shadow: 0 15px 35px rgba(13, 42, 70, 0.08); /* Bóng đậm hơn */
+  border-color: #d1e3f3;
+}
+
+/* 3. Làm đẹp con số 01, 02, 03 */
+.benefit-grid span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(
+    135deg,
+    #eaf4fc,
+    #f4f9ff
+  ); /* Nền xanh nhạt gradient */
+  color: var(--primary); /* Màu xanh chủ đạo */
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+}
+
+/* Hiệu ứng con số khi hover */
+.benefit-grid > div:hover span {
+  background: var(--primary);
+  color: #fff;
+  transform: scale(1.1) rotate(-5deg); /* Phóng to và xoay nhẹ */
+  box-shadow: 0 8px 15px rgba(7, 87, 160, 0.2);
+}
+
+/* 4. Tiêu đề (Đơn giản, Nhanh chóng...) */
+.benefit-grid h3 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a2b4c; /* Màu xanh đen đậm */
+  margin-bottom: 12px;
+}
+
+/* 5. Đoạn mô tả */
+.benefit-grid p {
+  font-size: 14.5px;
+  color: #667085;
+  line-height: 1.6;
+}
