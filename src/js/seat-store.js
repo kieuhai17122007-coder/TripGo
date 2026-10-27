@@ -90,7 +90,12 @@ export function groupError(seats, unavailable = new Set(), final = false) {
       ["D", "E", "F"],
     ]) {
       const ids = cols.map((c) => `${r}${c}`);
-      if (selected.has(ids[0]) && selected.has(ids[2]) && !selected.has(ids[1]))
+      if (
+        selected.has(ids[0]) &&
+        selected.has(ids[2]) &&
+        !selected.has(ids[1]) &&
+        !unavailable.has(ids[1])
+      )
         return `Hàng ${r}: hãy chọn ghế liền nhau, không bỏ ghế ${ids[1]} ở giữa.`;
       if (
         final &&
@@ -157,30 +162,29 @@ export function planGroup(
     ].map((cols) => {
       const ids = cols.map((c) => `${row}${c}`),
         must = ids.filter((s) => required.has(s)),
-        parts = must.length ? [] : [[]];
-      for (let size = 1; size <= 3; size++)
-        for (let i = 0; i + size <= 3; i++) {
-          const part = ids.slice(i, i + size);
-          if (
-            part.every((s) => !unavailable.has(s)) &&
-            must.every((s) => part.includes(s)) &&
-            !groupError(part, unavailable, true)
-          )
-            parts.push(part);
-        }
+        parts = [];
+      for (let mask = 0; mask < 1 << ids.length; mask++) {
+        const part = ids.filter((_, i) => mask & (1 << i));
+        if (
+          part.every((s) => !unavailable.has(s)) &&
+          must.every((s) => part.includes(s))
+        )
+          parts.push(part);
+      }
       return parts;
     });
     const choices = [];
     for (const a of halves[0])
       for (const b of halves[1]) {
         const seats = [...a, ...b],
-          blocks = Number(a.length > 0) + Number(b.length > 0);
-        const gap =
-          a.length && b.length
-            ? LETTERS.indexOf(b[0].slice(-1)) -
-              LETTERS.indexOf(a.at(-1).slice(-1)) -
-              1
-            : 0;
+          blocks =
+            countBlocks(a, LETTERS.slice(0, 3)) +
+            countBlocks(b, LETTERS.slice(3, 6)),
+          positions = seats.map((s) => LETTERS.indexOf(s.slice(-1))),
+          gap =
+            positions.length > 1
+              ? Math.max(...positions) - Math.min(...positions) + 1 - seats.length
+              : 0;
         if (seats.length <= count) choices.push({ seats, blocks, gap });
       }
     options.push(choices);
@@ -230,6 +234,19 @@ export function planGroup(
     if (best) return { ...best, span };
   }
   return null;
+}
+function countBlocks(seats, letters) {
+  let blocks = 0,
+    previous = -2;
+  const selected = new Set(seats.map((s) => s.slice(-1)));
+  for (const letter of letters) {
+    const position = LETTERS.indexOf(letter);
+    if (selected.has(letter)) {
+      if (position !== previous + 1) blocks++;
+      previous = position;
+    }
+  }
+  return blocks;
 }
 export function adjacentGroupError(seats, count, unavailable = new Set()) {
   if (count <= 1) return "";
@@ -342,5 +359,3 @@ export function renderCabin(
     box.append(cabin);
   }
 }
-
-
