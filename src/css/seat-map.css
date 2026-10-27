@@ -116,6 +116,23 @@
   border-radius: 16px;
   padding: 20px;
 }
+.seat-admin .seat-booking-confirm {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid #93c5fd;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #1e3a8a;
+}
+.seat-admin .seat-booking-confirm[hidden] {
+  display: none;
+}
+.seat-admin .seat-booking-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
 .seat-admin .cockpit,
 .seat-admin .cabin-tail,
 .seat-admin .aisle-label {
@@ -149,6 +166,11 @@
 }
 html.dark .seat-admin .seat-summary {
   border-color: #475569;
+}
+html.dark .seat-admin .seat-booking-confirm {
+  border-color: #1d4ed8;
+  background: #172554;
+  color: #dbeafe;
 }
 html.dark .seat-admin .aircraft-2d {
   background: linear-gradient(
