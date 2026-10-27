@@ -127,11 +127,22 @@
 .seat-admin .seat-booking-confirm[hidden] {
   display: none;
 }
+.seat-admin .seat-booking-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
 .seat-admin .seat-booking-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 14px;
+}
+.seat-admin .seat-booking-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
 }
 .seat-admin .cockpit,
 .seat-admin .cabin-tail,
