@@ -1,2 +1,2 @@
-import './auth.js';
+import "./auth.js";
 window.TripGoAuth.updateAuthUI();
