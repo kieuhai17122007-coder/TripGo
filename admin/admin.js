@@ -144,10 +144,34 @@ import {
     if (value === "pending" || value === "chờ thanh toán") return "pending";
     return "confirmed";
   };
-  const paymentState = (booking) =>
-    Object.hasOwn(PAYMENT_STATUS_LABELS, booking.paymentStatus)
-      ? booking.paymentStatus
-      : "awaiting_confirmation";
+  const paymentState = (booking) => {
+    if (booking.paymentState === "paid") return "paid";
+    if (booking.paymentState === "processing") return "processing";
+    if (["pending", "awaiting_confirmation"].includes(booking.paymentState))
+      return "awaiting_confirmation";
+    const status = String(booking.paymentStatus || "").toLowerCase();
+    if (status === "paid" || status === "đã thanh toán") return "paid";
+    if (status === "processing" || status === "đang xử lý")
+      return "processing";
+    return "awaiting_confirmation";
+  };
+  const isRevenueBooking = (booking) =>
+    bookingState(booking) !== "cancelled" &&
+    (paymentState(booking) === "paid" ||
+      (booking.paymentState == null &&
+        booking.paymentStatus == null &&
+        bookingState(booking) === "confirmed"));
+  const revenueDate = (booking) =>
+    booking.paidAt ||
+    booking.confirmedAt ||
+    booking.createdAt ||
+    booking.date ||
+    booking.departureDate;
+  const activityDate = (booking) =>
+    booking.createdAt ||
+    booking.date ||
+    booking.departureDate ||
+    booking.paidAt;
   const paymentStatusClass = (state) =>
     state === "awaiting_confirmation"
       ? "awaiting-payment"
@@ -380,7 +404,7 @@ import {
   function renderOverview() {
     const active = flights.filter((f) => f.status === "active");
     const flying = flights.filter((f) => f.status === "flying");
-    const confirmed = bookings.filter((b) => bookingState(b) === "confirmed");
+    const confirmed = bookings.filter(isRevenueBooking);
     const cancelled = bookings.filter((b) => bookingState(b) === "cancelled");
     const revenue = confirmed.reduce(
       (total, booking) =>
@@ -913,6 +937,8 @@ import {
   function getMonthKey(dateValue) {
     const value = dateValue || "";
     if (!value) return "";
+    const datePrefix = String(value).match(/^(\d{4})-(\d{2})-\d{2}$/);
+    if (datePrefix) return `${datePrefix[1]}-${datePrefix[2]}`;
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return "";
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
@@ -993,7 +1019,10 @@ import {
           customerBookings.length,
           customerBookings.reduce(
             (sum, booking) =>
-              sum + Number(booking.totalPrice ?? booking.total ?? 0),
+              sum +
+              (isRevenueBooking(booking)
+                ? Number(booking.totalPrice ?? booking.total ?? 0)
+                : 0),
             0,
           ),
           user.createdAt ? user.createdAt.slice(0, 10) : "-",
@@ -1015,17 +1044,17 @@ import {
     const reportRows = months.map((month) => {
       const monthBookings = bookings.filter(
         (booking) =>
-          getMonthKey(
-            booking.date || booking.createdAt || booking.departureDate,
-          ) === month.key,
+          getMonthKey(activityDate(booking)) === month.key,
       );
-      const confirmed = monthBookings.filter(
-        (booking) => bookingState(booking) === "confirmed",
+      const revenueBookings = bookings.filter(
+        (booking) =>
+          isRevenueBooking(booking) &&
+          getMonthKey(revenueDate(booking)) === month.key,
       );
       const cancelled = monthBookings.filter(
         (booking) => bookingState(booking) === "cancelled",
       );
-      const revenue = confirmed.reduce(
+      const revenue = revenueBookings.reduce(
         (sum, booking) =>
           sum + Number(booking.totalPrice ?? booking.total ?? 0),
         0,
@@ -1035,6 +1064,20 @@ import {
         bookings: monthBookings.length,
         revenue,
         cancelled: cancelled.length,
+        paidTickets: revenueBookings.reduce(
+          (sum, booking) =>
+            sum +
+            Math.max(
+              1,
+              Number(
+                booking.passengerCount ||
+                  booking.passengers ||
+                  booking.seats?.length ||
+                  1,
+              ),
+            ),
+          0,
+        ),
       };
     });
     const totalRevenue = reportRows.reduce(
@@ -1045,29 +1088,31 @@ import {
       (sum, month) => sum + month.bookings,
       0,
     );
-    const avgOrder = totalBookings ? totalRevenue / totalBookings : 0;
+    const paidTicketCount = reportRows.reduce(
+      (sum, month) => sum + month.paidTickets,
+      0,
+    );
+    const avgOrder = paidTicketCount ? totalRevenue / paidTicketCount : 0;
     const reportBookings = bookings.filter((booking) =>
       reportRows.some(
         (month) =>
-          getMonthKey(
-            booking.date || booking.createdAt || booking.departureDate,
-          ) === month.key,
+          getMonthKey(activityDate(booking)) === month.key,
       ),
     );
     const bookingStates = [
       {
         key: "confirmed",
         label: "Đã xác nhận",
-        count: reportBookings.filter(
-          (booking) => bookingState(booking) === "confirmed",
-        ).length,
+        count: reportBookings.filter(isRevenueBooking).length,
         color: "#2563eb",
       },
       {
         key: "pending",
         label: "Chờ thanh toán",
         count: reportBookings.filter(
-          (booking) => bookingState(booking) === "pending",
+          (booking) =>
+            bookingState(booking) !== "cancelled" &&
+            !isRevenueBooking(booking),
         ).length,
         color: "#f59e0b",
       },
@@ -1099,21 +1144,15 @@ import {
       1,
       ...reportRows.map((month) => month.revenue),
     );
-    const chartMaxBookings = Math.max(
-      1,
-      ...reportRows.map((month) => month.bookings),
-    );
-    const chartPoints = reportRows.map((month, index) => ({
+    const revenuePoints = reportRows.map((month, index) => ({
       x: chartStep * index + chartStep / 2,
       y:
         chartBottom -
-        (month.bookings / chartMaxBookings) * (chartBottom - chartTop),
+        (month.revenue / chartMaxRevenue) * (chartBottom - chartTop),
     }));
-    const bookingFlowPath = chartPoints.reduce((path, point, index) => {
+    const revenueFlowPath = revenuePoints.reduce((path, point, index) => {
       if (index === 0) return `M ${point.x} ${point.y}`;
-      const previous = chartPoints[index - 1];
-      const middleX = (previous.x + point.x) / 2;
-      return `${path} Q ${middleX} ${previous.y}, ${middleX} ${(previous.y + point.y) / 2} T ${point.x} ${point.y}`;
+      return `${path} L ${point.x} ${point.y}`;
     }, "");
     const chartBars = reportRows
       .map((month, index) => {
@@ -1122,7 +1161,7 @@ import {
           (month.revenue / chartMaxRevenue) * (chartBottom - chartTop);
         const x = chartStep * index + (chartStep - barWidth) / 2;
         const y = chartBottom - barHeight;
-        const point = chartPoints[index];
+        const point = revenuePoints[index];
         return `
           <g class="report-chart-column">
             <title>${safe(month.label)}: ${safe(money(month.revenue))}, ${month.bookings} vé</title>
@@ -1208,20 +1247,20 @@ import {
         <div class="report-charts">
           <section class="card report-chart-card report-chart-flow" aria-labelledby="reportFlowTitle">
             <div class="report-chart-heading">
-              <div><h3 id="reportFlowTitle">Dòng chảy doanh thu</h3><p>Cột: doanh thu · Đường: số vé theo tháng</p></div>
+              <div><h3 id="reportFlowTitle">Xu hướng doanh thu</h3><p>Cột và đường: doanh thu đã xác nhận theo tháng</p></div>
               <span class="report-chart-period">6 tháng</span>
             </div>
-            <div class="report-flow-legend"><span><i></i>Doanh thu</span><span><i></i>Số vé</span></div>
+            <div class="report-flow-legend"><span><i></i>Doanh thu</span><span><i></i>Xu hướng doanh thu</span></div>
             <div class="report-chart-scroll">
-              <svg class="report-flow-svg" viewBox="0 0 ${chartWidth} ${chartHeight}" role="img" aria-label="Biểu đồ cột doanh thu và đường xu hướng số vé trong 6 tháng gần nhất">
+              <svg class="report-flow-svg" viewBox="0 0 ${chartWidth} ${chartHeight}" role="img" aria-label="Biểu đồ doanh thu theo tháng trong 6 tháng gần nhất">
                 <defs><linearGradient id="reportBarFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#3b82f6"></stop><stop offset="100%" stop-color="#93c5fd"></stop></linearGradient></defs>
                 ${chartGrid}
                 ${chartBars}
-                <path class="report-booking-flow" d="${bookingFlowPath}"></path>
-                ${chartPoints.map((point) => `<circle class="report-booking-point" cx="${point.x}" cy="${point.y}" r="4"></circle>`).join("")}
+                <path class="report-booking-flow" d="${revenueFlowPath}"></path>
+                ${revenuePoints.map((point) => `<circle class="report-booking-point" cx="${point.x}" cy="${point.y}" r="4"></circle>`).join("")}
               </svg>
             </div>
-            <p class="report-chart-footnote">Giá trị trên cột tính theo triệu đồng; điểm đường biểu thị số vé.</p>
+            <p class="report-chart-footnote">Giá trị tính theo triệu đồng; doanh thu xếp theo thời điểm thanh toán. Vé 2D demo là giao dịch mô phỏng, không phải tiền thật.</p>
           </section>
           <section class="card report-chart-card" aria-labelledby="reportPieTitle">
             <div class="report-chart-heading">
@@ -1291,7 +1330,11 @@ import {
         )
       : [];
     const detailSpend = customerBookings.reduce(
-      (sum, booking) => sum + Number(booking.totalPrice ?? booking.total ?? 0),
+      (sum, booking) =>
+        sum +
+        (isRevenueBooking(booking)
+          ? Number(booking.totalPrice ?? booking.total ?? 0)
+          : 0),
       0,
     );
     $("content").innerHTML = `
@@ -1363,7 +1406,10 @@ import {
             );
             const totalSpend = customerBookings.reduce(
               (sum, booking) =>
-                sum + Number(booking.totalPrice ?? booking.total ?? 0),
+                sum +
+                (isRevenueBooking(booking)
+                  ? Number(booking.totalPrice ?? booking.total ?? 0)
+                  : 0),
               0,
             );
             const createdAt = user.createdAt || user.created_at || "";

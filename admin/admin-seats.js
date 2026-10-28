@@ -45,15 +45,77 @@ export function renderSeatManagement(ctx) {
       </div>
     </div>`,
   );
-  function save(map) {
+  function save(map, bookingToAdd = null) {
     if (!window.TripGoAuth.isAdmin()) return false;
+    const previousMaps = localStorage.getItem(MAP_KEY);
+    const previousBookings = localStorage.getItem("tripgo_bookings");
     try {
       const maps = read(MAP_KEY).filter((m) => m.id !== map.id);
       maps.push(map);
+      const bookings = read("tripgo_bookings");
+      const demoBookings = new Map(
+        (Array.isArray(map.demoBookings) ? map.demoBookings : []).map(
+          (booking) => [booking.bookingCode, booking],
+        ),
+      );
+      const updatedBookings = bookings.map((booking) => {
+        if (
+          !booking.isSeatDemoBooking ||
+          booking.seatMapId !== map.id
+        )
+          return booking;
+        const demoBooking = demoBookings.get(booking.bookingCode);
+        if (!demoBooking) {
+          if (["Đã hủy", "cancelled"].includes(booking.status)) return booking;
+          return {
+            ...booking,
+            status: "Đã hủy",
+            cancelledAt: new Date().toISOString(),
+          };
+        }
+        const passengerCount = demoBooking.seats.length;
+        const totalPrice = Number(demoBooking.unitPrice) * passengerCount;
+        const previousSeats = Array.isArray(booking.seats) ? booking.seats : [];
+        const seatsChanged =
+          previousSeats.length !== demoBooking.seats.length ||
+          previousSeats.some((seat, index) => seat !== demoBooking.seats[index]);
+        if (
+          !seatsChanged &&
+          booking.seat === demoBooking.seats.join(", ") &&
+          Number(booking.totalPrice) === totalPrice &&
+          Number(booking.passengerCount) === passengerCount
+        )
+          return booking;
+        return {
+          ...booking,
+          seats: demoBooking.seats,
+          seat: demoBooking.seats.join(", "),
+          passengerCount,
+          totalPrice,
+        };
+      });
+      if (bookingToAdd) updatedBookings.push(bookingToAdd);
+      if (
+        bookingToAdd ||
+        updatedBookings.some(
+          (booking, index) => booking !== bookings[index],
+        )
+      )
+        write("tripgo_bookings", updatedBookings);
       write(MAP_KEY, maps);
       return true;
-    } catch {
-      alertMessage("Không lưu được sơ đồ ghế.", true);
+    } catch (error) {
+      try {
+        if (previousMaps === null) localStorage.removeItem(MAP_KEY);
+        else localStorage.setItem(MAP_KEY, previousMaps);
+        if (previousBookings === null)
+          localStorage.removeItem("tripgo_bookings");
+        else localStorage.setItem("tripgo_bookings", previousBookings);
+      } catch (rollbackError) {
+        console.error("Could not roll back seat booking data", rollbackError);
+      }
+      console.error("Could not save seat booking data", error);
+      alertMessage("Không lưu được sơ đồ ghế hoặc vé đặt demo.", true);
       return false;
     }
   }
@@ -208,24 +270,65 @@ export function renderSeatManagement(ctx) {
         phone: String(formData.get("phone")).trim(),
         document: String(formData.get("document")).trim(),
       };
-    map.demoBooked = [...new Set([...map.demoBooked, ...seats])];
+    const bookingCode = `TG2D${crypto.randomUUID().replaceAll("-", "").slice(0, 8).toUpperCase()}`;
+    const createdAt = new Date().toISOString();
+    const totalPrice = current.price * seats.length;
+    const ticketBooking = {
+      bookingCode,
+      userEmail: passenger.email,
+      email: passenger.email,
+      passenger: {
+        fullName: passenger.name,
+        name: passenger.name,
+        email: passenger.email,
+        phone: passenger.phone,
+        document: passenger.document,
+      },
+      flightId: current.id,
+      date: current.date,
+      departureDate: current.date,
+      flight: {
+        airline: current.airline || "",
+        date: current.date,
+        flightNumber: current.id,
+        id: current.id,
+        from: current.from,
+        to: current.to,
+        departure: current.departure,
+        arrival: current.arrival,
+      },
+      seat: seats.join(", "),
+      seats,
+      passengerCount: seats.length,
+      price: current.price,
+      totalPrice,
+      status: "Đã đặt vé",
+      paymentStatus: "paid",
+      paymentState: "paid",
+      paymentMethod: "2D · Mô phỏng",
+      createdAt,
+      paidAt: createdAt,
+      confirmedAt: createdAt,
+      isSeatDemoBooking: true,
+      seatMapId: map.id,
+    };
     map.demoBookings = [
       ...(Array.isArray(map.demoBookings) ? map.demoBookings : []),
       {
+        bookingCode,
         seats,
         passenger,
-        price: current.price * seats.length,
-        createdAt: new Date().toISOString(),
+        unitPrice: current.price,
+        price: totalPrice,
+        createdAt,
       },
     ];
-    if (save(map)) {
+    if (save(map, ticketBooking)) {
       selectedSeats.clear();
       draw();
       document.getElementById("seatBookingConfirm").hidden = true;
       document.getElementById("seatDetail").textContent =
-        `Đã đặt demo ghế ${seats.join(", ")} cho ${passenger.name}; tổng giá tham khảo ${(
-          current.price * seats.length
-        ).toLocaleString("vi-VN")} ₫.`;
+        `Đã lưu vé demo ${bookingCode} cho ${passenger.name}; doanh thu mô phỏng ${totalPrice.toLocaleString("vi-VN")} ₫ đã được ghi nhận.`;
       form.reset();
     }
   };
