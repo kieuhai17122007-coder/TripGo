@@ -172,12 +172,6 @@ import {
     booking.date ||
     booking.departureDate ||
     booking.paidAt;
-  const paymentStatusClass = (state) =>
-    state === "awaiting_confirmation"
-      ? "awaiting-payment"
-      : state === "processing"
-        ? "processing"
-        : "";
   let bookingLimit = 10;
   let paymentLimit = 10;
   let page = "overview",
@@ -1480,7 +1474,7 @@ import {
   function renderPayments() {
     paymentLimit = 10;
     $("content").innerHTML =
-      `<div class="space-y-5"><section class="stats-grid" aria-label="Tổng quan thanh toán"><article class="card stat-card"><p class="stat-label">Cần xác nhận</p><p id="paymentAwaitingCount" class="stat-value">0</p></article><article class="card stat-card"><p class="stat-label">Đang xử lý</p><p id="paymentProcessingCount" class="stat-value">0</p></article><article class="card stat-card"><p class="stat-label">Đã thanh toán</p><p id="paymentPaidCount" class="stat-value">0</p></article></section><section class="card"><div class="booking-tools"><h2 class="font-bold">Danh sách thanh toán <span id="paymentCount" class="text-slate-400 font-normal">(0)</span></h2><div class="booking-filters payment-filters"><input id="paymentSearch" class="field" aria-label="Tìm thanh toán" placeholder="Tìm mã vé, hành khách, chuyến bay"><select id="paymentStatusFilter" class="field" aria-label="Lọc theo trạng thái thanh toán"><option value="all">Tất cả trạng thái</option>${Object.entries(PAYMENT_STATUS_LABELS).map(([value, label]) => `<option value="${value}">${label}</option>`).join("")}</select></div></div><div class="table-scroll"><table class="data-table payment-table"><thead><tr><th>Mã vé</th><th>Hành khách</th><th>Chuyến bay</th><th>Phương thức</th><th>Tổng tiền</th><th>Trạng thái thanh toán</th></tr></thead><tbody id="paymentRows"></tbody></table></div><div class="p-4 flex items-center justify-between gap-3"><span id="paymentProgress" class="text-sm text-slate-500"></span><button id="morePayments" class="secondary hidden">Xem thêm 10 khoản</button></div></section></div>`;
+      `<div class="space-y-5"><section class="stats-grid" aria-label="Tổng quan thanh toán"><article class="card stat-card"><p class="stat-label">Cần xác nhận</p><p id="paymentAwaitingCount" class="stat-value">0</p></article><article class="card stat-card"><p class="stat-label">Đang xử lý</p><p id="paymentProcessingCount" class="stat-value">0</p></article><article class="card stat-card"><p class="stat-label">Đã thanh toán</p><p id="paymentPaidCount" class="stat-value">0</p></article></section><section class="card"><p class="text-sm text-slate-500">Admin chỉ xem trạng thái. Xác nhận thanh toán mô phỏng được thực hiện bởi khách hàng trên trang QR.</p><div class="booking-tools"><h2 class="font-bold">Danh sách thanh toán <span id="paymentCount" class="text-slate-400 font-normal">(0)</span></h2><div class="booking-filters payment-filters"><input id="paymentSearch" class="field" aria-label="Tìm thanh toán" placeholder="Tìm mã vé, hành khách, chuyến bay"><select id="paymentStatusFilter" class="field" aria-label="Lọc theo trạng thái thanh toán"><option value="all">Tất cả trạng thái</option>${Object.entries(PAYMENT_STATUS_LABELS).map(([value, label]) => `<option value="${value}">${label}</option>`).join("")}</select></div></div><div class="table-scroll"><table class="data-table payment-table"><thead><tr><th>Mã vé</th><th>Hành khách</th><th>Chuyến bay</th><th>Phương thức</th><th>Tổng tiền</th><th>Trạng thái thanh toán</th></tr></thead><tbody id="paymentRows"></tbody></table></div><div class="p-4 flex items-center justify-between gap-3"><span id="paymentProgress" class="text-sm text-slate-500"></span><button id="morePayments" class="secondary hidden">Xem thêm 10 khoản</button></div></section></div>`;
     $("paymentSearch").addEventListener("input", () => {
       paymentLimit = 10;
       fillPayments();
@@ -1556,67 +1550,16 @@ import {
               booking.passenger?.name ||
               "-";
             const cancelled = bookingState(booking) === "cancelled";
-            return `<tr><td><b>${safe(code || "-")}</b></td><td>${safe(passenger)}<br><span class="text-slate-500">${safe(booking.email || booking.passenger?.email || "")}</span></td><td>${safe(booking.flightId || "-")}<br><span class="text-slate-500">${date(booking.date || booking.departureDate)}</span></td><td>${safe(booking.paymentMethod || "-")}</td><td>${money(booking.totalPrice ?? booking.total)}</td><td><select class="field payment-status-select ${paymentStatusClass(state)}" data-code="${safe(code)}" aria-label="Trạng thái thanh toán vé ${safe(code)}"${cancelled ? " disabled" : ""}>${Object.entries(PAYMENT_STATUS_LABELS).map(([value, label]) => `<option value="${value}"${state === value ? " selected" : ""}>${label}</option>`).join("")}</select>${!cancelled && state !== "paid" ? `<button class="action payment-confirm-action" data-payment-confirm="${safe(code)}">Xác nhận thanh toán</button>` : ""}${cancelled ? '<small class="payment-disabled-note">Vé đã hủy</small>' : ""}</td></tr>`;
+            const paymentLabel =
+              (booking.paymentMode === "demo" && state === "paid"
+                ? "Đã thanh toán (mô phỏng)"
+                : null) ||
+              PAYMENT_STATUS_LABELS[state] ||
+              PAYMENT_STATUS_LABELS.awaiting_confirmation;
+            return `<tr><td><b>${safe(code || "-")}</b></td><td>${safe(passenger)}<br><span class="text-slate-500">${safe(booking.email || booking.passenger?.email || "")}</span></td><td>${safe(booking.flightId || "-")}<br><span class="text-slate-500">${date(booking.date || booking.departureDate)}</span></td><td>${safe(booking.paymentMethod || "-")}</td><td>${money(booking.totalPrice ?? booking.total)}</td><td>${safe(paymentLabel)}${cancelled ? '<br><small class="payment-disabled-note">Vé đã hủy</small>' : ""}</td></tr>`;
           })
           .join("")
       : '<tr><td colspan="6" class="empty">Không có khoản thanh toán phù hợp.</td></tr>';
-    const updatePaymentStatus = (booking, state) => {
-      if (!authenticated()) return;
-      if (
-        !booking ||
-        bookingState(booking) === "cancelled" ||
-        !Object.hasOwn(PAYMENT_STATUS_LABELS, state)
-      ) {
-        alertMessage("Không thể cập nhật khoản thanh toán này.", true);
-        renderPayments();
-        return;
-      }
-      booking.paymentStatus = state;
-      booking.paymentState =
-        state === "awaiting_confirmation" ? "pending" : state;
-      if (state === "paid") {
-        const confirmedAt = new Date().toISOString();
-        booking.status = "Đã đặt vé";
-        booking.paidAt = confirmedAt;
-        booking.confirmedAt = confirmedAt;
-      } else {
-        booking.status = "Chờ thanh toán";
-        delete booking.paidAt;
-        delete booking.confirmedAt;
-      }
-      try {
-        write(KEYS.bookings, bookings);
-        renderPayments();
-        alertMessage("Đã cập nhật trạng thái thanh toán.");
-      } catch (error) {
-        console.error("Could not update payment status", error);
-        alertMessage("Không thể lưu trạng thái thanh toán.", true);
-        renderPayments();
-      }
-    };
-    $("paymentRows")
-      .querySelectorAll(".payment-status-select")
-      .forEach((select) =>
-        select.addEventListener("change", () => {
-          const booking = bookings.find(
-            (item) =>
-              (item.bookingCode || item.code) === select.dataset.code,
-          );
-          updatePaymentStatus(booking, select.value);
-        }),
-      );
-    $("paymentRows")
-      .querySelectorAll("[data-payment-confirm]")
-      .forEach((button) =>
-        button.addEventListener("click", () => {
-          const booking = bookings.find(
-            (item) =>
-              (item.bookingCode || item.code) ===
-              button.dataset.paymentConfirm,
-          );
-          updatePaymentStatus(booking, "paid");
-        }),
-      );
   }
   function fillBookings() {
     const query = ($("bookingSearch").value || "").trim().toLowerCase();
@@ -1670,7 +1613,7 @@ import {
                 .join(", ") ||
               booking.passenger?.name ||
               "-";
-            return `<tr><td><b>${safe(code || "-")}</b></td><td>${safe(passenger)}</td><td>${safe(booking.from || booking.flight?.from || "-")} → ${safe(booking.to || booking.flight?.to || "-")}</td><td>${date(booking.date || booking.departureDate)}</td><td>${money(booking.totalPrice ?? booking.total)}</td><td><span class="badge ${bookingStatus === "cancelled" ? "cancel" : bookingStatus === "pending" ? "off" : ""}">${status(booking.status)}</span></td><td><button class="action" data-action="booking-detail" data-id="${safe(code)}">Chi tiết</button>${bookingStatus === "pending" ? ` · <button class="action" data-action="confirm-booking" data-id="${safe(code)}">Xác nhận</button>` : ""}${bookingStatus === "cancelled" ? "" : ` · <button class="action danger" data-action="cancel" data-id="${safe(code)}">Hủy vé</button>`}</td></tr>`;
+            return `<tr><td><b>${safe(code || "-")}</b></td><td>${safe(passenger)}</td><td>${safe(booking.from || booking.flight?.from || "-")} → ${safe(booking.to || booking.flight?.to || "-")}</td><td>${date(booking.date || booking.departureDate)}</td><td>${money(booking.totalPrice ?? booking.total)}</td><td><span class="badge ${bookingStatus === "cancelled" ? "cancel" : bookingStatus === "pending" ? "off" : ""}">${status(booking.status)}</span></td><td><button class="action" data-action="booking-detail" data-id="${safe(code)}">Chi tiết</button>${bookingStatus === "cancelled" ? "" : ` · <button class="action danger" data-action="cancel" data-id="${safe(code)}">Hủy vé</button>`}</td></tr>`;
           })
           .join("")
       : '<tr><td colspan="7" class="empty">Không tìm thấy vé phù hợp.</td></tr>';

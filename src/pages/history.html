@@ -101,6 +101,9 @@
                 ? "paid"
                 : "pending");
             const paymentLabel =
+              (b.paymentMode === "demo" && paymentState === "paid"
+                ? "Đã thanh toán (mô phỏng)"
+                : null) ||
               {
                 awaiting_confirmation: "Cần xác nhận thanh toán",
                 processing: "Đang xử lý",

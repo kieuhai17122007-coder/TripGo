@@ -795,20 +795,6 @@ body {
 .payment-table {
   min-width: 1100px;
 }
-.payment-status-select {
-  min-width: 205px;
-  padding: 8px 32px 8px 10px;
-}
-.payment-status-select.awaiting-payment {
-  border-color: #fcd34d;
-}
-.payment-status-select.processing {
-  border-color: #93c5fd;
-}
-.payment-confirm-action {
-  display: block;
-  margin-top: 7px;
-}
 .payment-disabled-note {
   display: block;
   margin-top: 5px;
@@ -1007,12 +993,6 @@ body {
 .admin-dark .badge.processing {
   color: #bfdbfe;
   background: #1c3455;
-}
-.admin-dark .payment-status-select.awaiting-payment {
-  border-color: #a16207;
-}
-.admin-dark .payment-status-select.processing {
-  border-color: #31547e;
 }
 .admin-dark .payment-disabled-note {
   color: #a8b6ca;

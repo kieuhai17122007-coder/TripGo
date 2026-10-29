@@ -236,7 +236,12 @@ export function createManagement(ctx) {
             : "Đã xác nhận",
       ],
       ["Thanh toán", b.paymentMethod],
-      ["Trạng thái thanh toán", paymentStatusLabel(b.paymentStatus)],
+      [
+        "Trạng thái thanh toán",
+        b.paymentMode === "demo" && b.paymentState === "paid"
+          ? "Đã thanh toán (mô phỏng)"
+          : paymentStatusLabel(b.paymentStatus),
+      ],
       ["Ghi chú nội bộ", b.adminNote],
     ];
     const dialog = document.createElement("dialog");
@@ -445,34 +450,6 @@ export function createManagement(ctx) {
     if (action === "booking-detail") {
       const b = getBookings().find((b) => (b.bookingCode || b.code) === id);
       if (b) showBooking(b);
-      return true;
-    }
-    if (action === "confirm-booking") {
-      const all = getBookings();
-      const b = all.find((b) => (b.bookingCode || b.code) === id);
-      if (!b || bookingState(b) !== "pending") return true;
-      const f = getFlights().find((f) => f.id === b.flightId);
-      if (!f || ["cancelled", "deleted"].includes(f.status)) {
-        alertMessage(
-          "Không thể xác nhận vé: chuyến bay không hoạt động.",
-          true,
-        );
-        return true;
-      }
-      if (!confirm(`Xác nhận thanh toán mô phỏng cho vé ${id}?`)) return true;
-      const confirmedAt = new Date().toISOString();
-      b.status = "Đã đặt vé";
-      b.paymentStatus = "paid";
-      b.paymentState = "paid";
-      b.paidAt = confirmedAt;
-      b.confirmedAt = confirmedAt;
-      try {
-        write("tripgo_bookings", all);
-        render();
-        alertMessage("Đã xác nhận vé trong demo.");
-      } catch {
-        alertMessage("Không thể lưu vé.", true);
-      }
       return true;
     }
     if (action === "archive-flight") {

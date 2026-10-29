@@ -43,8 +43,10 @@ let activeBooking = requestedBookingCode
 let paymentState = activeBooking?.paymentState || "pending";
 let providerPaymentId = activeBooking?.providerPaymentId || "";
 let statusTimer;
+const isDemoPayment = (booking) => booking?.paymentMode === "demo";
 const hasVerifiedPayment = (booking) =>
   booking?.paymentState === "paid" &&
+  !isDemoPayment(booking) &&
   !/demo|mô phỏng/i.test(booking.paymentStatus || "");
 const paymentMethods = {
   "domestic-card": {
@@ -192,6 +194,7 @@ function renderPaymentState() {
   const badge = document.getElementById("paymentBadge");
   const retryButton = document.getElementById("retryPayment");
   const ticketLink = document.getElementById("viewTicket");
+  const demoConfirmButton = document.getElementById("confirmDemoPayment");
   const cancelButton = document.getElementById("cancelPayment");
   const states = {
     pending: [
@@ -211,7 +214,13 @@ function renderPaymentState() {
       "TripGo đang yêu cầu cổng thanh toán hủy giao dịch.",
       "info",
     ],
-    paid: ["Thanh toán thành công", "Giao dịch đã được xác nhận.", "success"],
+    paid: [
+      "Thanh toán thành công",
+      isDemoPayment(activeBooking)
+        ? "Đã ghi nhận xác nhận mô phỏng; giao dịch ngân hàng chưa được xác minh."
+        : "Giao dịch đã được xác nhận.",
+      "success",
+    ],
     failed: [
       "Thanh toán thất bại",
       activeBooking?.paymentFailureReason ||
@@ -242,6 +251,10 @@ function renderPaymentState() {
   retryButton.disabled = !manualQrAvailable;
   ticketLink.hidden = paymentState !== "paid";
   ticketLink.href = `/src/pages/booking-success.html?bookingCode=${encodeURIComponent(activeBooking.bookingCode)}`;
+  demoConfirmButton.hidden =
+    paymentConfig.mode === "live" ||
+    Boolean(providerPaymentId) ||
+    paymentState !== "pending";
   cancelButton.hidden = paymentState === "paid" || paymentState === "cancelled";
   cancelButton.disabled =
     paymentState === "processing" || paymentState === "cancelling";
@@ -579,7 +592,9 @@ async function copyValue(value, label) {
 const paymentAvailability = document.getElementById("paymentAvailability");
 if (manualQrAvailable) {
   paymentAvailability.textContent =
-    "Cả ba phương thức đều thanh toán bằng mã VietQR. TripGo sẽ xác nhận sau khi đối soát giao dịch.";
+    paymentConfig.mode === "live"
+      ? "Thanh toán QR đang ở chế độ cổng thanh toán. Chỉ trạng thái được cổng xác minh mới được xác nhận."
+      : "Đây là luồng thanh toán mô phỏng. Nút xác nhận bên dưới không kiểm tra giao dịch ngân hàng thật.";
   paymentAvailability.hidden = false;
 } else {
   paymentAvailability.textContent =
@@ -617,6 +632,7 @@ if (requestedBookingCode) {
     payButton.disabled = true;
   } else if (
     activeBooking.status === "Đã đặt vé" &&
+    !isDemoPayment(activeBooking) &&
     !hasVerifiedPayment(activeBooking)
   ) {
     showError("Đơn hàng chưa có xác nhận thanh toán từ cổng thanh toán.");
@@ -661,6 +677,44 @@ payButton.addEventListener("click", async () => {
 });
 
 document.getElementById("retryPayment").addEventListener("click", retryPayment);
+document
+  .getElementById("confirmDemoPayment")
+  .addEventListener("click", () => {
+    const button = document.getElementById("confirmDemoPayment");
+    if (
+      !activeBooking ||
+      paymentState !== "pending" ||
+      paymentConfig.mode === "live" ||
+      providerPaymentId
+    )
+      return;
+
+    button.disabled = true;
+    try {
+      const paidAt = new Date().toISOString();
+      updateBooking({
+        status: "Đã đặt vé",
+        paymentStatus: "paid",
+        paymentState: "paid",
+        paymentMode: "demo",
+        paidAt,
+        confirmedAt: paidAt,
+      });
+      paymentState = "paid";
+      localStorage.removeItem("tripgo_selected_seats");
+      localStorage.removeItem("tripgo_selected_seat");
+      localStorage.removeItem("tripgo_selected_seat_flight");
+      window.location.replace(
+        `/src/pages/booking-success.html?bookingCode=${encodeURIComponent(activeBooking.bookingCode)}`,
+      );
+    } catch (error) {
+      console.error("Không thể xác nhận thanh toán mô phỏng:", error);
+      showError(
+        error.message || "Không thể xác nhận thanh toán. Vui lòng thử lại.",
+      );
+      button.disabled = false;
+    }
+  });
 document
   .getElementById("cancelPayment")
   .addEventListener("click", cancelPayment);
@@ -725,6 +779,7 @@ window.addEventListener("storage", (event) => {
   );
   if (
     updatedBooking?.status !== "Đã đặt vé" ||
+    isDemoPayment(updatedBooking) ||
     !hasVerifiedPayment(updatedBooking)
   ) {
     return;

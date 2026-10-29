@@ -37,19 +37,21 @@ const booking = bookingCode
       )
   : null;
 
+const isDemoPayment = booking?.paymentMode === "demo";
+
 if (!booking) {
   missing.hidden = false;
 } else if (
   booking.status !== "Đã đặt vé" ||
   booking.paymentState !== "paid" ||
-  /demo|mô phỏng/i.test(booking.paymentStatus || "")
+  (!isDemoPayment && /demo|mô phỏng/i.test(booking.paymentStatus || ""))
 ) {
   paymentPending.hidden = false;
   const isCancelled = booking.status === "Đã hủy";
   const isUnverified =
     booking.status === "Đã đặt vé" &&
     (booking.paymentState !== "paid" ||
-      /demo|mô phỏng/i.test(booking.paymentStatus || ""));
+      (!isDemoPayment && /demo|mô phỏng/i.test(booking.paymentStatus || "")));
   document.getElementById("pendingTitle").textContent = isCancelled
     ? "Đơn hàng đã bị hủy"
     : isUnverified
@@ -94,10 +96,11 @@ if (!booking) {
   const values = {
     bookingCode: booking.bookingCode,
     bookingStatus: booking.status || "Đã đặt vé",
-    paymentStatus:
-      paymentStatusLabels[booking.paymentStatus] ||
-      booking.paymentStatus ||
-      "Chưa xác nhận thanh toán",
+    paymentStatus: isDemoPayment
+      ? "Đã thanh toán (mô phỏng)"
+      : paymentStatusLabels[booking.paymentStatus] ||
+        booking.paymentStatus ||
+        "Chưa xác nhận thanh toán",
     flightNumber: booking.flightId || flight.flightNumber || flight.id || "—",
     fromCode: flight.from || booking.from || "—",
     fromName: airports[flight.from || booking.from] || "—",
@@ -124,6 +127,10 @@ if (!booking) {
 
   for (const [id, value] of Object.entries(values)) {
     document.getElementById(id).textContent = value;
+  }
+  if (isDemoPayment) {
+    document.getElementById("paymentDisclaimer").textContent =
+      "Trạng thái này chỉ mô phỏng; TripGo chưa xác minh tiền đã chuyển.";
   }
 
   ticket.hidden = false;
