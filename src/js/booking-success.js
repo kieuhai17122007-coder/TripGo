@@ -135,6 +135,52 @@ if (!booking) {
 
   ticket.hidden = false;
   actions.hidden = false;
+  const downloadTicketPdf = document.getElementById("downloadTicketPdf");
+  downloadTicketPdf.addEventListener("click", async () => {
+    downloadTicketPdf.disabled = true;
+    downloadTicketPdf.textContent = "Đang tạo PDF...";
+
+    try {
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import("html2canvas"),
+        import("jspdf"),
+      ]);
+      const safeBookingCode = booking.bookingCode.replace(
+        /[^a-zA-Z0-9_-]/g,
+        "_",
+      );
+      const canvas = await html2canvas(ticket, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+      });
+      const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+      const margin = 10;
+      const pageWidth = pdf.internal.pageSize.getWidth() - margin * 2;
+      const pageHeight = pdf.internal.pageSize.getHeight() - margin * 2;
+      const scale = Math.min(
+        pageWidth / canvas.width,
+        pageHeight / canvas.height,
+      );
+      const width = canvas.width * scale;
+      const height = canvas.height * scale;
+      pdf.addImage(
+        canvas.toDataURL("image/jpeg", 0.98),
+        "JPEG",
+        (pdf.internal.pageSize.getWidth() - width) / 2,
+        (pdf.internal.pageSize.getHeight() - height) / 2,
+        width,
+        height,
+      );
+      pdf.save(`TripGo_${safeBookingCode}.pdf`);
+    } catch (error) {
+      console.error("Không thể tạo PDF vé:", error);
+      alert("Chưa thể tạo file PDF. Vui lòng thử lại hoặc chọn In vé.");
+    } finally {
+      downloadTicketPdf.disabled = false;
+      downloadTicketPdf.textContent = "Tải vé PDF";
+    }
+  });
   document
     .getElementById("printTicket")
     .addEventListener("click", () => window.print());
