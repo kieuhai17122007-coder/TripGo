@@ -3,10 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>TripGo - Check-in</title>
+    <title>TripGo - Check-in trực tuyến</title>
     <link rel="stylesheet" href="/src/css/main.css" />
     <link rel="stylesheet" href="/src/css/pages.css" />
     <link rel="stylesheet" href="/src/css/user-experience.css" />
+    <link rel="stylesheet" href="/src/css/checkin.css" />
   </head>
   <body>
     <header class="header">
@@ -33,67 +34,196 @@
         </div>
       </div>
     </header>
-    <main class="simple-page">
-      <div class="form-card">
-        <p class="eyebrow dark">ONLINE CHECK-IN</p>
-        <h1>Check-in trực tuyến</h1>
-        <p>Nhập mã đặt chỗ và họ hành khách để bắt đầu.</p>
-        <label for="code">Mã đặt chỗ</label
-        ><input id="code" placeholder="TG123456" autocomplete="off" />
-        <label for="surname">Họ hành khách</label
-        ><input id="surname" placeholder="NGUYEN" autocomplete="family-name" />
-        <button class="primary-btn wide" id="checkinBtn">Check-in</button>
-        <div id="result"></div>
+
+    <main class="checkin-page">
+      <div class="container checkin-shell">
+        <section class="checkin-heading">
+          <p class="eyebrow dark">TRIPGO ONLINE SERVICES</p>
+          <h1>Check-in trực tuyến</h1>
+          <p>
+            Tra cứu đặt chỗ, xác nhận hành khách và ghế ngồi để xem thẻ lên máy
+            bay của bạn.
+          </p>
+        </section>
+
+        <ol class="checkin-progress" aria-label="Tiến trình check-in">
+          <li class="active" aria-current="step" data-progress-step="1">
+            <span>01</span><b>Tra cứu đặt chỗ</b>
+          </li>
+          <li data-progress-step="2"><span>02</span><b>Xác nhận hành khách</b></li>
+          <li data-progress-step="3"><span>03</span><b>Xác nhận check-in</b></li>
+          <li data-progress-step="4"><span>04</span><b>Thẻ lên máy bay</b></li>
+        </ol>
+
+        <div id="statusMessage" class="checkin-message" role="status" aria-live="polite" hidden></div>
+
+        <section class="checkin-card lookup-card" id="lookupSection">
+          <div class="section-heading">
+            <span class="section-icon" aria-hidden="true">01</span>
+            <div>
+              <h2>Tra cứu đặt chỗ</h2>
+              <p>Dùng mã đặt chỗ và họ của hành khách chính xác như trên vé.</p>
+            </div>
+          </div>
+          <form id="lookupForm" novalidate>
+            <div class="lookup-fields">
+              <div class="checkin-field">
+                <label for="bookingCode">Mã đặt chỗ</label>
+                <input
+                  id="bookingCode"
+                  name="bookingCode"
+                  type="text"
+                  placeholder="Ví dụ: TG123456"
+                  autocomplete="off"
+                  autocapitalize="characters"
+                  required
+                />
+              </div>
+              <div class="checkin-field">
+                <label for="surname">Họ hành khách</label>
+                <input
+                  id="surname"
+                  name="surname"
+                  type="text"
+                  placeholder="Nhập họ như đã đăng ký"
+                  autocomplete="family-name"
+                  required
+                />
+              </div>
+            </div>
+            <button class="primary-btn checkin-primary" id="lookupButton" type="submit">
+              Tra cứu đặt chỗ
+            </button>
+          </form>
+          <details class="booking-code-help">
+            <summary>Tìm mã đặt chỗ ở đâu?</summary>
+            <p>
+              Mã đặt chỗ được lưu trong xác nhận đặt vé và mục Lịch sử đặt vé
+              sau khi bạn đăng nhập. Check-in này chỉ tra cứu dữ liệu TripGo
+              trong trình duyệt hiện tại.
+            </p>
+          </details>
+        </section>
+
+        <section class="checkin-card booking-card" id="bookingSection" hidden>
+          <div class="section-heading">
+            <span class="section-icon" aria-hidden="true">02</span>
+            <div>
+              <h2>Thông tin đặt chỗ</h2>
+              <p>Đối chiếu hành trình và trạng thái trước khi tiếp tục.</p>
+            </div>
+            <button class="text-button" id="changeBookingButton" type="button">Tra cứu mã khác</button>
+          </div>
+          <div id="bookingSummary"></div>
+          <div class="passenger-picker">
+            <div class="section-subheading">
+              <h3>Chọn hành khách</h3>
+              <p>Chỉ hành khách có thông tin trong đặt chỗ mới có thể làm thủ tục.</p>
+            </div>
+            <fieldset id="passengerChoices" class="passenger-choices">
+              <legend class="visually-hidden">Hành khách cần check-in</legend>
+            </fieldset>
+            <div id="passengerDataWarning" class="inline-warning" hidden></div>
+            <button class="primary-btn checkin-primary" id="continueToSeat" type="button" disabled>
+              Xác nhận hành khách
+            </button>
+          </div>
+        </section>
+
+        <section class="checkin-card seat-card" id="seatSection" hidden>
+          <div class="section-heading">
+            <span class="section-icon" aria-hidden="true">03</span>
+            <div>
+              <h2>Xác nhận ghế ngồi</h2>
+              <p>Chọn ghế còn trống hoặc xác nhận ghế đã được đặt.</p>
+            </div>
+          </div>
+          <div class="selected-passenger-summary" id="selectedPassengerSummary"></div>
+          <div class="seat-selection-info">
+            <div>
+              <h3>Sơ đồ ghế</h3>
+              <p id="seatSelectionHint"></p>
+            </div>
+            <div class="seat-legend" aria-label="Chú giải ghế">
+              <span><i class="seat-dot free"></i>Còn trống</span>
+              <span><i class="seat-dot chosen"></i>Đang chọn</span>
+              <span><i class="seat-dot unavailable"></i>Đã đặt / khóa</span>
+            </div>
+          </div>
+          <div class="checkin-seat-map">
+            <div class="checkin-cockpit" aria-hidden="true">ĐẦU MÁY BAY</div>
+            <div id="seatCabin" aria-label="Sơ đồ ghế chuyến bay"></div>
+            <div class="checkin-cabin-tail" aria-hidden="true">CUỐI KHOANG</div>
+          </div>
+          <div id="seatStatus" class="inline-warning" role="status" aria-live="polite" hidden></div>
+          <div class="checkin-actions">
+            <button class="secondary-btn" id="backToPassengers" type="button">Quay lại hành khách</button>
+            <button class="primary-btn" id="continueToConfirm" type="button">Tiếp tục xác nhận</button>
+          </div>
+        </section>
+
+        <section class="checkin-card confirm-card" id="confirmSection" hidden>
+          <div class="section-heading">
+            <span class="section-icon" aria-hidden="true">03</span>
+            <div>
+              <h2>Xác nhận check-in</h2>
+              <p>Kiểm tra lại các thông tin dưới đây trước khi lưu.</p>
+            </div>
+          </div>
+          <div id="confirmationSummary" class="confirmation-summary"></div>
+          <div class="checkin-disclaimer">
+            Đây là xác nhận trong hệ thống TripGo. Dữ liệu chỉ được lưu trong
+            localStorage của trình duyệt và origin hiện tại, chưa đồng bộ với
+            hãng hàng không hoặc thiết bị khác.
+          </div>
+          <div id="confirmationError" class="inline-error" role="alert" hidden></div>
+          <div class="checkin-actions">
+            <button class="secondary-btn" id="backToSeat" type="button">Quay lại chỉnh sửa</button>
+            <button class="primary-btn" id="confirmCheckin" type="button">Xác nhận check-in</button>
+          </div>
+        </section>
+
+        <section class="boarding-pass" id="boardingPass" hidden aria-labelledby="boardingPassTitle">
+          <div class="boarding-pass-main">
+            <header class="boarding-pass-header">
+              <div class="boarding-brand">
+                <span class="boarding-brand-mark" aria-hidden="true">✈</span>
+                <span>TripGo</span>
+              </div>
+              <div class="boarding-label">
+                <span>BOARDING PASS</span>
+                <h2 id="boardingPassTitle">THẺ LÊN MÁY BAY</h2>
+              </div>
+            </header>
+            <div class="boarding-pass-route" id="boardingRoute"></div>
+            <div class="boarding-pass-content">
+              <div class="boarding-pass-details" id="boardingDetails"></div>
+              <div class="boarding-pass-qr">
+                <img id="checkinQr" alt="Mã QR tham chiếu check-in TripGo" />
+                <strong>MÃ THAM CHIẾU CHECK-IN</strong>
+                <small id="checkinReference"></small>
+              </div>
+            </div>
+            <p class="boarding-disclaimer">
+              Mã tham chiếu nội bộ TripGo, không thay thế thẻ lên máy bay do
+              hãng hàng không phát hành và không dùng để làm thủ tục tại sân bay.
+            </p>
+          </div>
+          <div class="boarding-actions no-print">
+            <button class="secondary-btn" id="downloadBoardingPass" type="button">Tải thẻ lên máy bay</button>
+            <button class="secondary-btn" id="printBoardingPass" type="button">In thẻ</button>
+            <a class="primary-btn" href="/">Về trang chủ</a>
+          </div>
+        </section>
+
+        <p class="checkin-policy">
+          Quy tắc mô phỏng TripGo: check-in mở trước giờ khởi hành 24 giờ và
+          đóng trước 2 giờ, tính theo giờ cục bộ của trình duyệt. Đây không phải
+          quy định của bất kỳ hãng hàng không nào.
+        </p>
       </div>
     </main>
-    <script type="module">
-      import "../js/auth.js";
-      if (window.TripGoAuth.requireLogin()) {
-        window.TripGoAuth.updateAuthUI();
-        document.getElementById("checkinBtn").addEventListener("click", () => {
-          const code = document
-              .getElementById("code")
-              .value.trim()
-              .toUpperCase(),
-            surname = document
-              .getElementById("surname")
-              .value.trim()
-              .toLowerCase(),
-            result = document.getElementById("result");
-          const user = window.TripGoAuth.getCurrentUser();
-          const bookings = window.TripGoAuth.getBookings();
-          const userEmail = user.email?.toLowerCase();
-          const booking = bookings.find((item) => {
-            const belongsToUser =
-              window.TripGoAuth.isAdmin() ||
-              item.userEmail?.toLowerCase() === userEmail ||
-              item.passenger?.email?.toLowerCase() === userEmail ||
-              (user.phone && item.passenger?.phone === user.phone);
-            return (
-              belongsToUser &&
-              item.bookingCode?.toUpperCase() === code &&
-              (item.passenger?.fullName || "")
-                .toLowerCase()
-                .split(" ")
-                .pop() === surname
-            );
-          });
-          if (!booking) {
-            result.innerHTML =
-              '<div class="error">Không tìm thấy đặt chỗ. Kiểm tra mã đặt chỗ và họ hành khách.</div>';
-            return;
-          }
-          if (booking.status === "Đã hủy") {
-            result.innerHTML =
-              '<div class="error">Đặt chỗ này đã bị hủy.</div>';
-            return;
-          }
-          booking.status = "Đã check-in";
-          window.TripGoAuth.saveBookings(bookings);
-          result.innerHTML = `<div class="notice">Check-in thành công cho mã <b>${booking.bookingCode}</b>. Ghế: <b>${booking.seat || "Chưa chọn"}</b>.</div>`;
-        });
-      }
-    </script>
+    <script type="module" src="/src/js/check-in.js"></script>
     <script type="module" src="/src/js/auth-page.js"></script>
   </body>
 </html>
