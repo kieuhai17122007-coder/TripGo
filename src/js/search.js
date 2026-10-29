@@ -299,8 +299,10 @@ if (window.TripGoAuth.requireLogin()) {
 
       card.className = "flight-card";
 
-      const duration =
-        flight.duration || getFlightDuration(flight.departure, flight.arrival);
+      const duration = getFlightDuration(
+        flight.departure,
+        flight.arrival,
+      );
 
       card.innerHTML = `
             <div class="flight-top">
